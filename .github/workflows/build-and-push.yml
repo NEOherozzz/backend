@@ -76,73 +76,16 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            remnawave/backend:latest
-            remnawave/backend:${{github.ref_name}}
-            remnawave/backend:2
-            ghcr.io/remnawave/backend:latest
-            ghcr.io/remnawave/backend:${{github.ref_name}}
-            ghcr.io/remnawave/backend:2
-
-  create-release:
-    needs: [build-docker-image]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22.x'
-
-      - name: NewTag
-        id: tag
-        uses: JinoArch/get-latest-tag@latest
-
-      - name: Generate changelog
-        id: changelog
-        run: |
-          CHANGELOG=$(npx changelogen --from=${{ steps.tag.outputs.previousTag }} --to=${{ steps.tag.outputs.latestTag }} | sed '/^\[log\]/d')
-          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
-          echo "$CHANGELOG" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN_GH_DEPLOY }}
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: v${{ github.ref_name }}
-          generate_release_notes: true
-          append_body: true
-          make_latest: true
-          draft: false
-          prerelease: false
-          body: |
-            🌊 Remnawave Backend v${{ github.ref_name }}
-
-            <p align="center">
-              <a href="https://t.me/remnawave" target="_blank" rel="noopener noreferrer">
-                <img src="https://img.shields.io/badge/Join%20community-Telegram-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Join community on Telegram" width="220" height="auto">
-              </a>
-            </p>
-
-            ${{ env.CHANGELOG }}
-
-            Latest Docker image:
-            - `remnawave/backend:latest`
-            - `ghcr.io/remnawave/backend:latest`
-
-            Docker images:
-            - `remnawave/backend:${{github.ref_name}}`
-            - `ghcr.io/remnawave/backend:${{github.ref_name}}`
+            neohero/backend:latest
+            neohero/backend:${{github.ref_name}}
+            neohero/backend:2
+            ghcr.io/NEOherozzz/backend:latest
+            ghcr.io/NEOherozzz/backend:${{github.ref_name}}
+            ghcr.io/NEOherozzz/backend:2
 
   send-finish-tg-msg:
     name: Send TG message
-    needs: [build-docker-image, create-release]
+    needs: [build-docker-image]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source code
