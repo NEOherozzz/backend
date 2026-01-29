@@ -142,7 +142,7 @@ export class SingBoxGeneratorService {
             filteredTags = filteredTags.filter((tag) => {
                 return includePatterns.some((pattern) => {
                     try {
-                        const regex = new RegExp(pattern);
+                        const regex = new RegExp(pattern, 'u');
                         return regex.test(tag);
                     } catch {
                         // Invalid regex, skip this pattern
@@ -157,7 +157,7 @@ export class SingBoxGeneratorService {
             filteredTags = filteredTags.filter((tag) => {
                 return !excludePatterns.some((pattern) => {
                     try {
-                        const regex = new RegExp(pattern);
+                        const regex = new RegExp(pattern, 'u');
                         return regex.test(tag);
                     } catch {
                         // Invalid regex, skip this pattern
@@ -176,9 +176,8 @@ export class SingBoxGeneratorService {
             .filter((outbound: OutboundConfig) => urltest_types.includes(outbound.type))
             .map((outbound: OutboundConfig) => outbound.tag);
 
-        const selector_types = [...urltest_types, 'urltest'];
         const selector_tags = config.outbounds
-            .filter((outbound: OutboundConfig) => selector_types.includes(outbound.type))
+            .filter((outbound: OutboundConfig) => urltest_types.includes(outbound.type))
             .map((outbound: OutboundConfig) => outbound.tag);
 
         /**
