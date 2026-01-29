@@ -79,9 +79,9 @@ jobs:
             neohero/backend:latest
             neohero/backend:${{github.ref_name}}
             neohero/backend:2
-            ghcr.io/NEOherozzz/backend:latest
-            ghcr.io/NEOherozzz/backend:${{github.ref_name}}
-            ghcr.io/NEOherozzz/backend:2
+            ghcr.io/neoherozzz/backend:latest
+            ghcr.io/neoherozzz/backend:${{github.ref_name}}
+            ghcr.io/neoherozzz/backend:2
 
   send-finish-tg-msg:
     name: Send TG message
