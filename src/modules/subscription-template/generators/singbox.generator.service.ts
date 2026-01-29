@@ -1,8 +1,16 @@
+import _ from 'lodash';
+
 import { Injectable } from '@nestjs/common';
 
 import { SubscriptionTemplateService } from '@modules/subscription-template/subscription-template.service';
 
 import { IFormattedHost } from './interfaces';
+
+interface Remnawave {
+    'include-proxies'?: boolean;
+    'select-random-proxy'?: boolean;
+    'shuffle-proxies-order'?: boolean;
+}
 
 interface OutboundConfig {
     flow?: string;
@@ -22,6 +30,7 @@ interface OutboundConfig {
     path?: string;
     max_early_data?: number;
     early_data_header_name?: string;
+    remnawave?: Remnawave;
 }
 
 interface TlsConfig {
@@ -95,13 +104,49 @@ export class SingBoxGeneratorService {
             .filter((outbound: OutboundConfig) => selector_types.includes(outbound.type))
             .map((outbound: OutboundConfig) => outbound.tag);
 
+        /**
+         * Process Remnawave custom keys for dynamic proxy assignment.
+         * Priority: include-proxies > select-random-proxy > shuffle-proxies-order > default
+         */
         config.outbounds.forEach((outbound: OutboundConfig) => {
-            if (outbound.type === 'urltest') {
-                outbound.outbounds = urltest_tags;
+            // Only process selector and urltest types
+            if (outbound.type !== 'selector' && outbound.type !== 'urltest') {
+                return;
             }
-            if (outbound.type === 'selector') {
-                outbound.outbounds = selector_tags;
+
+            // Determine which tag set to use
+            const availableTags = outbound.type === 'urltest' ? urltest_tags : selector_tags;
+
+            // Extract and delete remnawave property
+            let remnawaveCustom: Remnawave | undefined = undefined;
+            if (outbound?.remnawave) {
+                remnawaveCustom = outbound.remnawave;
+                delete outbound.remnawave; // Clean up before JSON output
             }
+
+            // Priority 1: include-proxies = false → skip outbound entirely
+            if (remnawaveCustom && remnawaveCustom['include-proxies'] === false) {
+                return;
+            }
+
+            // Priority 2: select-random-proxy = true → add one random proxy
+            if (remnawaveCustom && remnawaveCustom['select-random-proxy'] === true) {
+                const randomTag =
+                    availableTags[Math.floor(Math.random() * availableTags.length)];
+                if (randomTag) {
+                    outbound.outbounds = [randomTag];
+                }
+                return;
+            }
+
+            // Priority 3: shuffle-proxies-order = true → add all proxies shuffled
+            if (remnawaveCustom && remnawaveCustom['shuffle-proxies-order'] === true) {
+                outbound.outbounds = _.shuffle(availableTags);
+                return;
+            }
+
+            // Default: add all proxies in original order
+            outbound.outbounds = availableTags;
         });
 
         return JSON.stringify(config, null, 4);
