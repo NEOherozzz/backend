@@ -93,6 +93,83 @@ export class SingBoxGeneratorService {
         config.outbounds.push(outbound_data);
     }
 
+    /**
+     * Extract include/exclude regex directives from outbounds array.
+     * Removes directive strings and returns filtering config.
+     */
+    private extractRegexDirectives(outbounds: string[]): {
+        includePatterns: string[];
+        excludePatterns: string[];
+        cleanedOutbounds: string[];
+    } {
+        const includePatterns: string[] = [];
+        const excludePatterns: string[] = [];
+        const cleanedOutbounds: string[] = [];
+
+        for (const item of outbounds) {
+            if (typeof item !== 'string') {
+                cleanedOutbounds.push(item);
+                continue;
+            }
+
+            const includeMatch = item.match(/^include:\s*(.+)$/i);
+            const excludeMatch = item.match(/^exclude:\s*(.+)$/i);
+
+            if (includeMatch) {
+                includePatterns.push(includeMatch[1].trim());
+            } else if (excludeMatch) {
+                excludePatterns.push(excludeMatch[1].trim());
+            } else {
+                cleanedOutbounds.push(item);
+            }
+        }
+
+        return { includePatterns, excludePatterns, cleanedOutbounds };
+    }
+
+    /**
+     * Apply regex include/exclude filters to proxy tags.
+     */
+    private applyRegexFilters(
+        tags: string[],
+        includePatterns: string[],
+        excludePatterns: string[],
+    ): string[] {
+        let filteredTags = [...tags];
+
+        // Apply include filters (if any)
+        if (includePatterns.length > 0) {
+            filteredTags = filteredTags.filter((tag) => {
+                return includePatterns.some((pattern) => {
+                    try {
+                        const regex = new RegExp(pattern);
+                        return regex.test(tag);
+                    } catch {
+                        // Invalid regex, skip this pattern
+                        return false;
+                    }
+                });
+            });
+        }
+
+        // Apply exclude filters (if any)
+        if (excludePatterns.length > 0) {
+            filteredTags = filteredTags.filter((tag) => {
+                return !excludePatterns.some((pattern) => {
+                    try {
+                        const regex = new RegExp(pattern);
+                        return regex.test(tag);
+                    } catch {
+                        // Invalid regex, skip this pattern
+                        return true; // Keep tag if exclude pattern is invalid
+                    }
+                });
+            });
+        }
+
+        return filteredTags;
+    }
+
     private renderConfig(config: Record<string, any>): string {
         const urltest_types = ['vless', 'trojan', 'shadowsocks'];
         const urltest_tags = config.outbounds
@@ -105,8 +182,10 @@ export class SingBoxGeneratorService {
             .map((outbound: OutboundConfig) => outbound.tag);
 
         /**
-         * Process Remnawave custom keys for dynamic proxy assignment.
-         * Priority: include-proxies > select-random-proxy > shuffle-proxies-order > default
+         * Process outbounds for proxy assignment with support for:
+         * 1. Regex filtering (include/exclude directives)
+         * 2. Remnawave custom keys
+         * Priority: Regex filtering > Remnawave properties
          */
         config.outbounds.forEach((outbound: OutboundConfig) => {
             // Only process selector and urltest types
@@ -117,36 +196,56 @@ export class SingBoxGeneratorService {
             // Determine which tag set to use
             const availableTags = outbound.type === 'urltest' ? urltest_tags : selector_tags;
 
-            // Extract and delete remnawave property
+            // Initialize outbounds array if needed
+            if (!Array.isArray(outbound.outbounds)) {
+                outbound.outbounds = [];
+            }
+
+            // Step 1: Extract and remove regex directives from outbounds
+            const { includePatterns, excludePatterns, cleanedOutbounds } =
+                this.extractRegexDirectives(outbound.outbounds);
+            outbound.outbounds = cleanedOutbounds;
+
+            // Step 2: Apply regex filtering to available tags
+            let tagsToAdd = this.applyRegexFilters(
+                availableTags,
+                includePatterns,
+                excludePatterns,
+            );
+
+            // Step 3: Extract and process remnawave property
             let remnawaveCustom: Remnawave | undefined = undefined;
             if (outbound?.remnawave) {
                 remnawaveCustom = outbound.remnawave;
                 delete outbound.remnawave; // Clean up before JSON output
             }
 
-            // Priority 1: include-proxies = false → skip outbound entirely
-            if (remnawaveCustom && remnawaveCustom['include-proxies'] === false) {
-                return;
-            }
-
-            // Priority 2: select-random-proxy = true → add one random proxy
-            if (remnawaveCustom && remnawaveCustom['select-random-proxy'] === true) {
-                const randomTag =
-                    availableTags[Math.floor(Math.random() * availableTags.length)];
-                if (randomTag) {
-                    outbound.outbounds = [randomTag];
+            // Step 4: Apply remnawave logic (if present)
+            if (remnawaveCustom) {
+                // Priority 1: include-proxies = false → skip adding proxies entirely
+                if (remnawaveCustom['include-proxies'] === false) {
+                    return;
                 }
-                return;
+
+                // Priority 2: select-random-proxy = true → add one random proxy
+                if (remnawaveCustom['select-random-proxy'] === true) {
+                    const randomTag = tagsToAdd[Math.floor(Math.random() * tagsToAdd.length)];
+                    if (randomTag) {
+                        outbound.outbounds.push(randomTag);
+                    }
+                    return;
+                }
+
+                // Priority 3: shuffle-proxies-order = true → shuffle before adding
+                if (remnawaveCustom['shuffle-proxies-order'] === true) {
+                    tagsToAdd = _.shuffle(tagsToAdd);
+                }
             }
 
-            // Priority 3: shuffle-proxies-order = true → add all proxies shuffled
-            if (remnawaveCustom && remnawaveCustom['shuffle-proxies-order'] === true) {
-                outbound.outbounds = _.shuffle(availableTags);
-                return;
+            // Step 5: Append all tags to outbounds (preserves existing entries)
+            for (const tag of tagsToAdd) {
+                outbound.outbounds.push(tag);
             }
-
-            // Default: add all proxies in original order
-            outbound.outbounds = availableTags;
         });
 
         return JSON.stringify(config, null, 4);
