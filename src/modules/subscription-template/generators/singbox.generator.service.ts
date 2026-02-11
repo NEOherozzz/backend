@@ -18,6 +18,7 @@ interface OutboundConfig {
     multiplex?: any;
     network?: string;
     outbounds?: string[];
+    udp_over_tcp?: { enabled: boolean; version: number };
     password?: string;
     server: string;
     server_port: number;
@@ -403,7 +404,10 @@ export class SingBoxGeneratorService {
         }
 
         if (params.protocol === 'shadowsocks') {
-            config.network = 'tcp';
+            config.udp_over_tcp = {
+                enabled: true,
+                version: 2,
+            };
         }
 
         if (['httpupgrade', 'ws'].includes(params.network)) {
