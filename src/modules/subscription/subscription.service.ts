@@ -29,6 +29,7 @@ import { RenderTemplatesService } from '@modules/subscription-template/render-te
 import { CountUsersDevicesQuery } from '@modules/hwid-user-devices/queries/count-users-devices';
 import { IFormattedHost, IRawHost } from '@modules/subscription-template/generators/interfaces';
 import { GetUsersWithPaginationQuery } from '@modules/users/queries/get-users-with-pagination';
+import { isJsonSubscriptionFallbackSupported } from '@modules/subscription-template/constants';
 import { ExternalSquadEntity } from '@modules/external-squads/entities/external-squad.entity';
 import { CheckHwidExistsQuery } from '@modules/hwid-user-devices/queries/check-hwid-exists';
 import { GetUserByUniqueFieldQuery } from '@modules/users/queries/get-user-by-unique-field';
@@ -41,6 +42,7 @@ import { GetFullUserResponseModel } from '@modules/users/models';
 import { UsersQueuesService } from '@queue/_users/users-queues.service';
 
 import {
+    ConnectionKeysResponseModel,
     RawSubscriptionWithHostsResponse,
     SubscriptionNotFoundResponse,
     SubscriptionRawResponse,
@@ -166,6 +168,7 @@ export class SubscriptionService {
                             TemplateEngine.formatWithUser(
                                 subscriptionSettings.hwidSettings.maxDevicesAnnounce,
                                 user.response,
+                                subscriptionSettings,
                                 this.subPublicDomain,
                             ),
                         ).toString('base64')}`;
@@ -200,8 +203,23 @@ export class SubscriptionService {
                 await this.checkAndUpsertHwidUserDevice(user.response, hwidHeaders);
             }
 
+            if (
+                srrContext.subscriptionSettings.serveJsonAtBaseSubscription &&
+                srrContext.matchedResponseType === 'XRAY_BASE64' &&
+                !srrContext.ignoreServeJsonAtBaseSubscription
+            ) {
+                if (isJsonSubscriptionFallbackSupported(srrContext.userAgent)) {
+                    srrContext.matchedResponseType = 'XRAY_JSON';
+                }
+            }
+
             const hosts = await this.queryBus.execute(
-                new GetHostsForUserQuery(user.response.tId, false, false),
+                new GetHostsForUserQuery(
+                    user.response.tId,
+                    false,
+                    srrContext.matchedResponseType === 'XRAY_JSON' ||
+                        srrContext.matchedResponseType === 'MIHOMO',
+                ),
             );
 
             if (!hosts.isOk) {
@@ -612,7 +630,12 @@ export class SubscriptionService {
             'content-disposition': `attachment; filename=${user.username}`,
             'support-url': settings.supportLink,
             'profile-title': `base64:${Buffer.from(
-                TemplateEngine.formatWithUser(settings.profileTitle, user, this.subPublicDomain),
+                TemplateEngine.formatWithUser(
+                    settings.profileTitle,
+                    user,
+                    settings,
+                    this.subPublicDomain,
+                ),
             ).toString('base64')}`,
             'profile-update-interval': settings.profileUpdateInterval.toString(),
             'subscription-userinfo': Object.entries(getSubscriptionUserInfo(user))
@@ -622,7 +645,12 @@ export class SubscriptionService {
 
         if (settings.happAnnounce) {
             headers.announce = `base64:${Buffer.from(
-                TemplateEngine.formatWithUser(settings.happAnnounce, user, this.subPublicDomain),
+                TemplateEngine.formatWithUser(
+                    settings.happAnnounce,
+                    user,
+                    settings,
+                    this.subPublicDomain,
+                ),
             ).toString('base64')}`;
         }
 
@@ -644,6 +672,7 @@ export class SubscriptionService {
                 headers[key] = TemplateEngine.formatWithUser(
                     value,
                     user,
+                    settings,
                     this.subPublicDomain,
                     true,
                 );
@@ -961,6 +990,88 @@ export class SubscriptionService {
                     webpageAllowed: false,
                 }),
             );
+        }
+    }
+
+    public async getConnectionKeysByUuid(
+        uuid: string,
+    ): Promise<TResult<ConnectionKeysResponseModel>> {
+        try {
+            const userResult = await this.queryBus.execute(
+                new GetUserByUniqueFieldQuery(
+                    {
+                        uuid,
+                    },
+                    {
+                        activeInternalSquads: false,
+                    },
+                ),
+            );
+
+            if (!userResult.isOk) {
+                return fail(ERRORS.USER_NOT_FOUND);
+            }
+
+            const userEntity = userResult.response;
+
+            if (!userEntity) {
+                return fail(ERRORS.USER_NOT_FOUND);
+            }
+
+            let settings = await this.queryBus.execute(new GetCachedSubscriptionSettingsQuery());
+            let hostsOverrides: ExternalSquadEntity['hostOverrides'] | undefined;
+
+            if (!settings) {
+                return fail(ERRORS.INTERNAL_SERVER_ERROR);
+            }
+
+            if (userEntity.externalSquadUuid) {
+                const {
+                    subscriptionSettings: patchedSubscriptionSettings,
+                    hostsOverrides: patchedHostsOverrides,
+                } = await this.applyMaybeExternalSquadOverrides(
+                    settings,
+                    userEntity.externalSquadUuid,
+                );
+
+                settings = patchedSubscriptionSettings;
+                hostsOverrides = patchedHostsOverrides;
+            }
+
+            const allHostsResult = await this.queryBus.execute(
+                new GetHostsForUserQuery(userEntity.tId, true, true),
+            );
+
+            const allHosts = allHostsResult.isOk ? allHostsResult.response : [];
+
+            const enabledHosts = allHosts.filter((h) => !h.isDisabled && !h.isHidden);
+            const disabledHosts = allHosts.filter((h) => h.isDisabled && !h.isHidden);
+            const hiddenHosts = allHosts.filter((h) => h.isHidden && !h.isDisabled);
+
+            const formatOrSkip = async (hosts: typeof allHosts, allowEmpty: boolean = false) => {
+                if (hosts.length === 0 && !allowEmpty) return [];
+                return this.formatHostsService.generateFormattedHosts({
+                    subscriptionSettings: settings,
+                    hosts,
+                    user: userEntity,
+                    hostsOverrides,
+                });
+            };
+
+            const formattedEnabled = await formatOrSkip(enabledHosts, true);
+            const formattedDisabled = await formatOrSkip(disabledHosts);
+            const formattedHidden = await formatOrSkip(hiddenHosts);
+
+            return ok(
+                new ConnectionKeysResponseModel({
+                    enabledKeys: this.xrayGeneratorService.generateLinks(formattedEnabled, false),
+                    disabledKeys: this.xrayGeneratorService.generateLinks(formattedDisabled, false),
+                    hiddenKeys: this.xrayGeneratorService.generateLinks(formattedHidden, false),
+                }),
+            );
+        } catch (error) {
+            this.logger.error(`Error getting subscription info: ${error}`);
+            return fail(ERRORS.INTERNAL_SERVER_ERROR);
         }
     }
 }

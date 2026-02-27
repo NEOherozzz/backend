@@ -77,9 +77,7 @@ export class SingBoxGeneratorService {
             const proxy_remarks: string[] = [];
 
             for (const host of hosts) {
-                if (!host) {
-                    continue;
-                }
+                if (host.serviceInfo.excludeFromSubscriptionTypes.includes('SINGBOX')) continue;
 
                 this.addHost(host, config, proxy_remarks);
             }

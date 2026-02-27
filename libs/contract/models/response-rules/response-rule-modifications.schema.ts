@@ -52,6 +52,16 @@ export const ResponseRuleModificationsSchema = z
                 }),
             )
             .optional(),
+        applyHeadersToEnd: z
+            .boolean()
+            .optional()
+            .describe(
+                JSON.stringify({
+                    markdownDescription:
+                        'By default, headers are added when forming the response. In some cases, headers set in SRR may be overridden by headers from other parts of the system. If you set this flag to **true**, headers from SRR will be added at the very end, just before the response is sent. In this case, SRR headers may override headers from other sections.',
+                }),
+            )
+            .optional(),
         subscriptionTemplate: z
             .string()
             .min(1, 'Subscription template name is required')
@@ -69,6 +79,15 @@ export const ResponseRuleModificationsSchema = z
                 JSON.stringify({
                     markdownDescription:
                         "Each Host may have its own Xray Json Template. If you set this flag to **true**, the Xray Json Template defined by the SRR will be used. **The Host's Xray Json Template will be ignored.**",
+                }),
+            ),
+        ignoreServeJsonAtBaseSubscription: z
+            .boolean()
+            .optional()
+            .describe(
+                JSON.stringify({
+                    markdownDescription:
+                        'If you set this flag to **true**, the **Serve JSON at Base Subscription** setting will be ignored (set to **false**).',
                 }),
             ),
     })
