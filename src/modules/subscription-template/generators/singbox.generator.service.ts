@@ -288,7 +288,6 @@ export class SingBoxGeneratorService {
             case 'shadowsocks':
                 config.password = host.protocolOptions.password;
                 config.method = host.protocolOptions.method;
-                config.network = 'tcp';
                 config.udp_over_tcp = {
                     enabled: host.protocolOptions.uot,
                     version: host.protocolOptions.uotVersion,
