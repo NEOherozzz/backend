@@ -19,6 +19,7 @@ interface OutboundConfig {
     network?: string;
     outbounds?: string[];
     udp_over_tcp?: { enabled: boolean; version: number };
+    tcp_fast_open?: boolean;
     password?: string;
     server: string;
     server_port: number;
@@ -292,6 +293,7 @@ export class SingBoxGeneratorService {
                     enabled: host.protocolOptions.uot,
                     version: host.protocolOptions.uotVersion,
                 };
+                config.tcp_fast_open = true;
                 return true;
 
             default:
