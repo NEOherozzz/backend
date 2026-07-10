@@ -12,6 +12,7 @@ export namespace CreateNodePluginCommand {
         NODE_PLUGINS_ROUTES.CREATE,
         'post',
         'Create Node Plugin',
+        { scope: 'create', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

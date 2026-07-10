@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { Cron, SchedulerRegistry } from '@nestjs/schedule';
-import { ConfigService } from '@nestjs/config';
+
+import { TypedConfigService } from '@common/config/app-config';
 
 import { UsersQueuesService } from '@queue/_users';
 
@@ -13,32 +14,27 @@ export class FindNotConnectedUsersNotificationTask implements OnApplicationBoots
 
     constructor(
         private readonly usersQueuesService: UsersQueuesService,
-        private readonly configService: ConfigService,
+        private readonly configService: TypedConfigService,
         private schedulerRegistry: SchedulerRegistry,
     ) {}
 
     public async onApplicationBootstrap() {
-        const isNotConnectedUsersNotificationsEnabled = this.configService.getOrThrow<string>(
+        const isJobEnabled = this.configService.getOrThrow(
             'NOT_CONNECTED_USERS_NOTIFICATIONS_ENABLED',
         );
-        const isTelegramLoggerEnabled = this.configService.getOrThrow<string>(
+        const isTelegramLoggerEnabled = this.configService.getOrThrow(
             'IS_TELEGRAM_NOTIFICATIONS_ENABLED',
         );
-        const isWebhookLoggerEnabled = this.configService.getOrThrow<string>('WEBHOOK_ENABLED');
+        const isWebhookLoggerEnabled = this.configService.getOrThrow('WEBHOOK_ENABLED');
 
-        if (
-            isNotConnectedUsersNotificationsEnabled === 'true' &&
-            (isTelegramLoggerEnabled === 'true' || isWebhookLoggerEnabled === 'true')
-        ) {
+        if (isJobEnabled && (isTelegramLoggerEnabled || isWebhookLoggerEnabled)) {
             const job = this.schedulerRegistry.getCronJob(
                 FindNotConnectedUsersNotificationTask.CRON_NAME,
             );
 
             if (job) {
                 job.start();
-                this.logger.log('Find not connected users notification job enabled.');
-            } else {
-                this.logger.warn('Find not connected users notification job not found.');
+                this.logger.log('Job enabled.');
             }
         } else {
             try {
@@ -46,7 +42,7 @@ export class FindNotConnectedUsersNotificationTask implements OnApplicationBoots
                     FindNotConnectedUsersNotificationTask.CRON_NAME,
                 );
 
-                this.logger.log('Find not connected users notification job disabled.');
+                this.logger.log('Job disabled.');
             } catch (error) {
                 this.logger.error(
                     `Error deleting "${FindNotConnectedUsersNotificationTask.CRON_NAME}" cron job: ${error}`,

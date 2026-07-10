@@ -1,13 +1,5 @@
-import { Request, Response } from 'express';
+import { Request } from 'express';
 
-import {
-    ApiBearerAuth,
-    ApiNotFoundResponse,
-    ApiOkResponse,
-    ApiParam,
-    ApiQuery,
-    ApiTags,
-} from '@nestjs/swagger';
 import {
     Body,
     Controller,
@@ -18,15 +10,26 @@ import {
     UseFilters,
     UseGuards,
 } from '@nestjs/common';
+import {
+    ApiBearerAuth,
+    ApiNotFoundResponse,
+    ApiOkResponse,
+    ApiParam,
+    ApiQuery,
+    ApiTags,
+} from '@nestjs/swagger';
 
+import { Endpoint } from '@common/decorators/base-endpoint';
+import { IpAddress } from '@common/decorators/get-ip';
+import { Roles } from '@common/decorators/roles/roles';
+import { ApiScopeResource } from '@common/decorators/scopes';
 import { HttpExceptionFilter } from '@common/exception/http-exception.filter';
 import { JwtDefaultGuard } from '@common/guards/jwt-guards/def-jwt-guard';
-import { extractHwidHeaders } from '@common/utils/extract-hwid-headers';
-import { errorHandler } from '@common/helpers/error-handler.helper';
-import { Endpoint } from '@common/decorators/base-endpoint';
-import { Roles } from '@common/decorators/roles/roles';
-import { IpAddress } from '@common/decorators/get-ip';
 import { RolesGuard } from '@common/guards/roles';
+import { ScopesGuard } from '@common/guards/scopes';
+import { errorHandler } from '@common/helpers/error-handler.helper';
+import { extractHwidHeaders } from '@common/utils/extract-hwid-headers';
+import { CONTROLLERS_INFO, SUBSCRIPTIONS_CONTROLLER } from '@libs/contracts/api';
 import {
     GetAllSubscriptionsCommand,
     GetConnectionKeysByUuidCommand,
@@ -36,7 +39,6 @@ import {
     GetSubscriptionByUuidCommand,
 } from '@libs/contracts/commands';
 import { GetSubpageConfigByShortUuidCommand } from '@libs/contracts/commands/subscriptions/subpage/get-subpage-config-by-shortuuid.command';
-import { CONTROLLERS_INFO, SUBSCRIPTIONS_CONTROLLER } from '@libs/contracts/api';
 import { ROLE } from '@libs/contracts/constants';
 
 import {
@@ -63,9 +65,10 @@ import { AllSubscriptionsResponseModel, SubscriptionRawResponse } from '../model
 import { SubscriptionService } from '../subscription.service';
 
 @ApiBearerAuth('Authorization')
+@ApiScopeResource(CONTROLLERS_INFO.SUBSCRIPTIONS.resource)
 @ApiTags(CONTROLLERS_INFO.SUBSCRIPTIONS.tag)
 @Roles(ROLE.ADMIN, ROLE.API)
-@UseGuards(JwtDefaultGuard, RolesGuard)
+@UseGuards(JwtDefaultGuard, RolesGuard, ScopesGuard)
 @UseFilters(HttpExceptionFilter)
 @Controller(SUBSCRIPTIONS_CONTROLLER)
 export class SubscriptionsController {

@@ -1,5 +1,7 @@
+import { INodeConnectionOpts } from '@common/axios';
+
 export interface IRecordNodeUsagePayload {
     nodeUuid: string;
-    nodeAddress: string;
-    nodePort: number | null;
+    nodeConsumptionMultiplier: string;
+    connectionOpts: INodeConnectionOpts;
 }

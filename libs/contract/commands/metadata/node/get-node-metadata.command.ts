@@ -11,6 +11,7 @@ export namespace GetNodeMetadataCommand {
         METADATA_ROUTES.NODE.GET(':uuid'),
         'get',
         'Get node metadata',
+        { scope: 'get-node', kind: 'read' },
     );
 
     export const RequestParamsSchema = z.object({

@@ -1,6 +1,9 @@
 export class GetHwidDevicesStatsResponseModel {
-    public readonly byPlatform: Array<{ platform: string; count: number }>;
-    public readonly byApp: Array<{ app: string; count: number }>;
+    public readonly byPlatform: Array<{
+        platform: string;
+        count: number;
+        byApp: Array<{ app: string; count: number }>;
+    }>;
     public readonly stats: {
         totalUniqueDevices: number;
         totalHwidDevices: number;
@@ -9,7 +12,6 @@ export class GetHwidDevicesStatsResponseModel {
 
     constructor(data: GetHwidDevicesStatsResponseModel) {
         this.byPlatform = data.byPlatform;
-        this.byApp = data.byApp;
         this.stats = data.stats;
     }
 }

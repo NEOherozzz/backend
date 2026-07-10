@@ -4,7 +4,5 @@
     "outDir": "../dist/prisma",
     "module": "NodeNext"
   },
-  "include": [
-    "seed/**/*"
-  ]
+  "include": ["seed/**/*"]
 }

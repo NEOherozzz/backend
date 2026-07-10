@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { REQUEST_TEMPLATE_TYPE } from '../../constants';
 import { REST_API } from '../../api';
+import { REQUEST_TEMPLATE_TYPE } from '../../constants';
 
 export namespace GetSubscriptionByShortUuidByClientTypeCommand {
     export const url = REST_API.SUBSCRIPTION.GET;

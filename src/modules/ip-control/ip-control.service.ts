@@ -4,14 +4,15 @@ import { QueryBus } from '@nestjs/cqrs';
 import { fail, ok, TResult } from '@common/types';
 import { ERRORS } from '@libs/contracts/constants';
 
-import { GetUserIdsByUserUuidsQuery } from '@modules/users/queries/get-user-ids-by-user-uuids';
-import { GetUserByUniqueFieldQuery } from '@modules/users/queries/get-user-by-unique-field';
+import { NodesEntity } from '@modules/nodes/entities/nodes.entity';
 import { FindNodesByCriteriaQuery } from '@modules/nodes/queries/find-nodes-by-criteria';
 import { GetNodeByUuidQuery } from '@modules/nodes/queries/get-node-by-uuid';
-import { NodesEntity } from '@modules/nodes/entities/nodes.entity';
+import { GetUserByUniqueFieldQuery } from '@modules/users/queries/get-user-by-unique-field';
+import { GetUserIdsByUserUuidsQuery } from '@modules/users/queries/get-user-ids-by-user-uuids';
 
 import { NodesQueuesService } from '@queue/_nodes';
 
+import { DropConnectionsRequestDto } from './dtos';
 import {
     BaseEventResponseModel,
     FetchUsersIpsResponseModel,
@@ -21,7 +22,6 @@ import {
     FetchIpsResponseModel,
     FetchIpsResultResponseModel,
 } from './models/fetch-user-ips.response.model';
-import { DropConnectionsRequestDto } from './dtos';
 
 @Injectable()
 export class IpControlService {
@@ -116,6 +116,7 @@ export class IpControlService {
                             node: {
                                 address: node.address,
                                 port: node.port,
+                                proxyUrl: node.proxyUrl,
                             },
                         });
                     }
@@ -130,6 +131,7 @@ export class IpControlService {
                             node: {
                                 address: node.address,
                                 port: node.port,
+                                proxyUrl: node.proxyUrl,
                             },
                         });
                     }

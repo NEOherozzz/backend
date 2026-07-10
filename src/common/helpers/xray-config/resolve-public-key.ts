@@ -1,38 +1,41 @@
-import { createPrivateKey, createPublicKey, KeyObject } from 'node:crypto';
 import { ml_dsa65 } from '@noble/post-quantum/ml-dsa.js';
+import { createPrivateKey, createPublicKey, KeyObject } from 'node:crypto';
 
 import { generateEncryptionFromDecryption } from '../vless-encryption/generate-encryption-from-decryption';
+
+const x25519PublicKeyCache = new Map<string, string>();
+const mldsa65PublicKeyCache = new Map<string, string>();
+const encryptionCache = new Map<string, string>();
 
 export async function resolveInboundAndPublicKey(inbounds: any[]): Promise<Map<string, string>> {
     const publicKeyMap = new Map<string, string>();
 
     for (const inbound of inbounds) {
-        if (inbound.streamSettings?.realitySettings?.privateKey) {
-            try {
-                if (publicKeyMap.has(inbound.tag)) {
-                    continue;
-                }
+        const privateKey = inbound.streamSettings?.realitySettings?.privateKey;
 
-                const { publicKey: jwkPublicKey } = await createX25519KeyPairFromBase64(
-                    inbound.streamSettings.realitySettings.privateKey,
-                );
+        if (!privateKey || publicKeyMap.has(inbound.tag)) {
+            continue;
+        }
+
+        try {
+            let pubKeyRaw = x25519PublicKeyCache.get(privateKey);
+
+            if (pubKeyRaw === undefined) {
+                const { publicKey: jwkPublicKey } = await createX25519KeyPairFromBase64(privateKey);
 
                 const publicKeyJwk = jwkPublicKey.export({ format: 'jwk' });
 
-                if (!publicKeyJwk) {
+                if (!publicKeyJwk?.x) {
                     continue;
                 }
 
-                const pubKeyRaw = publicKeyJwk.x;
-
-                if (!pubKeyRaw) {
-                    continue;
-                }
-
-                publicKeyMap.set(inbound.tag, pubKeyRaw);
-            } catch {
-                continue;
+                pubKeyRaw = publicKeyJwk.x;
+                x25519PublicKeyCache.set(privateKey, pubKeyRaw);
             }
+
+            publicKeyMap.set(inbound.tag, pubKeyRaw);
+        } catch {
+            continue;
         }
     }
 
@@ -45,24 +48,29 @@ export async function resolveInboundAndMlDsa65PublicKey(
     const mldsa65PublicKeyMap = new Map<string, string>();
 
     for (const inbound of inbounds) {
-        if (inbound.streamSettings?.realitySettings?.mldsa65Seed) {
-            try {
-                if (mldsa65PublicKeyMap.has(inbound.tag)) {
+        const seed = inbound.streamSettings?.realitySettings?.mldsa65Seed;
+
+        if (!seed || mldsa65PublicKeyMap.has(inbound.tag)) {
+            continue;
+        }
+
+        try {
+            let publicKey = mldsa65PublicKeyCache.get(seed);
+
+            if (publicKey === undefined) {
+                const derived = getMlDsa65PublicKey(seed);
+
+                if (!derived) {
                     continue;
                 }
 
-                const publicKey = getMlDsa65PublicKey(
-                    inbound.streamSettings.realitySettings.mldsa65Seed,
-                );
-
-                if (!publicKey) {
-                    continue;
-                }
-
-                mldsa65PublicKeyMap.set(inbound.tag, publicKey);
-            } catch {
-                continue;
+                publicKey = derived;
+                mldsa65PublicKeyCache.set(seed, publicKey);
             }
+
+            mldsa65PublicKeyMap.set(inbound.tag, publicKey);
+        } catch {
+            continue;
         }
     }
 
@@ -80,15 +88,9 @@ export async function resolveEncryptionFromDecryption(
                 continue;
             }
 
-            if (!inbound.settings) {
-                continue;
-            }
+            const decryption = inbound.settings?.decryption;
 
-            if (!inbound.settings.decryption) {
-                continue;
-            }
-
-            if (inbound.settings.decryption === 'none') {
+            if (!decryption || decryption === 'none') {
                 continue;
             }
 
@@ -96,9 +98,15 @@ export async function resolveEncryptionFromDecryption(
                 continue;
             }
 
-            const encryption = await generateEncryptionFromDecryption(inbound.settings.decryption);
+            let encryption = encryptionCache.get(decryption);
 
-            encryptionMap.set(inbound.tag, encryption.encryption);
+            if (encryption === undefined) {
+                const generated = await generateEncryptionFromDecryption(decryption);
+                encryption = generated.encryption;
+                encryptionCache.set(decryption, encryption);
+            }
+
+            encryptionMap.set(inbound.tag, encryption);
         } catch {
             continue;
         }

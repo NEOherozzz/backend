@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../constants';
 import { REST_API, SYSTEM_ROUTES } from '../../api';
+import { getEndpointDetails } from '../../constants';
 
 export namespace GetMetadataCommand {
     export const url = REST_API.SYSTEM.METADATA;
@@ -11,6 +11,7 @@ export namespace GetMetadataCommand {
         SYSTEM_ROUTES.METADATA,
         'get',
         'Get Remnawave Information',
+        { scope: 'metadata', kind: 'read' },
     );
 
     export const ResponseSchema = z.object({

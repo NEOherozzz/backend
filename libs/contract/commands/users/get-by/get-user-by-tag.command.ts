@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
+import { REST_API, USERS_ROUTES } from '../../../api';
 import { getEndpointDetails } from '../../../constants';
 import { ExtendedUsersSchema } from '../../../models';
-import { REST_API, USERS_ROUTES } from '../../../api';
 
 export namespace GetUserByTagCommand {
     export const url = REST_API.USERS.GET_BY.TAG;
@@ -12,6 +12,7 @@ export namespace GetUserByTagCommand {
         USERS_ROUTES.GET_BY.TAG(':tag'),
         'get',
         'Get users by tag',
+        { scope: 'by-tag', kind: 'read' },
     );
 
     export const RequestSchema = z.object({

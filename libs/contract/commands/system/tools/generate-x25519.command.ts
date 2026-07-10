@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../../constants';
 import { REST_API, SYSTEM_ROUTES } from '../../../api';
+import { getEndpointDetails } from '../../../constants';
 
 export namespace GenerateX25519Command {
     export const url = REST_API.SYSTEM.TOOLS.GENERATE_X25519;
@@ -11,6 +11,7 @@ export namespace GenerateX25519Command {
         SYSTEM_ROUTES.TOOLS.GENERATE_X25519,
         'get',
         'Generate 30 X25519 keypairs',
+        { scope: 'generate-x25519', kind: 'read' },
     );
 
     export const ResponseSchema = z.object({

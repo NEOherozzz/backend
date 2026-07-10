@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-import { InfraBillingAvailableNodeSchema, InfraBillingNodeSchema } from '../../models';
 import { INFRA_BILLING_ROUTES, REST_API } from '../../api';
 import { getEndpointDetails } from '../../constants';
+import { InfraBillingAvailableNodeSchema, InfraBillingNodeSchema } from '../../models';
 
 export namespace GetInfraBillingNodesCommand {
     export const url = REST_API.INFRA_BILLING.GET_BILLING_NODES;
@@ -12,6 +12,7 @@ export namespace GetInfraBillingNodesCommand {
         INFRA_BILLING_ROUTES.GET_BILLING_NODES,
         'get',
         'Get infra billing nodes',
+        { scope: 'list-billing-nodes', kind: 'read' },
     );
 
     export const ResponseSchema = z.object({

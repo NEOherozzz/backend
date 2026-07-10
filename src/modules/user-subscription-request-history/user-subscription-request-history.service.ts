@@ -4,9 +4,9 @@ import { fail, ok, TResult } from '@common/types';
 import { GetSubscriptionRequestHistoryCommand } from '@libs/contracts/commands';
 import { ERRORS } from '@libs/contracts/constants';
 
-import { UserSubscriptionRequestHistoryRepository } from './repositories/user-subscription-request-history.repository';
-import { GetSubscriptionRequestHistoryStatsResponseModel } from './models';
 import { UserSubscriptionRequestHistoryEntity } from './entities';
+import { GetSubscriptionRequestHistoryStatsResponseModel } from './models';
+import { UserSubscriptionRequestHistoryRepository } from './repositories/user-subscription-request-history.repository';
 
 @Injectable()
 export class UserSubscriptionRequestHistoryService {

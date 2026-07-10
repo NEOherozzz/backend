@@ -1,8 +1,8 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { BatchResetUserTrafficCommand } from './batch-reset-user-traffic.command';
 import { UsersRepository } from '../../repositories/users.repository';
+import { BatchResetUserTrafficCommand } from './batch-reset-user-traffic.command';
 
 @CommandHandler(BatchResetUserTrafficCommand)
 export class BatchResetUserTrafficHandler implements ICommandHandler<BatchResetUserTrafficCommand> {

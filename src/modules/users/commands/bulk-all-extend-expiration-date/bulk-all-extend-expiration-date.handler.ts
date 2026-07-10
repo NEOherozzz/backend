@@ -1,8 +1,8 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { BulkAllExtendExpirationDateCommand } from './bulk-all-extend-expiration-date.command';
 import { UsersRepository } from '../../repositories/users.repository';
+import { BulkAllExtendExpirationDateCommand } from './bulk-all-extend-expiration-date.command';
 
 @CommandHandler(BulkAllExtendExpirationDateCommand)
 export class BulkAllExtendExpirationDateHandler implements ICommandHandler<BulkAllExtendExpirationDateCommand> {

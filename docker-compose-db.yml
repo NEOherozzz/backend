@@ -1,6 +1,6 @@
 services:
   remnawavedb:
-    image: postgres:17.6
+    image: postgres:18.4
     container_name: remnawavedb
     hostname: remnawavedb
     restart: always
@@ -18,7 +18,7 @@ services:
     networks:
       - remnawave_internal
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
       interval: 3s

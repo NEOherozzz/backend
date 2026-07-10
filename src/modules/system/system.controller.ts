@@ -10,22 +10,18 @@ import {
     UseFilters,
     UseGuards,
 } from '@nestjs/common';
-import {
-    ApiBearerAuth,
-    ApiCreatedResponse,
-    ApiOkResponse,
-    ApiResponse,
-    ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { HttpExceptionFilter } from '@common/exception/http-exception.filter';
-import { JwtDefaultGuard } from '@common/guards/jwt-guards/def-jwt-guard';
-import { errorHandler } from '@common/helpers/error-handler.helper';
 import { Endpoint } from '@common/decorators/base-endpoint';
 import { Roles } from '@common/decorators/roles/roles';
+import { ApiScopeResource } from '@common/decorators/scopes';
+import { HttpExceptionFilter } from '@common/exception/http-exception.filter';
+import { JwtDefaultGuard } from '@common/guards/jwt-guards/def-jwt-guard';
 import { RolesGuard } from '@common/guards/roles';
+import { ScopesGuard } from '@common/guards/scopes';
+import { errorHandler } from '@common/helpers/error-handler.helper';
+import { CONTROLLERS_INFO, SYSTEM_CONTROLLER } from '@libs/contracts/api';
 import {
-    EncryptHappCryptoLinkCommand,
     GenerateX25519Command,
     GetBandwidthStatsCommand,
     GetMetadataCommand,
@@ -36,7 +32,6 @@ import {
     GetStatsCommand,
     TestSrrMatcherCommand,
 } from '@libs/contracts/commands';
-import { CONTROLLERS_INFO, SYSTEM_CONTROLLER } from '@libs/contracts/api';
 import { ROLE } from '@libs/contracts/constants';
 
 import {
@@ -47,20 +42,18 @@ import {
     GetRemnawaveHealthResponseDto,
     GetStatsResponseDto,
     GenerateX25519ResponseDto,
-    EncryptHappCryptoLinkResponseDto,
-    EncryptHappCryptoLinkRequestDto,
     DebugSrrMatcherRequestDto,
     DebugSrrMatcherResponseDto,
     GetMetadataResponseDto,
     GetRecapResponseDto,
 } from './dtos';
-import { EncryptHappCryptoLinkResponseModel } from './models';
 import { SystemService } from './system.service';
 
 @ApiBearerAuth('Authorization')
+@ApiScopeResource(CONTROLLERS_INFO.SYSTEM.resource)
 @ApiTags(CONTROLLERS_INFO.SYSTEM.tag)
 @Roles(ROLE.ADMIN, ROLE.API)
-@UseGuards(JwtDefaultGuard, RolesGuard)
+@UseGuards(JwtDefaultGuard, RolesGuard, ScopesGuard)
 @UseFilters(HttpExceptionFilter)
 @Controller(SYSTEM_CONTROLLER)
 export class SystemController {
@@ -191,26 +184,6 @@ export class SystemController {
         const data = errorHandler(result);
         return {
             response: data,
-        };
-    }
-
-    @ApiOkResponse({
-        type: EncryptHappCryptoLinkResponseDto,
-        description: 'Returns encrypted Happ crypto link',
-    })
-    @Endpoint({
-        command: EncryptHappCryptoLinkCommand,
-        httpCode: HttpStatus.OK,
-        apiBody: EncryptHappCryptoLinkRequestDto,
-    })
-    async encryptHappCryptoLink(
-        @Body() body: EncryptHappCryptoLinkRequestDto,
-    ): Promise<EncryptHappCryptoLinkResponseDto> {
-        const result = await this.systemService.encryptHappCryptoLink(body.linkToEncrypt);
-
-        const data = errorHandler(result);
-        return {
-            response: new EncryptHappCryptoLinkResponseModel(data),
         };
     }
 

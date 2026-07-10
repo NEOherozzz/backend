@@ -12,6 +12,7 @@ export namespace GetNodePluginsCommand {
         NODE_PLUGINS_ROUTES.GET_ALL,
         'get',
         'Get all Node Plugins',
+        { scope: 'list', kind: 'read' },
     );
 
     export const ResponseSchema = z.object({

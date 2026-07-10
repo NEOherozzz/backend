@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-import { ApiTokensSchema } from '../../models/api-tokens.schema';
 import { REST_API, API_TOKENS_ROUTES } from '../../api';
 import { getEndpointDetails } from '../../constants';
+import { ApiTokensSchema } from '../../models/api-tokens.schema';
 
 export namespace FindAllApiTokensCommand {
     export const url = REST_API.API_TOKENS.GET;
@@ -12,14 +12,15 @@ export namespace FindAllApiTokensCommand {
         API_TOKENS_ROUTES.GET,
         'get',
         'Get all API tokens',
+        { scope: 'list', kind: 'read' },
         'This endpoint is forbidden to use via "API-key". It can only be used with admin JWT-token.',
     );
 
     export const ResponseSchema = z.object({
         response: z.object({
-            apiKeys: z.array(ApiTokensSchema),
+            tokens: z.array(ApiTokensSchema),
             docs: z.object({
-                isDocsEnabled: z.boolean(),
+                enabled: z.boolean(),
                 scalarPath: z.string().nullable(),
                 swaggerPath: z.string().nullable(),
             }),

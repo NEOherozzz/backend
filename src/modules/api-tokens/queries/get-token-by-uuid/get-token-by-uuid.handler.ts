@@ -1,11 +1,11 @@
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
 import { fail, ok, TResult } from '@common/types';
 import { ERRORS } from '@libs/contracts/constants';
 
-import { ApiTokensRepository } from '../../repositories/api-tokens.repository';
 import { ApiTokenEntity } from '../../entities/api-token.entity';
+import { ApiTokensRepository } from '../../repositories/api-tokens.repository';
 import { GetTokenByUuidQuery } from './get-token-by-uuid.query';
 
 @QueryHandler(GetTokenByUuidQuery)

@@ -1,12 +1,12 @@
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
 import { fail, ok, TResult } from '@common/types';
 import { ERRORS } from '@libs/contracts/constants';
 
-import { GetAdminByUsernameQuery } from './get-admin-by-username.query';
-import { AdminRepository } from '../../repositories/admin.repository';
 import { AdminEntity } from '../../entities/admin.entity';
+import { AdminRepository } from '../../repositories/admin.repository';
+import { GetAdminByUsernameQuery } from './get-admin-by-username.query';
 
 @QueryHandler(GetAdminByUsernameQuery)
 export class GetAdminByUsernameHandler implements IQueryHandler<

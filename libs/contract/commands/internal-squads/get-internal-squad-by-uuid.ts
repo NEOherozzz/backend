@@ -12,6 +12,7 @@ export namespace GetInternalSquadByUuidCommand {
         INTERNAL_SQUADS_ROUTES.GET_BY_UUID(':uuid'),
         'get',
         'Get internal squad by uuid',
+        { scope: 'get', kind: 'read' },
     );
 
     export const RequestSchema = z.object({

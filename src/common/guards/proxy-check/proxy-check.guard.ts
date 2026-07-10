@@ -1,5 +1,5 @@
-import { Observable } from 'rxjs';
 import { Request } from 'express';
+import { Observable } from 'rxjs';
 
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Logger } from '@nestjs/common';

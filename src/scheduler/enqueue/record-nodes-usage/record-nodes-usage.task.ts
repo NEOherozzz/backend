@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
 import { QueryBus } from '@nestjs/cqrs';
+import { Cron } from '@nestjs/schedule';
 
 import { GetOnlineNodesQuery } from '@modules/nodes/queries/get-online-nodes/get-online-nodes.query';
 
@@ -37,8 +37,8 @@ export class RecordNodesUsageTask {
             await this.nodesQueuesService.recordNodeUsageBulk(
                 nodesResponse.response.map((node) => ({
                     nodeUuid: node.uuid,
-                    nodeAddress: node.address,
-                    nodePort: node.port,
+                    nodeConsumptionMultiplier: node.nodeConsumptionMultiplier.toString(),
+                    connectionOpts: node.connectionOpts,
                 })),
             );
 

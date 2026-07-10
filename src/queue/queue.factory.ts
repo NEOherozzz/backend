@@ -1,8 +1,8 @@
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { BullBoardModule } from '@bull-board/nestjs';
 
-import { DynamicModule } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
+import { DynamicModule } from '@nestjs/common';
 import { Type } from '@nestjs/common';
 
 import { useBullBoard, useQueueProcessor } from '@common/utils/startup-app';

@@ -15,6 +15,7 @@ const entityToModel = (entity: InfraBillingNodeEntity): InfraBillingNodes => {
         uuid: entity.uuid,
         nodeUuid: entity.nodeUuid,
         providerUuid: entity.providerUuid,
+        name: entity.name,
         nextBillingAt: entity.nextBillingAt,
         createdAt: entity.createdAt,
         updatedAt: entity.updatedAt,

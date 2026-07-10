@@ -12,6 +12,7 @@ export namespace UpdateInfraProviderCommand {
         INFRA_BILLING_ROUTES.UPDATE_PROVIDER,
         'patch',
         'Update infra provider',
+        { scope: 'update-provider', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

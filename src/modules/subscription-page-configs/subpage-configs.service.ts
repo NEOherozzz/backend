@@ -1,23 +1,23 @@
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { nanoid } from 'nanoid';
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Injectable, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import { fail, ok, TResult } from '@common/types';
-import { cleanLocalizedTexts } from '@libs/subscription-page/models/subscription-page-config.validator';
 import { CRUD_ACTIONS, ERRORS, EVENTS, TCrudActions } from '@libs/contracts/constants';
-import { SubscriptionPageRawConfigSchema } from '@libs/subscription-page/models';
 import { SUBPAGE_DEFAULT_CONFIG_UUID } from '@libs/subscription-page/constants';
+import { SubscriptionPageRawConfigSchema } from '@libs/subscription-page/models';
+import { cleanLocalizedTexts } from '@libs/subscription-page/models/subscription-page-config.validator';
 
 import { ServiceEvent } from '@integration-modules/notifications/interfaces';
 
-import { GetSubscriptionPageConfigsResponseModel } from './models/get-subscripion-page-configs.response.model';
-import { BaseSubscriptionPageConfigResponseModel } from './models/base-subpage-config.response.model';
-import { SubscriptionPageConfigRepository } from './repositories/subpage-configs.repository';
+import { DEFAULT_SUBPAGE_CONFIG } from './constants';
 import { SubscriptionPageConfigEntity } from './entities/sub-page-config.entity';
 import { DeleteSubscriptionPageConfigResponseModel } from './models';
-import { DEFAULT_SUBPAGE_CONFIG } from './constants';
+import { BaseSubscriptionPageConfigResponseModel } from './models/base-subpage-config.response.model';
+import { GetSubscriptionPageConfigsResponseModel } from './models/get-subscripion-page-configs.response.model';
+import { SubscriptionPageConfigRepository } from './repositories/subpage-configs.repository';
 
 @Injectable()
 export class SubscriptionPageConfigService {

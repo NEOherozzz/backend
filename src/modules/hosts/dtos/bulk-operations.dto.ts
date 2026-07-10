@@ -1,11 +1,10 @@
 import { createZodDto } from 'nestjs-zod';
 
 import {
-    BulkDeleteHostsCommand,
     BulkDisableHostsCommand,
     BulkEnableHostsCommand,
-    SetInboundToManyHostsCommand,
-    SetPortToManyHostsCommand,
+    BulkDeleteHostsCommand,
+    UpdateManyHostsCommand,
 } from '@libs/contracts/commands';
 
 export class BulkDeleteHostsRequestDto extends createZodDto(BulkDeleteHostsCommand.RequestSchema) {}
@@ -25,16 +24,7 @@ export class BulkEnableHostsResponseDto extends createZodDto(
     BulkEnableHostsCommand.ResponseSchema,
 ) {}
 
-export class SetInboundToManyHostsRequestDto extends createZodDto(
-    SetInboundToManyHostsCommand.RequestSchema,
-) {}
-export class SetInboundToManyHostsResponseDto extends createZodDto(
-    SetInboundToManyHostsCommand.ResponseSchema,
-) {}
-
-export class SetPortToManyHostsRequestDto extends createZodDto(
-    SetPortToManyHostsCommand.RequestSchema,
-) {}
-export class SetPortToManyHostsResponseDto extends createZodDto(
-    SetPortToManyHostsCommand.ResponseSchema,
+export class UpdateManyHostsRequestDto extends createZodDto(UpdateManyHostsCommand.RequestSchema) {}
+export class UpdateManyHostsResponseDto extends createZodDto(
+    UpdateManyHostsCommand.ResponseSchema,
 ) {}

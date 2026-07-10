@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../constants';
 import { HOSTS_ROUTES, REST_API } from '../../api';
+import { getEndpointDetails } from '../../constants';
 import { HostsSchema } from '../../models';
 
 export namespace GetOneHostCommand {
@@ -12,6 +12,7 @@ export namespace GetOneHostCommand {
         HOSTS_ROUTES.GET_BY_UUID(':uuid'),
         'get',
         'Get a host by UUID',
+        { scope: 'get', kind: 'read' },
     );
 
     export const RequestSchema = z.object({

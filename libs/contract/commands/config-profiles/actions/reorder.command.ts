@@ -12,6 +12,7 @@ export namespace ReorderConfigProfileCommand {
         CONFIG_PROFILES_ROUTES.ACTIONS.REORDER,
         'post',
         'Reorder config profiles',
+        { scope: 'reorder', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

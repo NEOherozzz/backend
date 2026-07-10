@@ -4,21 +4,22 @@ import {
     generateAuthenticationOptions,
     verifyAuthenticationResponse,
 } from '@simplewebauthn/server';
-import { createHmac, randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
-import { catchError, firstValueFrom } from 'rxjs';
-import { promisify } from 'node:util';
-import { AxiosError } from 'axios';
 import * as arctic from 'arctic';
+import { AxiosError } from 'axios';
+import { createHmac, randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
+import { promisify } from 'node:util';
+import { catchError, firstValueFrom } from 'rxjs';
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ConfigService } from '@nestjs/config';
-import { HttpService } from '@nestjs/axios';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
 
+import { TypedConfigService } from '@common/config/app-config';
 import { RawCacheService } from '@common/raw-cache';
 import { fail, ok, TResult } from '@common/types';
+import { AUTH_ROUTES } from '@libs/contracts/api';
 import {
     CACHE_KEYS,
     EVENTS,
@@ -27,28 +28,27 @@ import {
     TOAuth2ProvidersKeys,
 } from '@libs/contracts/constants';
 import { ERRORS } from '@libs/contracts/constants/errors';
-import { AUTH_ROUTES } from '@libs/contracts/api';
 
 import { ServiceEvent } from '@integration-modules/notifications/interfaces';
 
-import { GetCachedRemnawaveSettingsQuery } from '@modules/remnawave-settings/queries/get-cached-remnawave-settings';
-import { FindPasskeyByIdAndAdminUuidQuery } from '@modules/admin/queries/find-passkey-by-id-and-uuid';
-import { GetPasskeysByAdminUuidQuery } from '@modules/admin/queries/get-passkeys-by-admin-uuid';
-import { GetAdminByUsernameQuery } from '@modules/admin/queries/get-admin-by-username';
-import { CountAdminsByRoleQuery } from '@modules/admin/queries/count-admins-by-role';
-import { RemnawaveSettingsEntity } from '@modules/remnawave-settings/entities';
-import { UpdatePasskeyCommand } from '@modules/admin/commands/update-passkey';
-import { GetFirstAdminQuery } from '@modules/admin/queries/get-first-admin';
 import { CreateAdminCommand } from '@modules/admin/commands/create-admin';
+import { UpdatePasskeyCommand } from '@modules/admin/commands/update-passkey';
 import { AdminEntity } from '@modules/admin/entities/admin.entity';
+import { CountAdminsByRoleQuery } from '@modules/admin/queries/count-admins-by-role';
+import { FindPasskeyByIdAndAdminUuidQuery } from '@modules/admin/queries/find-passkey-by-id-and-uuid';
+import { GetAdminByUsernameQuery } from '@modules/admin/queries/get-admin-by-username';
+import { GetFirstAdminQuery } from '@modules/admin/queries/get-first-admin';
+import { GetPasskeysByAdminUuidQuery } from '@modules/admin/queries/get-passkeys-by-admin-uuid';
+import { RemnawaveSettingsEntity } from '@modules/remnawave-settings/entities';
+import { GetCachedRemnawaveSettingsQuery } from '@modules/remnawave-settings/queries/get-cached-remnawave-settings';
 
+import { VerifyPasskeyAuthenticationRequestDto } from './dtos';
+import { ILogin, IRegister } from './interfaces';
 import {
     OAuth2AuthorizeResponseModel,
     OAuth2CallbackResponseModel,
     GetStatusResponseModel,
 } from './model';
-import { VerifyPasskeyAuthenticationRequestDto } from './dtos';
-import { ILogin, IRegister } from './interfaces';
 
 const scryptAsync = promisify(scrypt);
 const REMNAWAVE_CUSTOM_CLAIM_KEY = 'remnawaveAccess';
@@ -63,14 +63,14 @@ export class AuthService {
     constructor(
         private readonly rawCacheService: RawCacheService,
         private readonly jwtService: JwtService,
-        private readonly configService: ConfigService,
+        private readonly configService: TypedConfigService,
         private readonly queryBus: QueryBus,
         private readonly commandBus: CommandBus,
         private readonly eventEmitter: EventEmitter2,
         private readonly httpService: HttpService,
     ) {
-        this.jwtSecret = this.configService.getOrThrow<string>('JWT_AUTH_SECRET');
-        this.jwtLifetime = this.configService.getOrThrow<number>('JWT_AUTH_LIFETIME');
+        this.jwtSecret = this.configService.getOrThrow('JWT_AUTH_SECRET');
+        this.jwtLifetime = this.configService.getOrThrow('JWT_AUTH_LIFETIME');
     }
 
     public async login(

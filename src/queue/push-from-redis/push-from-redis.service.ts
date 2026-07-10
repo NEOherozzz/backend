@@ -1,13 +1,13 @@
 import { Queue } from 'bullmq';
 import _ from 'lodash';
 
-import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 
-import { IRecordUserUsageFromRedisPayload } from './interfaces';
+import { QUEUES_NAMES } from '../queue.enum';
 import { AbstractQueueService } from '../queue.service';
 import { PushFromRedisJobNames } from './enums';
-import { QUEUES_NAMES } from '../queue.enum';
+import { IRecordUserUsageFromRedisPayload } from './interfaces';
 
 @Injectable()
 export class PushFromRedisQueueService

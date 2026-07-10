@@ -11,6 +11,7 @@ export namespace AddUsersToExternalSquadCommand {
         EXTERNAL_SQUADS_ROUTES.BULK_ACTIONS.ADD_USERS(':uuid'),
         'post',
         'Add all users to external squad',
+        { scope: 'add-users', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

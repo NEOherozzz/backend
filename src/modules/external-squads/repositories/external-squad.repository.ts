@@ -1,18 +1,18 @@
+import { TransactionHost } from '@nestjs-cls/transactional';
+import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 
-import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
-import { TransactionHost } from '@nestjs-cls/transactional';
 import { Injectable } from '@nestjs/common';
 
 import { TxKyselyService } from '@common/database';
-import { ICrud } from '@common/types/crud-port';
 import { getKyselyUuid } from '@common/helpers';
+import { ICrud } from '@common/types/crud-port';
 import { wrapDbNull } from '@common/utils';
 import { TSubscriptionTemplateType } from '@libs/contracts/constants';
 
 import { ExternalSquadEntity, ExternalSquadWithInfoEntity } from '../entities';
-import { ExternalSquadConverter } from '../external-squads.converter';
 import {} from '../entities';
+import { ExternalSquadConverter } from '../external-squads.converter';
 
 @Injectable()
 export class ExternalSquadRepository implements ICrud<ExternalSquadEntity> {

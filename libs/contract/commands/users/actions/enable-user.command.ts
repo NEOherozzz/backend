@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
+import { REST_API, USERS_ROUTES } from '../../../api';
 import { getEndpointDetails } from '../../../constants';
 import { ExtendedUsersSchema } from '../../../models';
-import { REST_API, USERS_ROUTES } from '../../../api';
 
 export namespace EnableUserCommand {
     export const url = REST_API.USERS.ACTIONS.ENABLE;
@@ -12,6 +12,7 @@ export namespace EnableUserCommand {
         USERS_ROUTES.ACTIONS.ENABLE(':uuid'),
         'post',
         'Enable user',
+        { scope: 'enable', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

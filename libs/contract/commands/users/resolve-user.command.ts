@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../constants';
 import { REST_API, USERS_ROUTES } from '../../api';
+import { getEndpointDetails } from '../../constants';
 
 export namespace ResolveUserCommand {
     export const url = REST_API.USERS.RESOLVE;
@@ -11,6 +11,7 @@ export namespace ResolveUserCommand {
         USERS_ROUTES.RESOLVE,
         'post',
         'Resolve a user',
+        { scope: 'resolve', kind: 'read' },
     );
 
     export const RequestSchema = z

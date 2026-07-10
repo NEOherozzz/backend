@@ -1,20 +1,19 @@
+import { ClsPluginTransactional } from '@nestjs-cls/transactional';
+import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 import { ClsModule } from 'nestjs-cls';
 import { join } from 'node:path';
 
-import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
-import { ConditionalModule, ConfigModule, ConfigService } from '@nestjs/config';
 import { Logger, Module, OnApplicationShutdown } from '@nestjs/common';
-import { ClsPluginTransactional } from '@nestjs-cls/transactional';
+import { ConditionalModule, ConfigModule, ConfigService } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ServeStaticModule } from '@nestjs/serve-static';
 
 import { CommonConfigModule } from '@common/config/common-config/common-config.module';
+import { PrismaModule } from '@common/database';
+import { PrismaService } from '@common/database/prisma.service';
+import { RawCacheModule } from '@common/raw-cache/raw-cache.module';
 import { RuntimeMetricsModule } from '@common/runtime-metrics/runtime-metrics.module';
 import { disableFrontend } from '@common/utils/startup-app/is-development';
-import { RawCacheModule } from '@common/raw-cache/raw-cache.module';
-import { PrismaService } from '@common/database/prisma.service';
-import { AxiosModule } from '@common/axios/axios.module';
-import { PrismaModule } from '@common/database';
 
 import { IntegrationModules } from '@integration-modules/integration-modules';
 
@@ -25,7 +24,6 @@ import { QueueModule } from '@queue/queue.module';
 @Module({
     imports: [
         RawCacheModule,
-        AxiosModule,
         CommonConfigModule,
         PrismaModule,
         ClsModule.forRoot({

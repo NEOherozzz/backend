@@ -11,9 +11,11 @@ export class GetInfraProviderByUuidResponseModel {
         totalBills: number;
     };
     public readonly billingNodes: {
-        nodeUuid: string;
         name: string;
-        countryCode: string;
+        details: {
+            nodeUuid: string;
+            countryCode: string;
+        } | null;
     }[];
 
     public readonly createdAt: Date;

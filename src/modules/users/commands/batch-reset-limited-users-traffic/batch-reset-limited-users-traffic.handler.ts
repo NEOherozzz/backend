@@ -1,12 +1,12 @@
 import { ERRORS } from '@contract/constants';
 
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { fail, ok } from '@common/types';
 
-import { BatchResetLimitedUsersTrafficCommand } from './batch-reset-limited-users-traffic.command';
 import { UsersRepository } from '../../repositories/users.repository';
+import { BatchResetLimitedUsersTrafficCommand } from './batch-reset-limited-users-traffic.command';
 
 @CommandHandler(BatchResetLimitedUsersTrafficCommand)
 export class BatchResetLimitedUsersTrafficHandler implements ICommandHandler<BatchResetLimitedUsersTrafficCommand> {

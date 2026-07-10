@@ -1,15 +1,14 @@
 import * as jwt from 'jsonwebtoken';
-
 import { IJWTAuthPayload } from 'src/modules/auth/interfaces';
 
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { fail, ok } from '@common/types';
 import { ERRORS, ROLE } from '@libs/contracts/constants';
 
-import { GetNodeJwtCommand } from './get-node-jwt.command';
 import { KeygenService } from '../../keygen.service';
+import { GetNodeJwtCommand } from './get-node-jwt.command';
 
 @CommandHandler(GetNodeJwtCommand)
 export class GetNodeJwtHandler implements ICommandHandler<GetNodeJwtCommand> {

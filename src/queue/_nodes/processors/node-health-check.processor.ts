@@ -1,14 +1,14 @@
 import { Job } from 'bullmq';
 
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { CommandBus } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { CommandBus } from '@nestjs/cqrs';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import { GetSystemStatsCommand } from '@remnawave/node-contract';
 
+import { AxiosService, INodeConnectionOpts } from '@common/axios';
 import { RawCacheService } from '@common/raw-cache';
-import { AxiosService } from '@common/axios';
 import { CACHE_KEYS, CACHE_KEYS_TTL, EVENTS } from '@libs/contracts/constants';
 
 import { NodeEvent } from '@integration-modules/notifications/interfaces';
@@ -38,7 +38,7 @@ export class NodeHealthCheckQueueProcessor extends WorkerHost {
     }
     async process(job: Job<INodeHealthCheckPayload>) {
         try {
-            const { nodeAddress, nodePort, nodeUuid, isConnected } = job.data;
+            const { nodeUuid, isConnected, connectionOpts } = job.data;
 
             const attemptsLimit = 2;
             let attempts = 0;
@@ -46,14 +46,13 @@ export class NodeHealthCheckQueueProcessor extends WorkerHost {
             let message = '';
 
             while (attempts < attemptsLimit) {
-                const statResult = await this.axios.getSystemStats(nodeAddress, nodePort);
+                const statResult = await this.axios.getSystemStats(connectionOpts);
 
                 switch (statResult.isOk) {
                     case true:
                         return await this.handleConnectedNode(
+                            connectionOpts,
                             nodeUuid,
-                            nodeAddress,
-                            nodePort,
                             isConnected,
                             statResult.response.response,
                         );
@@ -62,14 +61,14 @@ export class NodeHealthCheckQueueProcessor extends WorkerHost {
                         attempts++;
 
                         this.logger.warn(
-                            `Node ${nodeUuid}, ${nodeAddress}:${nodePort} – health check attempt ${attempts} of ${attemptsLimit}, message: ${message}`,
+                            `Node ${nodeUuid}, ${connectionOpts.address}:${connectionOpts.port} – health check attempt ${attempts} of ${attemptsLimit}, message: ${message}`,
                         );
 
                         continue;
                     default:
                         message = 'Unknown error';
                         this.logger.error(
-                            `Node ${nodeUuid}, ${nodeAddress}:${nodePort} – health check attempt ${attempts} of ${attemptsLimit}, message: ${message}`,
+                            `Node ${nodeUuid}, ${connectionOpts.address}:${connectionOpts.port} – health check attempt ${attempts} of ${attemptsLimit}, message: ${message}`,
                         );
 
                         attempts++;
@@ -87,9 +86,8 @@ export class NodeHealthCheckQueueProcessor extends WorkerHost {
     }
 
     private async handleConnectedNode(
+        connectionOpts: INodeConnectionOpts,
         nodeUuid: string,
-        nodeAddress: string,
-        nodePort: number | null,
         isConnected: boolean,
         stats: GetSystemStatsCommand.Response['response'],
     ) {
@@ -125,8 +123,7 @@ export class NodeHealthCheckQueueProcessor extends WorkerHost {
         if (reports !== undefined && reports > 0) {
             await this.nodesQueuesService.collectReports({
                 nodeUuid,
-                address: nodeAddress,
-                port: nodePort,
+                connectionOpts,
             });
 
             this.logger.log(`Node ${nodeUuid} has ${reports} reports, collecting reports...`);

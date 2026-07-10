@@ -1,24 +1,17 @@
 import { BlockIpsCommand, UnblockIpsCommand } from '@remnawave/node-contract';
 
+import { INodeConnectionOpts } from '@common/axios';
+
 export interface IBlockIpsPayload {
     data: BlockIpsCommand.Request;
-    node: {
-        address: string;
-        port: number | null;
-    };
+    node: INodeConnectionOpts;
 }
 
 export interface IUnblockIpsPayload {
     data: UnblockIpsCommand.Request;
-    node: {
-        address: string;
-        port: number | null;
-    };
+    node: INodeConnectionOpts;
 }
 
 export interface IRecreateTablesPayload {
-    node: {
-        address: string;
-        port: number | null;
-    };
+    node: INodeConnectionOpts;
 }

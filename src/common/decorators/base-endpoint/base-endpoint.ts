@@ -17,6 +17,7 @@ import {
     ApiOperation,
 } from '@nestjs/swagger';
 
+import { ApiScopeEndpoint } from '@common/decorators/scopes';
 import { EndpointDetails, ERRORS } from '@libs/contracts/constants';
 
 interface ApiEndpointOptions {
@@ -32,6 +33,7 @@ export function Endpoint(options: ApiEndpointOptions) {
 
     return applyDecorators(
         resolveRequestMethod(method)(options.command.endpointDetails.CONTROLLER_URL),
+        ApiScopeEndpoint(options.command.endpointDetails),
         HttpCode(options.httpCode),
         ApiOperation({
             summary: options.command.endpointDetails.METHOD_DESCRIPTION,

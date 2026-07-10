@@ -11,17 +11,17 @@ import { QueryBus } from '@nestjs/cqrs';
 
 import { RawCacheService } from '@common/raw-cache';
 import { fail, ok, TResult } from '@common/types';
-import { ERRORS } from '@libs/contracts/constants/errors';
 import { CACHE_KEYS } from '@libs/contracts/constants';
+import { ERRORS } from '@libs/contracts/constants/errors';
 
-import { GetCachedRemnawaveSettingsQuery } from '@modules/remnawave-settings/queries/get-cached-remnawave-settings';
-import { IJWTAuthPayload } from '@modules/auth/interfaces';
 import { PasskeyEntity } from '@modules/admin/entities';
+import { IJWTAuthPayload } from '@modules/auth/interfaces';
+import { GetCachedRemnawaveSettingsQuery } from '@modules/remnawave-settings/queries/get-cached-remnawave-settings';
 
 import { UpdatePasskeyRequestDto, VerifyPasskeyRegistrationRequestDto } from '../dtos';
 import { GetActivePasskeysResponseModel } from '../models/get-active-passkeys.model';
-import { PasskeyRepository } from '../repositories/passkey.repository';
 import { AdminRepository } from '../repositories/admin.repository';
+import { PasskeyRepository } from '../repositories/passkey.repository';
 
 const RP_NAME = 'Remnawave';
 

@@ -1,14 +1,14 @@
+import { Logger } from '@nestjs/common';
 import { IEventHandler, QueryBus } from '@nestjs/cqrs';
 import { EventsHandler } from '@nestjs/cqrs';
-import { Logger } from '@nestjs/common';
 
 import { AddUsersCommand as AddUsersToNodeCommandSdk } from '@remnawave/node-contract';
 
-import { getVlessFlowFromDbInbound } from '@common/utils/flow/get-vless-flow';
 import { isSS2022Method } from '@common/helpers/xray-config/ss-cipher';
+import { getVlessFlowFromDbInbound } from '@common/utils/flow/get-vless-flow';
 
-import { GetUsersWithResolvedInboundsQuery } from '@modules/users/queries/get-users-with-resolved-inbounds';
 import { ConfigProfileInboundEntity } from '@modules/config-profiles/entities';
+import { GetUsersWithResolvedInboundsQuery } from '@modules/users/queries/get-users-with-resolved-inbounds';
 
 import { NodesQueuesService } from '@queue/_nodes';
 
@@ -109,7 +109,7 @@ export class AddUsersToNodeHandler implements IEventHandler<AddUsersToNodeEvent>
                             affectedInboundTags,
                             users: usersForNode,
                         },
-                        node: { address: node.address, port: node.port },
+                        node: { address: node.address, port: node.port, proxyUrl: node.proxyUrl },
                     });
                 }
 
@@ -121,7 +121,7 @@ export class AddUsersToNodeHandler implements IEventHandler<AddUsersToNodeEvent>
                                 hashUuid: u.hashUuid,
                             })),
                         },
-                        node: { address: node.address, port: node.port },
+                        node: { address: node.address, port: node.port, proxyUrl: node.proxyUrl },
                     });
                 }
             }

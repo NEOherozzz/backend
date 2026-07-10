@@ -1,5 +1,5 @@
-import { createPrivateKey, createPublicKey } from 'node:crypto';
 import { ml_kem768 } from '@noble/post-quantum/ml-kem.js';
+import { createPrivateKey, createPublicKey } from 'node:crypto';
 
 enum KeyType {
     MLKEM768 = 'mlkem768',

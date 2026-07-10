@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../../constants';
 import { REST_API, USERS_ROUTES } from '../../../api';
+import { getEndpointDetails } from '../../../constants';
 import { RESET_PERIODS } from '../../../constants';
 import { UsersSchema } from '../../../models';
 
@@ -13,6 +13,7 @@ export namespace BulkUpdateUsersCommand {
         USERS_ROUTES.BULK.UPDATE,
         'post',
         'Bulk update users by UUIDs',
+        { scope: 'bulk-update-users', kind: 'write' },
     );
 
     export const RequestSchema = z.object({
@@ -27,7 +28,6 @@ export namespace BulkUpdateUsersCommand {
                     .number({
                         invalid_type_error: 'Traffic limit must be a number',
                     })
-                    .int('Traffic limit must be an integer')
                     .min(0, 'Traffic limit must be greater than 0')
                     .describe('Traffic limit in bytes. 0 - unlimited'),
             ),

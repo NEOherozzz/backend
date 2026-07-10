@@ -11,6 +11,7 @@ export namespace UpsertUserMetadataCommand {
         METADATA_ROUTES.USER.UPSERT(':uuid'),
         'put',
         'Update or create User Metadata',
+        { scope: 'upsert-user', kind: 'write' },
     );
 
     export const RequestParamsSchema = z.object({

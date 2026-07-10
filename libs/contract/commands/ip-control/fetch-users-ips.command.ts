@@ -11,6 +11,7 @@ export namespace FetchUsersIpsCommand {
         IP_CONTROL_ROUTES.FETCH_USERS_IPS(':nodeUuid'),
         'post',
         'Request Users IPs List for Node',
+        { scope: 'fetch-users-ips', kind: 'read' },
     );
 
     export const RequestSchema = z.object({

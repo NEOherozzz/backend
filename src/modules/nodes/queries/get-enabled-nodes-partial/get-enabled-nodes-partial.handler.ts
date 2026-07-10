@@ -1,14 +1,14 @@
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
 import { fail, ok, TResult } from '@common/types';
 import { ERRORS } from '@libs/contracts/constants';
 
+import { NodesRepository } from '../../repositories/nodes.repository';
 import {
     GetEnabledNodesPartialQuery,
     IGetEnabledNodesPartialResponse,
 } from './get-enabled-nodes-partial.query';
-import { NodesRepository } from '../../repositories/nodes.repository';
 
 @QueryHandler(GetEnabledNodesPartialQuery)
 export class GetEnabledNodesPartialHandler implements IQueryHandler<GetEnabledNodesPartialQuery> {

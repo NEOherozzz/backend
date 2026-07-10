@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-import { InfraBillingHistoryRecordSchema } from '../../models';
 import { INFRA_BILLING_ROUTES, REST_API } from '../../api';
 import { getEndpointDetails } from '../../constants';
+import { InfraBillingHistoryRecordSchema } from '../../models';
 
 export namespace DeleteInfraBillingHistoryRecordCommand {
     export const url = REST_API.INFRA_BILLING.DELETE_BILLING_HISTORY;
@@ -12,6 +12,7 @@ export namespace DeleteInfraBillingHistoryRecordCommand {
         INFRA_BILLING_ROUTES.DELETE_BILLING_HISTORY(':uuid'),
         'delete',
         'Delete infra billing history',
+        { scope: 'delete-bill-record', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

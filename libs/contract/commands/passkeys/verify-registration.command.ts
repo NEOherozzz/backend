@@ -11,6 +11,7 @@ export namespace VerifyPasskeyRegistrationCommand {
         PASSKEYS_ROUTES.VERIFY_REGISTRATION,
         'post',
         'Verify registration for passkey',
+        { scope: 'verify-registration', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

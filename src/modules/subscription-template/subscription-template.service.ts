@@ -15,12 +15,12 @@ import {
     DEFAULT_TEMPLATE_STASH,
     DEFAULT_TEMPLATE_XRAY_JSON,
 } from './constants';
-import { SubscriptionTemplateRepository } from './repositories/subscription-template.repository';
-import { GetSubscriptionTemplatesResponseModel } from './models/get-templates.response.model';
-import { SubscriptionTemplateEntity } from './entities/subscription-template.entity';
-import { BaseTemplateResponseModel } from './models/base-template.response.model';
-import { DeleteSubscriptionTemplateResponseModel } from './models';
 import { ReorderSubscriptionTemplatesRequestDto } from './dtos';
+import { SubscriptionTemplateEntity } from './entities/subscription-template.entity';
+import { DeleteSubscriptionTemplateResponseModel } from './models';
+import { BaseTemplateResponseModel } from './models/base-template.response.model';
+import { GetSubscriptionTemplatesResponseModel } from './models/get-templates.response.model';
+import { SubscriptionTemplateRepository } from './repositories/subscription-template.repository';
 
 const DEFAULT_TEMPLATE_NAME = 'Default';
 
@@ -144,7 +144,7 @@ export class SubscriptionTemplateService {
                     : undefined,
             });
 
-            await this.removeCachedTemplate(template.templateType, template.name);
+            await this.removeCachedTemplate(template.uuid, template.templateType, template.name);
 
             return ok(new BaseTemplateResponseModel(updatedTemplate));
         } catch (error) {
@@ -180,7 +180,7 @@ export class SubscriptionTemplateService {
                 return fail(ERRORS.RESERVED_TEMPLATE_CANNOT_BE_DELETED);
             }
 
-            await this.removeCachedTemplate(template.templateType, template.name);
+            await this.removeCachedTemplate(template.uuid, template.templateType, template.name);
 
             const deletedTemplate = await this.subscriptionTemplateRepository.deleteByUUID(uuid);
 
@@ -328,7 +328,7 @@ export class SubscriptionTemplateService {
             case 'MIHOMO':
             case 'STASH':
             case 'CLASH':
-                templateContent = yaml.parse(template.templateYaml!);
+                templateContent = yaml.parse(template.templateYaml!, { maxAliasCount: -1 });
                 break;
             case 'SINGBOX':
             case 'XRAY_JSON':
@@ -354,9 +354,13 @@ export class SubscriptionTemplateService {
     }
 
     private async removeCachedTemplate(
+        uuid: string,
         type: TSubscriptionTemplateType,
         name: string = DEFAULT_TEMPLATE_NAME,
     ): Promise<void> {
         await this.rawCacheService.del(CACHE_KEYS.SUBSCRIPTION_TEMPLATE(name, type));
+        if (type === 'XRAY_JSON') {
+            await this.rawCacheService.del(CACHE_KEYS.XRAY_JSON_TEMPLATE(uuid));
+        }
     }
 }

@@ -1,11 +1,11 @@
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
 import { fail, ok, TResult } from '@common/types';
 import { ERRORS } from '@libs/contracts/constants';
 
-import { SnippetsRepository } from '@modules/config-profiles/repositories/snippets.repository';
 import { SnippetEntity } from '@modules/config-profiles/entities';
+import { SnippetsRepository } from '@modules/config-profiles/repositories/snippets.repository';
 
 import { GetSnippetsQuery } from './get-snippets.query';
 

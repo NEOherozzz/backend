@@ -1,7 +1,7 @@
 import { InternalSquadEntity } from '@modules/internal-squads/entities';
 
-import { UserTrafficEntity } from './user-traffic.entity';
 import { BaseUserEntity } from './base-users.entity';
+import { UserTrafficEntity } from './user-traffic.entity';
 
 interface IActiveInternalSquads {
     activeInternalSquads?: Omit<InternalSquadEntity, 'createdAt' | 'updatedAt' | 'viewPosition'>[];

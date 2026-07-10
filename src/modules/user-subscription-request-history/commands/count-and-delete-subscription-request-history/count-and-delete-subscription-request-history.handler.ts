@@ -1,5 +1,5 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { UserSubscriptionRequestHistoryRepository } from '../../repositories/user-subscription-request-history.repository';
 import { CountAndDeleteSubscriptionRequestHistoryCommand } from './count-and-delete-subscription-request-history.command';
@@ -17,9 +17,9 @@ export class CountAndDeleteSubscriptionRequestHistoryHandler implements ICommand
 
     async execute(command: CountAndDeleteSubscriptionRequestHistoryCommand): Promise<void> {
         try {
-            const { userUuid } = command;
+            const { userId } = command;
 
-            await this.userSubscriptionRequestHistoryRepository.cleanupUserRecords(userUuid, 24);
+            await this.userSubscriptionRequestHistoryRepository.cleanupUserRecords(userId, 24);
 
             return;
         } catch (error: unknown) {

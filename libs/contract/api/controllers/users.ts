@@ -6,6 +6,7 @@ export const USERS_ROUTES = {
     CREATE: '',
     UPDATE: '',
     GET: '',
+    STREAM: 'stream',
     DELETE: (uuid: string) => `${uuid}`,
     GET_BY_UUID: (uuid: string) => `${uuid}`,
     ACCESSIBLE_NODES: (uuid: string) => `${uuid}/accessible-nodes`,

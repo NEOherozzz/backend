@@ -1,11 +1,6 @@
-import { CqrsModule } from '@nestjs/cqrs';
 import { Module } from '@nestjs/common';
+import { CqrsModule } from '@nestjs/cqrs';
 
-import {
-    InfraBillingHistoryRepository,
-    InfraBillingNodeRepository,
-    InfraProviderRepository,
-} from './repositories';
 import {
     InfraBillingHistoryConverter,
     InfraBillingNodeConverter,
@@ -14,6 +9,11 @@ import {
 import { InfraBillingController } from './infra-billing.controller';
 import { InfraBillingService } from './infra-billing.service';
 import { QUERIES } from './queries';
+import {
+    InfraBillingHistoryRepository,
+    InfraBillingNodeRepository,
+    InfraProviderRepository,
+} from './repositories';
 
 @Module({
     imports: [CqrsModule],

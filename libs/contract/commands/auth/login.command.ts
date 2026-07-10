@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../constants';
 import { AUTH_ROUTES, REST_API } from '../../api';
+import { getEndpointDetails } from '../../constants';
 
 export namespace LoginCommand {
     export const url = REST_API.AUTH.LOGIN;
@@ -11,6 +11,7 @@ export namespace LoginCommand {
         AUTH_ROUTES.LOGIN,
         'post',
         'Login as superadmin',
+        { scope: 'login', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

@@ -57,7 +57,7 @@ services:
       retries: 3
       start_period: 30s
 
-  remnawave-processor: # Do not scale this service!
+  remnawave-processor: # Scaling is OK
     <<: [*base, *common, *logging, *env]
     container_name: 'remnawave-processor'
     hostname: remnawave-processor
@@ -72,9 +72,10 @@ services:
         condition: service_healthy
 
   remnawave-db:
-    image: postgres:17.6
+    image: postgres:18.4
     container_name: 'remnawave-db'
     hostname: remnawave-db
+    shm_size: 512mb
     <<: [*common, *logging, *env]
 
     environment:
@@ -85,7 +86,7 @@ services:
     ports:
       - '127.0.0.1:6767:5432'
     volumes:
-      - remnawave-db-data:/var/lib/postgresql/data
+      - remnawave-db-data:/var/lib/postgresql
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
       interval: 3s
@@ -93,7 +94,7 @@ services:
       retries: 3
 
   remnawave-redis:
-    image: valkey/valkey:8.1-alpine
+    image: valkey/valkey:9-alpine
     container_name: remnawave-redis
     hostname: remnawave-redis
     <<: [*common, *logging]

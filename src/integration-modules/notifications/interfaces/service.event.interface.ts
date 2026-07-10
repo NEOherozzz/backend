@@ -13,6 +13,12 @@ export interface IServiceEvent {
         action: TCrudActions;
         uuid: string;
     };
+    apiToken?: {
+        name: string;
+        uuid: string;
+        expireAt: Date;
+        scopes: string[];
+    };
 }
 
 export class ServiceEvent {

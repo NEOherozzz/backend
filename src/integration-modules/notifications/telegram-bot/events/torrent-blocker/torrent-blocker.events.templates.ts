@@ -4,8 +4,8 @@ import { EVENTS, TTorrentBlockerEvents } from '@libs/contracts/constants';
 
 import { TorrentBlockerEvent } from '@integration-modules/notifications/interfaces';
 
-import { IInlineKeyboard } from '@queue/notifications/telegram-bot-logger/interfaces/inline-keyboard.interface';
 import { PANEL_URLS } from '@queue/notifications/telegram-bot-logger/enums';
+import { IInlineKeyboard } from '@queue/notifications/telegram-bot-logger/interfaces/inline-keyboard.interface';
 
 export type TorrentBlockerEventsTemplate = (
     event: TorrentBlockerEvent,

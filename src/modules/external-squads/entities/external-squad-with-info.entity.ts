@@ -1,6 +1,7 @@
 import { ExternalSquads } from '@prisma/client';
 import z from 'zod';
 
+import { TSubscriptionTemplateType } from '@libs/contracts/constants';
 import {
     ExternalSquadHostOverridesSchema,
     ExternalSquadResponseHeadersSchema,
@@ -8,7 +9,6 @@ import {
     TCustomRemarks,
     THwidSettings,
 } from '@libs/contracts/models';
-import { TSubscriptionTemplateType } from '@libs/contracts/constants';
 
 export class ExternalSquadWithInfoEntity implements ExternalSquads {
     public uuid: string;

@@ -12,6 +12,7 @@ export namespace UpdateNodePluginCommand {
         NODE_PLUGINS_ROUTES.UPDATE,
         'patch',
         'Update Node Plugin',
+        { scope: 'update', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

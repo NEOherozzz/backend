@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 import { REST_API, SUBSCRIPTION_PAGE_CONFIGS_ROUTES } from '../../api';
-import { SubscriptionPageConfigSchema } from '../../models';
 import { getEndpointDetails } from '../../constants';
+import { SubscriptionPageConfigSchema } from '../../models';
 
 export namespace GetSubscriptionPageConfigCommand {
     export const url = REST_API.SUBSCRIPTION_PAGE_CONFIGS.GET;
@@ -12,6 +12,7 @@ export namespace GetSubscriptionPageConfigCommand {
         SUBSCRIPTION_PAGE_CONFIGS_ROUTES.GET(':uuid'),
         'get',
         'Get subscription page config by uuid',
+        { scope: 'get', kind: 'read' },
     );
 
     export const RequestSchema = z.object({

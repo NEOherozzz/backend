@@ -11,6 +11,7 @@ export * from './get-user-by-username.dto';
 export * from './get-user-by-uuid.dto';
 export * from './get-user-subscription-request-history.dto';
 export * from './get-users-by-tag.dto';
+export * from './get-users-stream.dto';
 export * from './reset-user-traffic.dto';
 export * from './resolve-user.dto';
 export * from './revoke-user-subscription.dto';

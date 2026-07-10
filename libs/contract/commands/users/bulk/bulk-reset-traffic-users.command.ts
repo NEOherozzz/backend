@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../../constants';
 import { REST_API, USERS_ROUTES } from '../../../api';
+import { getEndpointDetails } from '../../../constants';
 
 export namespace BulkResetTrafficUsersCommand {
     export const url = REST_API.USERS.BULK.RESET_TRAFFIC;
@@ -11,6 +11,7 @@ export namespace BulkResetTrafficUsersCommand {
         USERS_ROUTES.BULK.RESET_TRAFFIC,
         'post',
         'Bulk reset traffic users by UUIDs',
+        { scope: 'bulk-reset-traffic', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

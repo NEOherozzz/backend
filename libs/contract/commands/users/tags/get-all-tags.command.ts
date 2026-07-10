@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../../constants';
 import { REST_API, USERS_ROUTES } from '../../../api';
+import { getEndpointDetails } from '../../../constants';
 
 export namespace GetAllTagsCommand {
     export const url = REST_API.USERS.TAGS.GET;
@@ -11,6 +11,7 @@ export namespace GetAllTagsCommand {
         USERS_ROUTES.TAGS.GET,
         'get',
         'Get all existing user tags',
+        { scope: 'list-tags', kind: 'read' },
     );
 
     export const ResponseSchema = z.object({

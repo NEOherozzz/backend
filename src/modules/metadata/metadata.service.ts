@@ -4,13 +4,13 @@ import { QueryBus } from '@nestjs/cqrs';
 import { fail, ok, TResult } from '@common/types';
 import { ERRORS } from '@libs/contracts/constants/errors';
 
-import { GetUserIdByUuidQuery } from '@modules/users/queries/get-user-id-by-uuid';
 import { GetNodeIdByUuidQuery } from '@modules/nodes/queries/get-node-id-by-uuid';
+import { GetUserIdByUuidQuery } from '@modules/users/queries/get-user-id-by-uuid';
 
-import { BaseMetadataResponseModel } from './models/base-metadata.response.model';
-import { UserMetadataRepository } from './repositories/user-metadata.repository';
-import { NodeMetadataRepository } from './repositories/node-metadata.repository';
 import { NodeMetadataEntity, UserMetadataEntity } from './entities';
+import { BaseMetadataResponseModel } from './models/base-metadata.response.model';
+import { NodeMetadataRepository } from './repositories/node-metadata.repository';
+import { UserMetadataRepository } from './repositories/user-metadata.repository';
 
 @Injectable()
 export class MetadataService {

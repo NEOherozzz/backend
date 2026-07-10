@@ -12,6 +12,7 @@ export namespace GetInfraProviderByUuidCommand {
         INFRA_BILLING_ROUTES.GET_PROVIDER_BY_UUID(':uuid'),
         'get',
         'Get infra provider by uuid',
+        { scope: 'get-provider', kind: 'read' },
     );
 
     export const RequestSchema = z.object({

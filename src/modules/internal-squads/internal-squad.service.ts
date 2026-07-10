@@ -1,22 +1,22 @@
+import { Transactional } from '@nestjs-cls/transactional';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
-import { Transactional } from '@nestjs-cls/transactional';
 import { Injectable, Logger } from '@nestjs/common';
 
 import { fail, ok, TResult } from '@common/types';
 import { ERRORS } from '@libs/contracts/constants/errors';
 
-import { SquadsQueueService } from '@queue/_squads';
 import { NodesQueuesService } from '@queue/_nodes';
+import { SquadsQueueService } from '@queue/_squads';
 
-import { GetInternalSquadByUuidResponseModel } from './models/get-internal-squad-by-uuid.response.model';
+import { ReorderInternalSquadsRequestDto } from './dtos';
+import { InternalSquadEntity } from './entities/internal-squad.entity';
+import { GetInternalSquadAccessibleNodesResponseModel } from './models';
 import { DeleteInternalSquadResponseModel } from './models/delete-internal-squad-by-uuid.response.model';
 import { EventSentInternalSquadResponseModel } from './models/event-sent-internal-squad.response.model';
+import { GetInternalSquadByUuidResponseModel } from './models/get-internal-squad-by-uuid.response.model';
 import { GetInternalSquadsResponseModel } from './models/get-internal-squads.response.model';
 import { InternalSquadRepository } from './repositories/internal-squad.repository';
-import { GetInternalSquadAccessibleNodesResponseModel } from './models';
-import { InternalSquadEntity } from './entities/internal-squad.entity';
-import { ReorderInternalSquadsRequestDto } from './dtos';
 
 @Injectable()
 export class InternalSquadService {

@@ -1,12 +1,12 @@
 import { ERRORS } from '@contract/constants';
 
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { fail, ok, TResult } from '@common/types';
 
-import { BulkDeleteByStatusCommand } from './bulk-delete-by-status.command';
 import { UsersRepository } from '../../repositories/users.repository';
+import { BulkDeleteByStatusCommand } from './bulk-delete-by-status.command';
 
 @CommandHandler(BulkDeleteByStatusCommand)
 export class BulkDeleteByStatusHandler implements ICommandHandler<

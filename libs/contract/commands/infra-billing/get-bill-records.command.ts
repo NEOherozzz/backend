@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-import { InfraBillingHistoryRecordSchema } from '../../models';
 import { INFRA_BILLING_ROUTES, REST_API } from '../../api';
 import { getEndpointDetails } from '../../constants';
+import { InfraBillingHistoryRecordSchema } from '../../models';
 
 export namespace GetInfraBillingHistoryRecordsCommand {
     export const url = REST_API.INFRA_BILLING.GET_BILLING_HISTORY;
@@ -12,6 +12,7 @@ export namespace GetInfraBillingHistoryRecordsCommand {
         INFRA_BILLING_ROUTES.GET_BILLING_HISTORY,
         'get',
         'Get infra billing history',
+        { scope: 'list-bill-records', kind: 'read' },
     );
 
     export const RequestQuerySchema = z.object({

@@ -12,6 +12,7 @@ export namespace UpdateConfigProfileCommand {
         CONFIG_PROFILES_ROUTES.UPDATE,
         'patch',
         'Update Core Config in specific config profile',
+        { scope: 'update', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

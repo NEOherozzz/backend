@@ -1,21 +1,21 @@
-import { jsonArrayFrom } from 'kysely/helpers/postgres';
-import { ExpressionBuilder } from 'kysely';
+import { TransactionHost } from '@nestjs-cls/transactional';
+import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 import { Prisma } from '@prisma/client';
-
+import { ExpressionBuilder, sql } from 'kysely';
+import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { DB } from 'prisma/generated/types';
 
-import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
-import { TransactionHost } from '@nestjs-cls/transactional';
 import { Injectable } from '@nestjs/common';
 
 import { TxKyselyService } from '@common/database';
 import { getKyselyUuid } from '@common/helpers';
+import { values } from '@common/helpers/kysely/values';
 
-import { ConfigProfileWithInboundsAndNodesEntity } from '../entities/config-profile-with-inbounds-and-nodes.entity';
-import { ConfigProfileInboundEntity } from '../entities/config-profile-inbound.entity';
 import { ConfigProfileConverter } from '../converters/config-profile.converter';
-import { ConfigProfileEntity } from '../entities/config-profile.entity';
 import { ConfigProfileInboundWithSquadsEntity } from '../entities';
+import { ConfigProfileInboundEntity } from '../entities/config-profile-inbound.entity';
+import { ConfigProfileWithInboundsAndNodesEntity } from '../entities/config-profile-with-inbounds-and-nodes.entity';
+import { ConfigProfileEntity } from '../entities/config-profile.entity';
 
 @Injectable()
 export class ConfigProfileRepository {
@@ -247,14 +247,22 @@ export class ConfigProfileRepository {
             viewPosition: number;
         }[],
     ): Promise<boolean> {
-        await this.prisma.withTransaction(async () => {
-            for (const { uuid, viewPosition } of dto) {
-                await this.prisma.tx.configProfiles.updateMany({
-                    where: { uuid },
-                    data: { viewPosition },
-                });
-            }
-        });
+        if (dto.length === 0) return true;
+
+        const v = values(
+            dto.map(({ uuid, viewPosition }) => ({
+                uuid: sql<string>`${uuid}::uuid`,
+                viewPosition: sql<number>`${viewPosition}::int`,
+            })),
+            'v',
+        );
+
+        await this.qb.kysely
+            .updateTable('configProfiles')
+            .from(v)
+            .set((eb) => ({ viewPosition: eb.ref('v.viewPosition') }))
+            .whereRef('configProfiles.uuid', '=', 'v.uuid')
+            .execute();
 
         await this.prisma.tx
             .$executeRaw`SELECT setval('config_profiles_view_position_seq', (SELECT MAX(view_position) FROM config_profiles) + 1)`;
@@ -262,7 +270,7 @@ export class ConfigProfileRepository {
         return true;
     }
 
-    /* 
+    /*
 
     Kysely helpers
 

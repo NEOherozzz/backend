@@ -1,7 +1,7 @@
 import { ResolvedProxyConfig } from '@modules/subscription-template/resolve-proxy/interfaces';
 import { GetFullUserResponseModel } from '@modules/users/models';
 
-import { ISubscriptionHeaders } from '../interfaces';
+import { IHwidCheckupResult, ISubscriptionHeaders } from '../interfaces';
 
 export class RawSubscriptionWithHostsResponse {
     public user: GetFullUserResponseModel;
@@ -10,7 +10,7 @@ export class RawSubscriptionWithHostsResponse {
         trafficLimit: string;
         trafficUsed: string;
         lifetimeTrafficUsed: string;
-        isHwidLimited: boolean;
+        hwidCheckup: null | IHwidCheckupResult;
     };
     public resolvedProxyConfigs: ResolvedProxyConfig[];
     public headers: ISubscriptionHeaders;

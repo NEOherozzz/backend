@@ -11,6 +11,7 @@ export namespace GetAllPasskeysCommand {
         PASSKEYS_ROUTES.GET_ALL_PASSKEYS,
         'get',
         'Get all passkeys',
+        { scope: 'list', kind: 'read' },
     );
 
     export const ResponseSchema = z.object({

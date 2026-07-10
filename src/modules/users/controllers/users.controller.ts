@@ -1,3 +1,4 @@
+import { Body, Controller, HttpStatus, Param, Query, UseFilters, UseGuards } from '@nestjs/common';
 import {
     ApiBearerAuth,
     ApiCreatedResponse,
@@ -7,15 +8,17 @@ import {
     ApiQuery,
     ApiTags,
 } from '@nestjs/swagger';
-import { Body, Controller, HttpStatus, Param, Query, UseFilters, UseGuards } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 
-import { HttpExceptionFilter } from '@common/exception/http-exception.filter';
-import { JwtDefaultGuard } from '@common/guards/jwt-guards/def-jwt-guard';
-import { errorHandler } from '@common/helpers/error-handler.helper';
+import { TypedConfigService } from '@common/config/app-config';
 import { Endpoint } from '@common/decorators/base-endpoint';
 import { Roles } from '@common/decorators/roles/roles';
+import { ApiScopeResource } from '@common/decorators/scopes';
+import { HttpExceptionFilter } from '@common/exception/http-exception.filter';
+import { JwtDefaultGuard } from '@common/guards/jwt-guards/def-jwt-guard';
 import { RolesGuard } from '@common/guards/roles';
+import { ScopesGuard } from '@common/guards/scopes';
+import { errorHandler } from '@common/helpers/error-handler.helper';
+import { CONTROLLERS_INFO, USERS_CONTROLLER } from '@libs/contracts/api';
 import {
     CreateUserCommand,
     DeleteUserCommand,
@@ -31,13 +34,13 @@ import {
     GetUserByTelegramIdCommand,
     GetUserByUsernameCommand,
     GetUserByUuidCommand,
+    GetUsersStreamCommand,
     GetUserSubscriptionRequestHistoryCommand,
     ResetUserTrafficCommand,
     ResolveUserCommand,
     RevokeUserSubscriptionCommand,
     UpdateUserCommand,
 } from '@libs/contracts/commands';
-import { CONTROLLERS_INFO, USERS_CONTROLLER } from '@libs/contracts/api';
 import { ROLE } from '@libs/contracts/constants';
 
 import {
@@ -64,6 +67,8 @@ import {
     GetUserByUsernameResponseDto,
     GetUserByUuidRequestDto,
     GetUserByUuidResponseDto,
+    GetUsersStreamQueryDto,
+    GetUsersStreamResponseDto,
     GetUserSubscriptionRequestHistoryRequestDto,
     GetUserSubscriptionRequestHistoryResponseDto,
     ResetUserTrafficRequestDto,
@@ -76,6 +81,8 @@ import {
     UpdateUserRequestDto,
     UpdateUserResponseDto,
 } from '../dtos';
+import { GetUserByEmailResponseDto } from '../dtos/get-user-by-email.dto';
+import { GetUserByEmailRequestDto } from '../dtos/get-user-by-email.dto';
 import {
     GetUserByTelegramIdRequestDto,
     GetUserByTelegramIdResponseDto,
@@ -84,24 +91,24 @@ import {
     GetAllTagsResponseModel,
     GetAllUsersResponseModel,
     GetFullUserResponseModel,
+    GetUsersStreamResponseModel,
 } from '../models';
-import { GetUserByEmailResponseDto } from '../dtos/get-user-by-email.dto';
-import { GetUserByEmailRequestDto } from '../dtos/get-user-by-email.dto';
 import { UsersService } from '../users.service';
 
 @ApiBearerAuth('Authorization')
+@ApiScopeResource(CONTROLLERS_INFO.USERS.resource)
 @ApiTags(CONTROLLERS_INFO.USERS.tag)
 @Roles(ROLE.ADMIN, ROLE.API)
-@UseGuards(JwtDefaultGuard, RolesGuard)
+@UseGuards(JwtDefaultGuard, RolesGuard, ScopesGuard)
 @UseFilters(HttpExceptionFilter)
 @Controller(USERS_CONTROLLER)
 export class UsersController {
     public readonly subPublicDomain: string;
     constructor(
         private readonly usersService: UsersService,
-        private readonly configService: ConfigService,
+        private readonly configService: TypedConfigService,
     ) {
-        this.subPublicDomain = this.configService.getOrThrow<string>('SUB_PUBLIC_DOMAIN');
+        this.subPublicDomain = this.configService.getOrThrow('SUB_PUBLIC_DOMAIN');
     }
 
     @ApiCreatedResponse({
@@ -200,6 +207,45 @@ export class UsersController {
                 users: data.users.map(
                     (item) => new GetFullUserResponseModel(item, this.subPublicDomain),
                 ),
+            }),
+        };
+    }
+
+    @ApiOkResponse({
+        type: GetUsersStreamResponseDto,
+        description: 'Users fetched successfully',
+    })
+    @ApiQuery({
+        name: 'cursor',
+        type: 'string',
+        required: false,
+        description: 'Cursor from the previous response (nextCursor). Omit on the first request',
+    })
+    @ApiQuery({
+        name: 'size',
+        type: 'number',
+        required: false,
+        description: 'Page size, no more than 1000 (default 250)',
+    })
+    @Endpoint({
+        command: GetUsersStreamCommand,
+        httpCode: HttpStatus.OK,
+    })
+    async getUsersStream(
+        @Query() query: GetUsersStreamQueryDto,
+    ): Promise<GetUsersStreamResponseDto> {
+        const { cursor, size } = query;
+
+        const result = await this.usersService.getUsersStream({ cursor, size });
+
+        const data = errorHandler(result);
+        return {
+            response: new GetUsersStreamResponseModel({
+                users: data.users.map(
+                    (item) => new GetFullUserResponseModel(item, this.subPublicDomain),
+                ),
+                nextCursor: data.nextCursor,
+                hasMore: data.hasMore,
             }),
         };
     }

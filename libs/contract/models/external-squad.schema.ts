@@ -1,12 +1,12 @@
 import { z } from 'zod';
 
+import { SUBSCRIPTION_TEMPLATE_TYPE } from '../constants';
 import {
     ExternalSquadSubscriptionSettingsSchema,
     ExternalSquadHostOverridesSchema,
     ExternalSquadResponseHeadersSchema,
 } from './external-squads';
 import { HwidSettingsSchema, CustomRemarksSchema } from './subscription-settings';
-import { SUBSCRIPTION_TEMPLATE_TYPE } from '../constants';
 
 export const ExternalSquadSchema = z.object({
     uuid: z.string().uuid(),

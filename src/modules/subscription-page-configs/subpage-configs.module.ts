@@ -1,5 +1,5 @@
-import { CqrsModule } from '@nestjs/cqrs';
 import { Module } from '@nestjs/common';
+import { CqrsModule } from '@nestjs/cqrs';
 
 import { SubscriptionPageConfigRepository } from './repositories/subpage-configs.repository';
 import { SubscriptionPageConfigController } from './subpage-configs.controller';

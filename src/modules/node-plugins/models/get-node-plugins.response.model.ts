@@ -1,5 +1,5 @@
-import { BaseNodePluginResponseModel } from './base-node-plugin.response.model';
 import { NodePluginEntity } from '../entities';
+import { BaseNodePluginResponseModel } from './base-node-plugin.response.model';
 
 export class GetNodePluginsResponseModel {
     public readonly total: number;

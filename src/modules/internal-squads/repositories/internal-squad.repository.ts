@@ -1,17 +1,19 @@
+import { TransactionHost } from '@nestjs-cls/transactional';
+import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
+import { sql } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 
-import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
-import { TransactionHost } from '@nestjs-cls/transactional';
 import { Injectable } from '@nestjs/common';
 
 import { TxKyselyService } from '@common/database';
-import { ICrud } from '@common/types/crud-port';
 import { getKyselyUuid } from '@common/helpers';
+import { values } from '@common/helpers/kysely/values';
+import { ICrud } from '@common/types/crud-port';
 
-import { IGetSquadAccessibleNodes } from '../interfaces/get-squad-accessible-nodes.interface';
-import { InternalSquadEntity } from '../entities/internal-squad.entity';
-import { InternalSquadConverter } from '../internal-squad.converter';
 import { InternalSquadWithInfoEntity } from '../entities';
+import { InternalSquadEntity } from '../entities/internal-squad.entity';
+import { IGetSquadAccessibleNodes } from '../interfaces/get-squad-accessible-nodes.interface';
+import { InternalSquadConverter } from '../internal-squad.converter';
 
 @Injectable()
 export class InternalSquadRepository implements ICrud<InternalSquadEntity> {
@@ -417,14 +419,22 @@ export class InternalSquadRepository implements ICrud<InternalSquadEntity> {
             viewPosition: number;
         }[],
     ): Promise<boolean> {
-        await this.prisma.withTransaction(async () => {
-            for (const { uuid, viewPosition } of dto) {
-                await this.prisma.tx.internalSquads.updateMany({
-                    where: { uuid },
-                    data: { viewPosition },
-                });
-            }
-        });
+        if (dto.length === 0) return true;
+
+        const v = values(
+            dto.map(({ uuid, viewPosition }) => ({
+                uuid: sql<string>`${uuid}::uuid`,
+                viewPosition: sql<number>`${viewPosition}::int`,
+            })),
+            'v',
+        );
+
+        await this.qb.kysely
+            .updateTable('internalSquads')
+            .from(v)
+            .set((eb) => ({ viewPosition: eb.ref('v.viewPosition') }))
+            .whereRef('internalSquads.uuid', '=', 'v.uuid')
+            .execute();
 
         await this.prisma.tx
             .$executeRaw`SELECT setval('internal_squads_view_position_seq', (SELECT MAX(view_position) FROM internal_squads) + 1)`;

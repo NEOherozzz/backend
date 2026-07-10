@@ -1,11 +1,12 @@
-import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 import { TransactionHost } from '@nestjs-cls/transactional';
+import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
+
 import { Injectable } from '@nestjs/common';
 
 import { ICrud } from '@common/types/crud-port';
 
-import { ApiTokenEntity } from '../entities/api-token.entity';
 import { ApiTokenConverter } from '../api-tokens.converter';
+import { ApiTokenEntity } from '../entities/api-token.entity';
 
 @Injectable()
 export class ApiTokensRepository implements ICrud<ApiTokenEntity> {
@@ -44,7 +45,9 @@ export class ApiTokensRepository implements ICrud<ApiTokenEntity> {
         return this.apiTokenConverter.fromPrismaModelToEntity(result);
     }
 
-    public async findByCriteria(dto: Partial<ApiTokenEntity>): Promise<ApiTokenEntity[]> {
+    public async findByCriteria(
+        dto: Partial<Omit<ApiTokenEntity, 'scopes'>>,
+    ): Promise<ApiTokenEntity[]> {
         const bannerList = await this.prisma.tx.apiTokens.findMany({
             where: dto,
             orderBy: {
@@ -54,7 +57,9 @@ export class ApiTokensRepository implements ICrud<ApiTokenEntity> {
         return this.apiTokenConverter.fromPrismaModelsToEntities(bannerList);
     }
 
-    public async findFirstByCriteria(dto: Partial<ApiTokenEntity>): Promise<ApiTokenEntity | null> {
+    public async findFirstByCriteria(
+        dto: Partial<Omit<ApiTokenEntity, 'scopes'>>,
+    ): Promise<ApiTokenEntity | null> {
         const result = await this.prisma.tx.apiTokens.findFirst({
             where: dto,
         });

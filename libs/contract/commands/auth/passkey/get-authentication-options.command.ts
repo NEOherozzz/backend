@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../../constants';
 import { AUTH_ROUTES, REST_API } from '../../../api';
+import { getEndpointDetails } from '../../../constants';
 
 export namespace GetPasskeyAuthenticationOptionsCommand {
     export const url = REST_API.AUTH.PASSKEY.GET_AUTHENTICATION_OPTIONS;
@@ -11,6 +11,7 @@ export namespace GetPasskeyAuthenticationOptionsCommand {
         AUTH_ROUTES.PASSKEY.GET_AUTHENTICATION_OPTIONS,
         'get',
         'Get the authentication options for passkey',
+        { scope: 'get-authentication-options', kind: 'read' },
     );
 
     export const ResponseSchema = z.object({

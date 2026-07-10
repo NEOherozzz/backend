@@ -1,10 +1,10 @@
-import { CqrsModule } from '@nestjs/cqrs';
 import { Module } from '@nestjs/common';
+import { CqrsModule } from '@nestjs/cqrs';
 
-import { RemnawaveSettingsRepository } from './repositories/remnawave-settings.repository';
+import { QUERIES } from './queries';
 import { RemnawaveSettingsController } from './remnawave-settings.controller';
 import { RemnawaveSettingsService } from './remnawave-settings.service';
-import { QUERIES } from './queries';
+import { RemnawaveSettingsRepository } from './repositories/remnawave-settings.repository';
 
 @Module({
     imports: [CqrsModule],

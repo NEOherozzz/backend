@@ -3,6 +3,8 @@ import { TResponseRulesResponseType } from '@libs/contracts/constants';
 
 import { SubscriptionSettingsEntity } from '@modules/subscription-settings/entities';
 
+import { TResponseRuleEncryption } from '../types/response-rules.types';
+
 export interface ISRRContext {
     userAgent: string;
     hwidHeaders: HwidHeaders | null;
@@ -14,4 +16,7 @@ export interface ISRRContext {
     ignoreHostXrayJsonTemplate?: boolean;
     headersToApply?: Record<string, string>;
     ignoreServeJsonAtBaseSubscription?: boolean;
+    disableHwidCheck?: boolean;
+    encryption?: TResponseRuleEncryption;
+    excludeHostsByTags?: Set<string>;
 }

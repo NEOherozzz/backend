@@ -2,30 +2,30 @@
     return this.toString();
 };
 
-import { utilities as nestWinstonModuleUtilities, WinstonModule } from 'nest-winston';
-import { patchNestJsSwagger, ZodValidationPipe } from 'nestjs-zod';
+process.title = 'rw-api';
+
+import { ROOT } from '@contract/api';
+import compression from 'compression';
+import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import timezone from 'dayjs/plugin/timezone';
-import { createLogger } from 'winston';
-import compression from 'compression';
-import * as winston from 'winston';
 import utc from 'dayjs/plugin/utc';
 import { json } from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import dayjs from 'dayjs';
+import { utilities as nestWinstonModuleUtilities, WinstonModule } from 'nest-winston';
+import { patchNestJsSwagger, ZodValidationPipe } from 'nestjs-zod';
+import { createLogger } from 'winston';
+import * as winston from 'winston';
 
-import { ROOT } from '@contract/api';
-
-import { NestExpressApplication } from '@nestjs/platform-express';
-import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
-import { getDocs, isDevelopment, isDevOrDebugLogsEnabled } from '@common/utils/startup-app';
+import { TypedConfigService } from '@common/config/app-config/typed-config.service';
 import { proxyCheckMiddleware, getRealIp, noRobotsMiddleware } from '@common/middlewares';
-import { getStartMessage } from '@common/utils/startup-app/get-start-message';
 import { customLogFilter } from '@common/utils/filter-logs';
-import { AxiosService } from '@common/axios';
+import { getDocs, isDevelopment, isDevOrDebugLogsEnabled } from '@common/utils/startup-app';
+import { getStartMessage } from '@common/utils/startup-app/get-start-message';
 
 import { AppModule } from './app.module';
 
@@ -77,35 +77,32 @@ async function bootstrap(): Promise<void> {
 
     app.use(json({ limit: '100mb' }));
 
-    const config = app.get(ConfigService);
+    const config = app.get(TypedConfigService);
 
-    app.use(
-        helmet({
-            contentSecurityPolicy: {
-                directives: {
-                    defaultSrc: ["'self'", '*'],
-                    scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", '*'],
-                    imgSrc: ["'self'", 'data:', '*'],
-                    connectSrc: ["'self'", '*'],
-                    workerSrc: ["'self'", 'blob:', '*'],
-                    frameSrc: ["'self'", 'oauth.telegram.org', '*'],
-                    frameAncestors: ["'self'", '*'],
+    if (!isDevelopment()) {
+        app.use(
+            helmet({
+                contentSecurityPolicy: {
+                    useDefaults: true,
+                    directives: {
+                        'script-src': ["'self'", "'wasm-unsafe-eval'"],
+                        'img-src': ["'self'", 'data:', 'https:'],
+                        'connect-src': [
+                            "'self'",
+                            'https://raw.githubusercontent.com',
+                            'https://ungh.cc',
+                        ],
+                    },
                 },
-            },
-
-            crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
-            crossOriginResourcePolicy: { policy: 'same-site' },
-            referrerPolicy: {
-                policy: 'strict-origin-when-cross-origin',
-            },
-        }),
-    );
+            }),
+        );
+    }
 
     app.use(compression());
 
     app.use(getRealIp);
 
-    if (config.getOrThrow<string>('IS_HTTP_LOGGING_ENABLED') === 'true') {
+    if (config.getOrThrow('IS_HTTP_LOGGING_ENABLED')) {
         app.use(
             morgan(
                 ':remote-addr - ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"',
@@ -136,7 +133,7 @@ async function bootstrap(): Promise<void> {
     await getDocs(app, config);
 
     app.enableCors({
-        origin: isDevelopment() ? '*' : config.getOrThrow<string>('FRONT_END_DOMAIN'),
+        origin: isDevelopment() ? '*' : config.getOrThrow('FRONT_END_DOMAIN'),
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
         credentials: false,
     });
@@ -147,10 +144,7 @@ async function bootstrap(): Promise<void> {
 
     app.enableShutdownHooks();
 
-    await app.listen(Number(config.getOrThrow<string>('APP_PORT')));
-
-    const axiosService = app.get(AxiosService);
-    await axiosService.setJwt();
+    await app.listen(Number(config.getOrThrow('APP_PORT')));
 
     logger.info('\n' + (await getStartMessage()) + '\n');
 }

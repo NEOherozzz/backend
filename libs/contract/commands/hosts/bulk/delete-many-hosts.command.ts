@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../../constants';
 import { HOSTS_ROUTES, REST_API } from '../../../api';
+import { getEndpointDetails } from '../../../constants';
 import { HostsSchema } from '../../../models';
 
 export namespace BulkDeleteHostsCommand {
@@ -12,6 +12,7 @@ export namespace BulkDeleteHostsCommand {
         HOSTS_ROUTES.BULK.DELETE_HOSTS,
         'post',
         'Delete hosts by UUIDs',
+        { scope: 'bulk-delete', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

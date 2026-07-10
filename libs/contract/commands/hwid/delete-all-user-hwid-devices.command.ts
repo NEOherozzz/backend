@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
+import { HWID_ROUTES, REST_API } from '../../api';
 import { getEndpointDetails } from '../../constants';
 import { HwidUserDeviceSchema } from '../../models';
-import { HWID_ROUTES, REST_API } from '../../api';
 
 export namespace DeleteAllUserHwidDevicesCommand {
     export const url = REST_API.HWID.DELETE_ALL_USER_HWID_DEVICES;
@@ -12,6 +12,7 @@ export namespace DeleteAllUserHwidDevicesCommand {
         HWID_ROUTES.DELETE_ALL_USER_HWID_DEVICES,
         'post',
         'Delete all user HWID devices',
+        { scope: 'delete-all', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

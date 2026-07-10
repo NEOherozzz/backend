@@ -17,6 +17,7 @@ const entityToModel = (entity: NodesEntity): Nodes => {
         name: entity.name,
         address: entity.address,
         port: entity.port,
+        proxyUrl: entity.proxyUrl,
         isConnected: entity.isConnected,
         isConnecting: entity.isConnecting,
         isDisabled: entity.isDisabled,
@@ -32,11 +33,13 @@ const entityToModel = (entity: NodesEntity): Nodes => {
         viewPosition: entity.viewPosition,
         countryCode: entity.countryCode,
         consumptionMultiplier: entity.consumptionMultiplier,
+        nodeConsumptionMultiplier: entity.nodeConsumptionMultiplier,
         tags: entity.tags,
 
         activeConfigProfileUuid: entity.activeConfigProfileUuid,
         providerUuid: entity.providerUuid,
         activePluginUuid: entity.activePluginUuid,
+        note: entity.note,
     };
 };
 

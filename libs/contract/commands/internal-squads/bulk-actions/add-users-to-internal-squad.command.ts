@@ -11,6 +11,7 @@ export namespace AddUsersToInternalSquadCommand {
         INTERNAL_SQUADS_ROUTES.BULK_ACTIONS.ADD_USERS(':uuid'),
         'post',
         'Add all users to internal squad',
+        { scope: 'add-users', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

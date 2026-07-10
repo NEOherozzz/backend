@@ -1,12 +1,12 @@
 import { ERRORS } from '@contract/constants';
 
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { fail, ok, TResult } from '@common/types';
 
-import { InternalSquadBulkActionsCommand } from './internal-squad-bulk-actions.command';
 import { InternalSquadRepository } from '../../repositories/internal-squad.repository';
+import { InternalSquadBulkActionsCommand } from './internal-squad-bulk-actions.command';
 
 @CommandHandler(InternalSquadBulkActionsCommand)
 export class InternalSquadBulkActionsHandler implements ICommandHandler<

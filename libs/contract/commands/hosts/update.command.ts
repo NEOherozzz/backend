@@ -1,13 +1,13 @@
 import { z } from 'zod';
 
+import { HOSTS_ROUTES, REST_API } from '../../api';
 import {
     getEndpointDetails,
-    FINGERPRINTS,
     SECURITY_LAYERS,
     ALPN,
     SUBSCRIPTION_TEMPLATE_TYPE,
+    MIHOMO_IP_VERSION,
 } from '../../constants';
-import { HOSTS_ROUTES, REST_API } from '../../api';
 import { HostsSchema } from '../../models';
 
 export namespace UpdateHostCommand {
@@ -18,6 +18,7 @@ export namespace UpdateHostCommand {
         HOSTS_ROUTES.UPDATE,
         'patch',
         'Update a host',
+        { scope: 'update', kind: 'write' },
     );
 
     export const RequestSchema = HostsSchema.pick({
@@ -48,48 +49,47 @@ export namespace UpdateHostCommand {
             })
             .int()
             .optional(),
-        path: z.optional(z.string()),
-        sni: z.optional(z.string()),
-        host: z.optional(z.string()),
-        alpn: z.optional(z.nativeEnum(ALPN).nullable()),
-        fingerprint: z.optional(z.nativeEnum(FINGERPRINTS).nullable()),
-        isDisabled: z.optional(z.boolean()),
+        path: z.string().nullish(),
+        sni: z.string().nullish(),
+        host: z.string().nullish(),
+        alpn: z.nativeEnum(ALPN).nullish(),
+        fingerprint: z.string().nullish(),
+        isDisabled: z.boolean().default(false),
         securityLayer: z.optional(z.nativeEnum(SECURITY_LAYERS)),
-        xHttpExtraParams: z.optional(z.nullable(z.unknown())),
-        muxParams: z.optional(z.nullable(z.unknown())),
-        sockoptParams: z.optional(z.nullable(z.unknown())),
-        finalMask: z.optional(z.nullable(z.unknown())),
-        serverDescription: z.optional(
+        xhttpExtraParams: z.unknown().nullish(),
+        muxParams: z.unknown().nullish(),
+        sockoptParams: z.unknown().nullish(),
+        finalMask: z.unknown().nullish(),
+        serverDescription: z
+            .string()
+            .max(30, {
+                message: 'Server description must be less than 30 characters',
+            })
+            .nullish(),
+        tags: z.optional(
             z
-                .string()
-                .max(30, {
-                    message: 'Server description must be less than 30 characters',
-                })
-                .nullable(),
+                .array(
+                    z
+                        .string()
+                        .regex(
+                            /^[A-Z0-9_:]+$/,
+                            'Tag can only contain uppercase letters, numbers, underscores and colons',
+                        )
+                        .max(36, 'Each tag must be less than 36 characters'),
+                )
+                .max(10, 'Maximum 10 tags'),
         ),
-        tag: z
-            .optional(
-                z
-                    .string()
-                    .regex(
-                        /^[A-Z0-9_:]+$/,
-                        'Tag can only contain uppercase letters, numbers, underscores and colons',
-                    )
-                    .max(32, 'Tag must be less than 32 characters')
-                    .nullable(),
-            )
-            .describe(
-                'Optional. Host tag for categorization. Max 32 characters, uppercase letters, numbers, underscores and colons are allowed.',
-            ),
         isHidden: z.optional(z.boolean()),
         overrideSniFromAddress: z.optional(z.boolean()),
         keepSniBlank: z.optional(z.boolean()),
         vlessRouteId: z.optional(z.number().int().min(0).max(65535).nullable()),
-        allowInsecure: z.optional(z.boolean()),
+        pinnedPeerCertSha256: z.string().nullish(),
+        verifyPeerCertByName: z.string().nullish(),
         shuffleHost: z.optional(z.boolean()),
         mihomoX25519: z.optional(z.boolean()),
+        mihomoIpVersion: z.nativeEnum(MIHOMO_IP_VERSION).nullish(),
         nodes: z.optional(z.array(z.string().uuid())),
-        xrayJsonTemplateUuid: z.optional(z.string().uuid().nullable()),
+        xrayJsonTemplateUuid: z.string().uuid().nullish(),
         excludedInternalSquads: z
             .optional(z.array(z.string().uuid()))
             .describe('Optional. Internal squads from which the host will be excluded.'),

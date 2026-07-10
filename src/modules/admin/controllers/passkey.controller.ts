@@ -1,13 +1,14 @@
 import { Body, Controller, HttpStatus, UseFilters, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+import { Endpoint } from '@common/decorators/base-endpoint';
+import { GetJWTPayload } from '@common/decorators/get-jwt-payload';
+import { Roles } from '@common/decorators/roles';
 import { HttpExceptionFilter } from '@common/exception/http-exception.filter';
 import { JwtDefaultGuard } from '@common/guards/jwt-guards/def-jwt-guard';
-import { errorHandler } from '@common/helpers/error-handler.helper';
-import { GetJWTPayload } from '@common/decorators/get-jwt-payload';
 import { RolesGuard } from '@common/guards/roles/roles.guard';
-import { Endpoint } from '@common/decorators/base-endpoint';
-import { Roles } from '@common/decorators/roles';
+import { errorHandler } from '@common/helpers/error-handler.helper';
+import { CONTROLLERS_INFO, PASSKEYS_CONTROLLER } from '@libs/contracts/api';
 import {
     GetPasskeyRegistrationOptionsCommand,
     VerifyPasskeyRegistrationCommand,
@@ -15,7 +16,6 @@ import {
     GetAllPasskeysCommand,
     UpdatePasskeyCommand,
 } from '@libs/contracts/commands';
-import { CONTROLLERS_INFO, PASSKEYS_CONTROLLER } from '@libs/contracts/api';
 import { ROLE } from '@libs/contracts/constants';
 
 import { IJWTAuthPayload } from '@modules/auth/interfaces';

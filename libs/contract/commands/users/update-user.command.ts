@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
+import { REST_API, USERS_ROUTES } from '../../api';
 import { getEndpointDetails, RESET_PERIODS, USERS_STATUS } from '../../constants';
 import { ExtendedUsersSchema, UsersSchema } from '../../models';
-import { REST_API, USERS_ROUTES } from '../../api';
 
 export namespace UpdateUserCommand {
     export const url = REST_API.USERS.UPDATE;
@@ -12,6 +12,7 @@ export namespace UpdateUserCommand {
         USERS_ROUTES.UPDATE,
         'patch',
         'Update a user by UUID or username',
+        { scope: 'update', kind: 'write' },
     );
 
     export const RequestSchema = z
@@ -38,7 +39,6 @@ export namespace UpdateUserCommand {
                 .number({
                     invalid_type_error: 'Traffic limit must be a number',
                 })
-                .int('Traffic limit must be an integer')
                 .min(0, 'Traffic limit must be greater than 0')
                 .describe('Traffic limit in bytes. 0 - unlimited')
                 .optional(),

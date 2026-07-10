@@ -1,6 +1,6 @@
 import { Global, Inject, Module, OnApplicationBootstrap } from '@nestjs/common';
-import { ClientProxy, ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ClientProxy, ClientsModule, Transport } from '@nestjs/microservices';
 
 import { getRedisConnectionOptions } from '@common/utils/get-redis-connection-options';
 

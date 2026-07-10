@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { EXTERNAL_SQUADS_ROUTES, REST_API } from '../../api';
+import { getEndpointDetails, SUBSCRIPTION_TEMPLATE_TYPE } from '../../constants';
 import {
     CustomRemarksSchema,
     ExternalSquadHostOverridesSchema,
@@ -8,8 +10,6 @@ import {
     ExternalSquadSubscriptionSettingsSchema,
     HwidSettingsSchema,
 } from '../../models';
-import { getEndpointDetails, SUBSCRIPTION_TEMPLATE_TYPE } from '../../constants';
-import { EXTERNAL_SQUADS_ROUTES, REST_API } from '../../api';
 
 export namespace UpdateExternalSquadCommand {
     export const url = REST_API.EXTERNAL_SQUADS.UPDATE;
@@ -19,6 +19,7 @@ export namespace UpdateExternalSquadCommand {
         EXTERNAL_SQUADS_ROUTES.UPDATE,
         'patch',
         'Update external squad',
+        { scope: 'update', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

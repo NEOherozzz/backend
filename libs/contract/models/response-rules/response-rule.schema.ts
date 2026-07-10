@@ -1,17 +1,17 @@
 import { z } from 'zod';
 
 import {
-    EXAMPLES_SRR_BLANK_RULE,
-    EXAMPLES_SRR_BLOCK_LEGACY_CLIENTS_RULE,
-    generateResponseRuleDescription,
-} from './response-rules-examples';
-import {
     RESPONSE_RULES_OPERATORS,
     RESPONSE_RULES_RESPONSE_TYPES,
     RESPONSE_RULES_RESPONSE_TYPES_DESCRIPTION,
 } from '../../constants';
-import { ResponseRuleModificationsSchema } from './response-rule-modifications.schema';
 import { ResponseRuleConditionSchema } from './response-rule-condition.schema';
+import { ResponseRuleModificationsSchema } from './response-rule-modifications.schema';
+import {
+    EXAMPLES_SRR_BLANK_RULE,
+    EXAMPLES_SRR_BLOCK_LEGACY_CLIENTS_RULE,
+    generateResponseRuleDescription,
+} from './response-rules-examples';
 
 export const ResponseRuleSchemaBase = z.object({
     name: z

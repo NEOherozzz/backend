@@ -1,5 +1,5 @@
-import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 
 import { HashedSet } from '@remnawave/hashed-set';
 

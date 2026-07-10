@@ -12,6 +12,7 @@ export namespace CreateInfraProviderCommand {
         INFRA_BILLING_ROUTES.CREATE_PROVIDER,
         'post',
         'Create infra provider',
+        { scope: 'create-provider', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

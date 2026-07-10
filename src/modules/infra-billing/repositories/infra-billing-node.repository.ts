@@ -1,19 +1,19 @@
+import { TransactionHost } from '@nestjs-cls/transactional';
+import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 import { sql } from 'kysely';
 
-import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
-import { TransactionHost } from '@nestjs-cls/transactional';
 import { Injectable } from '@nestjs/common';
 
 import { TxKyselyService } from '@common/database';
 import { ICrud } from '@common/types/crud-port';
 
+import { InfraBillingNodeConverter } from '../converters';
 import {
     InfraAvailableBillingNodeEntity,
     InfraBillingNodeEntity,
     InfraBillingNodeNotificationEntity,
 } from '../entities';
 import { NOTIFICATION_CONFIGS, TBillingNodeNotificationType } from '../interfaces';
-import { InfraBillingNodeConverter } from '../converters';
 
 @Injectable()
 export class InfraBillingNodeRepository implements ICrud<InfraBillingNodeEntity> {
@@ -195,10 +195,10 @@ export class InfraBillingNodeRepository implements ICrud<InfraBillingNodeEntity>
 
         const result = await this.qb.kysely
             .selectFrom('infraBillingNodes as ibn')
-            .innerJoin('nodes as n', 'n.uuid', 'ibn.nodeUuid')
+            .leftJoin('nodes as n', 'n.uuid', 'ibn.nodeUuid')
             .innerJoin('infraProviders as ip', 'ip.uuid', 'ibn.providerUuid')
-            .select([
-                'n.name as nodeName',
+            .select((eb) => [
+                sql<string>`coalesce(${eb.ref('n.name')}, ${eb.ref('ibn.name')})`.as('nodeName'),
                 'ip.loginUrl',
                 'ip.name as providerName',
                 'ibn.nextBillingAt',

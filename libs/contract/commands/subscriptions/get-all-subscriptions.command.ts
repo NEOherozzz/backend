@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails, RESET_PERIODS, USERS_STATUS } from '../../constants';
 import { REST_API, SUBSCRIPTIONS_ROUTES } from '../../api';
+import { getEndpointDetails, RESET_PERIODS, USERS_STATUS } from '../../constants';
 
 export namespace GetAllSubscriptionsCommand {
     export const url = REST_API.SUBSCRIPTIONS.GET;
@@ -11,6 +11,7 @@ export namespace GetAllSubscriptionsCommand {
         SUBSCRIPTIONS_ROUTES.GET,
         'get',
         'Get all subscriptions',
+        { scope: 'list', kind: 'read' },
     );
 
     export const RequestQuerySchema = z.object({

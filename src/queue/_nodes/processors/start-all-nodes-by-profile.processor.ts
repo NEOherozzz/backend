@@ -1,22 +1,22 @@
 import { Job } from 'bullmq';
-import semver from 'semver';
 import pMap from 'p-map';
+import semver from 'semver';
 
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Logger, Scope } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 
 import { AxiosService } from '@common/axios/axios.service';
 import { RawCacheService } from '@common/raw-cache';
 import { CACHE_KEYS, CACHE_KEYS_TTL } from '@libs/contracts/constants';
 
-import { GetPreparedConfigWithUsersQuery } from '@modules/users/queries/get-prepared-config-with-users/get-prepared-config-with-users.query';
-import { FindNodesByCriteriaQuery } from '@modules/nodes/queries/find-nodes-by-criteria';
-import { GetAllPluginsQuery } from '@modules/node-plugins/queries/get-all-plugins';
 import { ConfigProfileInboundEntity } from '@modules/config-profiles/entities';
-import { UpdateNodeCommand } from '@modules/nodes/commands/update-node';
 import { NodePluginEntity } from '@modules/node-plugins/entities';
+import { GetAllPluginsQuery } from '@modules/node-plugins/queries/get-all-plugins';
 import { NodesEntity } from '@modules/nodes';
+import { UpdateNodeCommand } from '@modules/nodes/commands/update-node';
+import { FindNodesByCriteriaQuery } from '@modules/nodes/queries/find-nodes-by-criteria';
+import { GetPreparedConfigWithUsersQuery } from '@modules/users/queries/get-prepared-config-with-users/get-prepared-config-with-users.query';
 
 import { NodesQueuesService } from '@queue/_nodes';
 
@@ -177,7 +177,11 @@ export class StartAllNodesByProfileQueueProcessor extends WorkerHost {
                 }
 
                 let pluginsSupported = true;
-                const xrayStatusResponse = await this.axios.getNodeHealth(node.address, node.port);
+                const xrayStatusResponse = await this.axios.getNodeHealth({
+                    address: node.address,
+                    port: node.port,
+                    proxyUrl: node.proxyUrl,
+                });
 
                 if (!xrayStatusResponse.isOk) {
                     await this.commandBus.execute(
@@ -250,8 +254,11 @@ export class StartAllNodesByProfileQueueProcessor extends WorkerHost {
                         {
                             plugin,
                         },
-                        node.address,
-                        node.port,
+                        {
+                            address: node.address,
+                            port: node.port,
+                            proxyUrl: node.proxyUrl,
+                        },
                     );
 
                     if (!syncNodePluginsResponse.isOk) {
@@ -294,8 +301,11 @@ export class StartAllNodesByProfileQueueProcessor extends WorkerHost {
                             forceRestart: payload.force ?? false,
                         },
                     },
-                    node.address,
-                    node.port,
+                    {
+                        address: node.address,
+                        port: node.port,
+                        proxyUrl: node.proxyUrl,
+                    },
                 );
 
                 switch (startXrayResponse.isOk) {
@@ -366,6 +376,6 @@ export class StartAllNodesByProfileQueueProcessor extends WorkerHost {
     }
 
     private isUnsecureInbound(protocol: string): boolean {
-        return ['dokodemo-door', 'http', 'mixed', 'tunnel', 'wireguard'].includes(protocol);
+        return ['dokodemo-door', 'http', 'mixed', 'tun', 'tunnel', 'wireguard'].includes(protocol);
     }
 }

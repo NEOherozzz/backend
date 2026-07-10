@@ -1,6 +1,6 @@
+import { Transactional } from '@nestjs-cls/transactional';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
-import { Transactional } from '@nestjs-cls/transactional';
 import { Injectable, Logger } from '@nestjs/common';
 
 import { RawCacheService } from '@common/raw-cache';
@@ -10,15 +10,15 @@ import { ERRORS } from '@libs/contracts/constants/errors';
 
 import { SquadsQueueService } from '@queue/_squads';
 
+import { ReorderExternalSquadsRequestDto, UpdateExternalSquadRequestDto } from './dtos';
+import { ExternalSquadEntity } from './entities';
 import {
     DeleteExternalSquadByUuidResponseModel,
     EventSentExternalSquadResponseModel,
 } from './models';
 import { GetExternalSquadByUuidResponseModel } from './models/get-external-squad-by-uuid.response.model';
 import { GetExternalSquadsResponseModel } from './models/get-external-squads.response.model';
-import { ReorderExternalSquadsRequestDto, UpdateExternalSquadRequestDto } from './dtos';
 import { ExternalSquadRepository } from './repositories/external-squad.repository';
-import { ExternalSquadEntity } from './entities';
 
 @Injectable()
 export class ExternalSquadService {

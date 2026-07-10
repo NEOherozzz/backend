@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../../constants';
 import { AUTH_ROUTES, REST_API } from '../../../api';
+import { getEndpointDetails } from '../../../constants';
 
 export namespace VerifyPasskeyAuthenticationCommand {
     export const url = REST_API.AUTH.PASSKEY.VERIFY_AUTHENTICATION;
@@ -11,6 +11,7 @@ export namespace VerifyPasskeyAuthenticationCommand {
         AUTH_ROUTES.PASSKEY.VERIFY_AUTHENTICATION,
         'post',
         'Verify the authentication for passkey',
+        { scope: 'verify-authentication', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

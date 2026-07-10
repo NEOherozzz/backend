@@ -1,8 +1,8 @@
 import { Job } from 'bullmq';
 
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { CommandBus } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { CommandBus } from '@nestjs/cqrs';
 
 import { ok } from '@common/types';
 import { EVENTS } from '@libs/contracts/constants';

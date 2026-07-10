@@ -1,3 +1,5 @@
+import dayjs from 'dayjs';
+
 import { EVENTS, TServiceEvents, TErrorsEvents } from '@libs/contracts/constants';
 
 import { ServiceEvent, CustomErrorEvent } from '@integration-modules/notifications/interfaces';
@@ -60,6 +62,24 @@ ${separator}
 ${separator}
 <b>Action:</b> <code>${e.data.subpageConfig!.action}</code>
 <b>UUID:</b> <code>${e.data.subpageConfig!.uuid}</code>`,
+    }),
+    [EVENTS.SERVICE.API_TOKEN_CREATED]: (e) => ({
+        message: `
+<tg-emoji emoji-id='5334882760735598374'>📝</tg-emoji> <b>#api_token_created</b>
+${separator}
+<b>Name:</b> <code>${e.data.apiToken!.name}</code>
+<b>Expire at:</b> <tg-time unix="${dayjs(e.data.apiToken!.expireAt).unix()}" format="DT">${dayjs(e.data.apiToken!.expireAt).format('DD.MM.YYYY HH:mm:ss')}</tg-time>
+<b>Scopes:</b> <code>${e.data.apiToken!.scopes.length}</code>
+<b>UUID:</b> <code>${e.data.apiToken!.uuid}</code>`,
+    }),
+    [EVENTS.SERVICE.API_TOKEN_DELETED]: (e) => ({
+        message: `
+<tg-emoji emoji-id='5334882760735598374'>📝</tg-emoji> <b>#api_token_deleted</b>
+${separator}
+<b>Name:</b> <code>${e.data.apiToken!.name}</code>
+<b>Expire at:</b> <tg-time unix="${dayjs(e.data.apiToken!.expireAt).unix()}" format="DT">${dayjs(e.data.apiToken!.expireAt).format('DD.MM.YYYY HH:mm:ss')}</tg-time>
+<b>Scopes:</b> <code>${e.data.apiToken!.scopes.length}</code>
+<b>UUID:</b> <code>${e.data.apiToken!.uuid}</code>`,
     }),
 };
 

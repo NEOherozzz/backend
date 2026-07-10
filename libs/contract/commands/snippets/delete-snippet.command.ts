@@ -12,6 +12,7 @@ export namespace DeleteSnippetCommand {
         SNIPPETS_ROUTES.DELETE,
         'delete',
         'Delete snippet',
+        { scope: 'delete', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

@@ -12,6 +12,7 @@ export namespace GetNodePluginCommand {
         NODE_PLUGINS_ROUTES.GET(':uuid'),
         'get',
         'Get Node Plugin by uuid',
+        { scope: 'get', kind: 'read' },
     );
 
     export const RequestSchema = z.object({

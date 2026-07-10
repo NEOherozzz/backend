@@ -1,12 +1,12 @@
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
 import { fail, ok, TResult } from '@common/types';
 import { ERRORS } from '@libs/contracts/constants';
 
-import { FindNodesByCriteriaQuery } from './find-nodes-by-criteria.query';
-import { NodesRepository } from '../../repositories/nodes.repository';
 import { NodesEntity } from '../../entities/nodes.entity';
+import { NodesRepository } from '../../repositories/nodes.repository';
+import { FindNodesByCriteriaQuery } from './find-nodes-by-criteria.query';
 
 @QueryHandler(FindNodesByCriteriaQuery)
 export class FindNodesByCriteriaHandler implements IQueryHandler<

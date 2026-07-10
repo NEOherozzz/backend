@@ -14,8 +14,8 @@ import {
 import { GetCachedSubscriptionSettingsQuery } from '@modules/subscription-settings/queries/get-cached-subscrtipion-settings';
 import { isExtendedClient } from '@modules/subscription-template/constants';
 
-import { ResponseRulesMatcherService } from '../services/response-rules-matcher.service';
 import { ISRRContext } from '../interfaces';
+import { ResponseRulesMatcherService } from '../services/response-rules-matcher.service';
 
 @Injectable()
 export class ResponseRulesMiddleware implements NestMiddleware {
@@ -49,15 +49,12 @@ export class ResponseRulesMiddleware implements NestMiddleware {
                 );
             }
 
-            const headersToAppend: Record<string, string> = {
+            const headersToAppend: Record<string, string | string[]> = {
                 'x-remnawave-injected-short-uuid': req.params.shortUuid,
             };
 
             if (req.params.clientType) {
                 overrideClientType = req.params.clientType as unknown as TRequestTemplateTypeKeys;
-                if (overrideClientType) {
-                    headersToAppend['x-remnawave-injected-client-type'] = overrideClientType;
-                }
             }
 
             const result = this.matcher.matchRules(
@@ -112,6 +109,18 @@ export class ResponseRulesMiddleware implements NestMiddleware {
                 }
                 if (mods.ignoreServeJsonAtBaseSubscription) {
                     ssrContext.ignoreServeJsonAtBaseSubscription = true;
+                }
+
+                if (mods.disableHwidCheck) {
+                    ssrContext.disableHwidCheck = true;
+                }
+
+                if (mods.encryption) {
+                    ssrContext.encryption = mods.encryption;
+                }
+
+                if (mods.excludeHostsByTags) {
+                    ssrContext.excludeHostsByTags = new Set(mods.excludeHostsByTags);
                 }
             }
 

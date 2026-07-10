@@ -1,20 +1,19 @@
+import { Injectable, Logger } from '@nestjs/common';
+
+import { isNonEmptyObject } from '@common/utils';
 import type {
     TRemnawaveInjectorSelectFrom,
     TRemnawaveInjectorSelector,
 } from '@libs/contracts/models';
 
-import { Injectable, Logger } from '@nestjs/common';
-
-import { isNonEmptyObject } from '@common/utils';
-
+import { ResolvedProxyConfig } from '../resolve-proxy/interfaces';
+import { SubscriptionTemplateService } from '../subscription-template.service';
 import {
     IGenerateConfigParams,
     Outbound,
     StreamSettings,
     XrayJsonConfig,
 } from './interfaces/xray-json-config.interface';
-import { SubscriptionTemplateService } from '../subscription-template.service';
-import { ResolvedProxyConfig } from '../resolve-proxy/interfaces';
 
 type VlessConfig = Extract<ResolvedProxyConfig, { protocol: 'vless' }>;
 type TrojanConfig = Extract<ResolvedProxyConfig, { protocol: 'trojan' }>;
@@ -94,7 +93,8 @@ const PROTOCOL_BUILDERS: ProtocolBuilderMap = {
 const TRANSPORT_BUILDERS: TransportBuilderMap = {
     ws: (host) => ({
         path: host.transportOptions.path,
-        headers: { Host: host.transportOptions.host, ...host.transportOptions.headers },
+        host: host.transportOptions.host,
+        headers: { ...host.transportOptions.headers },
         ...(host.transportOptions.heartbeatPeriod != null && {
             heartbeatPeriod: host.transportOptions.heartbeatPeriod,
         }),
@@ -102,7 +102,7 @@ const TRANSPORT_BUILDERS: TransportBuilderMap = {
     httpupgrade: (host) => ({
         path: host.transportOptions.path,
         host: host.transportOptions.host,
-        headers: { Host: host.transportOptions.host, ...host.transportOptions.headers },
+        headers: { ...host.transportOptions.headers },
     }),
     tcp: buildTcpSettings,
     xhttp: (host) => ({
@@ -118,7 +118,7 @@ const TRANSPORT_BUILDERS: TransportBuilderMap = {
     }),
     kcp: (host) => ({
         mtu: host.transportOptions.clientMtu,
-        tti: host.transportOptions.tti,
+        tti: host.transportOptions.clientTti,
         congestion: host.transportOptions.congestion,
     }),
     hysteria: (host) => ({
@@ -149,8 +149,20 @@ function buildTlsSettings(host: ResolvedProxyConfig): Record<string, unknown> {
         settings.alpn = host.securityOptions.alpn.split(',');
     }
 
-    if (host.securityOptions.allowInsecure) {
-        settings.allowInsecure = true;
+    if (host.securityOptions.pinnedPeerCertSha256) {
+        settings.pinnedPeerCertSha256 = host.securityOptions.pinnedPeerCertSha256;
+    }
+
+    if (host.securityOptions.verifyPeerCertByName) {
+        settings.verifyPeerCertByName = host.securityOptions.verifyPeerCertByName;
+    }
+
+    if (host.securityOptions.echForceQuery) {
+        settings.echForceQuery = host.securityOptions.echForceQuery;
+    }
+
+    if (host.securityOptions.echConfigList) {
+        settings.echConfigList = host.securityOptions.echConfigList;
     }
 
     return settings;
@@ -220,7 +232,7 @@ export class XrayJsonGeneratorService {
 
                 configs.push({
                     ...baseTemplate,
-                    outbounds: [...outboundConfig.outbounds, ...baseTemplate.outbounds],
+                    outbounds: [...outboundConfig.outbounds, ...(baseTemplate.outbounds ?? [])],
                     remarks: outboundConfig.remarks,
                     meta: outboundConfig.meta,
                 });
@@ -271,7 +283,11 @@ export class XrayJsonGeneratorService {
         };
 
         if (isNonEmptyObject(host.mux)) {
-            outbound.mux = host.mux;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { smux: _, ...mux } = host.mux;
+            if (Object.keys(mux).length > 0) {
+                outbound.mux = mux;
+            }
         }
 
         return outbound;
@@ -351,7 +367,7 @@ export class XrayJsonGeneratorService {
         }
 
         if (useHostTagAsTag) {
-            return hosts.map((h) => this.buildOutbound(h, h.metadata.tag || h.finalRemark));
+            return hosts.map((h) => this.buildOutbound(h, h.metadata.tags[0] || h.finalRemark));
         }
 
         const proxyTag = tagPrefix ?? 'proxy';
@@ -376,16 +392,21 @@ export class XrayJsonGeneratorService {
         allHosts: ResolvedProxyConfig[],
     ): ResolvedProxyConfig[] {
         const source = selectFrom ?? 'HIDDEN';
+        const recipientUuid = host.metadata.uuid;
         let candidates: ResolvedProxyConfig[] = [];
         switch (source) {
             case 'ALL':
-                candidates = allHosts;
+                candidates = allHosts.filter((h) => h.metadata.uuid !== recipientUuid);
                 break;
             case 'HIDDEN':
-                candidates = allHosts.filter((h) => h.metadata.isHidden);
+                candidates = allHosts.filter(
+                    (h) => h.metadata.isHidden && h.metadata.uuid !== recipientUuid,
+                );
                 break;
             case 'NOT_HIDDEN':
-                candidates = allHosts.filter((h) => !h.metadata.isHidden);
+                candidates = allHosts.filter(
+                    (h) => !h.metadata.isHidden && h.metadata.uuid !== recipientUuid,
+                );
                 break;
         }
 
@@ -404,13 +425,17 @@ export class XrayJsonGeneratorService {
             case 'sameTagAsRecipient':
                 return candidates.filter(
                     (h) =>
-                        h.metadata.tag && host.metadata.tag && h.metadata.tag === host.metadata.tag,
+                        h.metadata.tags.length > 0 &&
+                        host.metadata.tags.length > 0 &&
+                        h.metadata.tags.some((t) => host.metadata.tags.includes(t)),
                 );
 
             case 'tagRegex': {
                 const regex = this.parseRegex(selector.pattern);
                 if (!regex) return [];
-                return candidates.filter((h) => h.metadata.tag && regex.test(h.metadata.tag));
+                return candidates.filter(
+                    (h) => h.metadata.tags.length > 0 && h.metadata.tags.some((t) => regex.test(t)),
+                );
             }
         }
     }

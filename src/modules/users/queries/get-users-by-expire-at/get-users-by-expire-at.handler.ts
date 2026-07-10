@@ -1,11 +1,11 @@
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
 import { fail, ok } from '@common/types';
 import { ERRORS } from '@libs/contracts/constants';
 
-import { GetUsersByExpireAtQuery } from './get-users-by-expire-at.query';
 import { UsersRepository } from '../../repositories/users.repository';
+import { GetUsersByExpireAtQuery } from './get-users-by-expire-at.query';
 
 @QueryHandler(GetUsersByExpireAtQuery)
 export class GetUsersByExpireAtHandler implements IQueryHandler<GetUsersByExpireAtQuery> {

@@ -1,7 +1,7 @@
 import { RedisModule, RedisModuleOptions } from '@songkeys/nestjs-redis';
 
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Global, Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { getRedisConnectionOptions } from '@common/utils/get-redis-connection-options';
 

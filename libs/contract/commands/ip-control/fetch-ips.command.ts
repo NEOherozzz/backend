@@ -11,6 +11,7 @@ export namespace FetchIpsCommand {
         IP_CONTROL_ROUTES.FETCH_IPS(':uuid'),
         'post',
         'Request IP List for User',
+        { scope: 'fetch-ips', kind: 'read' },
     );
 
     export const RequestSchema = z.object({

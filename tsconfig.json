@@ -14,30 +14,14 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
-      "@common/*": [
-        "./src/common/*"
-      ],
-      "@integration-modules/*": [
-        "./src/integration-modules/*"
-      ],
-      "@modules/*": [
-        "./src/modules/*"
-      ],
-      "@libs/contracts/*": [
-        "./libs/contract/*"
-      ],
-      "@libs/subscription-page/*": [
-        "./libs/subscription-page/*"
-      ],
-      "@contract/*": [
-        "./libs/contract/*"
-      ],
-      "@queue/*": [
-        "./src/queue/*"
-      ],
-      "@scheduler/*": [
-        "./src/scheduler/*"
-      ]
+      "@common/*": ["./src/common/*"],
+      "@integration-modules/*": ["./src/integration-modules/*"],
+      "@modules/*": ["./src/modules/*"],
+      "@libs/contracts/*": ["./libs/contract/*"],
+      "@libs/subscription-page/*": ["./libs/subscription-page/*"],
+      "@contract/*": ["./libs/contract/*"],
+      "@queue/*": ["./src/queue/*"],
+      "@scheduler/*": ["./src/scheduler/*"]
     },
     "incremental": true,
     "skipLibCheck": true,
@@ -49,8 +33,6 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "useDefineForClassFields": true,
-    "typeRoots": [
-      "./@types"
-    ],
+    "typeRoots": ["./@types"]
   }
 }

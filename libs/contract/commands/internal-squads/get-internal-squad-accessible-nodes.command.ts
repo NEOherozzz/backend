@@ -11,6 +11,7 @@ export namespace GetInternalSquadAccessibleNodesCommand {
         INTERNAL_SQUADS_ROUTES.ACCESSIBLE_NODES(':uuid'),
         'get',
         'Get internal squad accessible nodes',
+        { scope: 'accessible-nodes', kind: 'read' },
     );
 
     export const RequestSchema = z.object({

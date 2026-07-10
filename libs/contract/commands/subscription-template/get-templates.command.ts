@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 import { REST_API, SUBSCRIPTION_TEMPLATE_ROUTES } from '../../api';
-import { SubscriptionTemplateSchema } from '../../models';
 import { getEndpointDetails } from '../../constants';
+import { SubscriptionTemplateSchema } from '../../models';
 
 export namespace GetSubscriptionTemplatesCommand {
     export const url = REST_API.SUBSCRIPTION_TEMPLATE.GET_ALL;
@@ -12,6 +12,7 @@ export namespace GetSubscriptionTemplatesCommand {
         SUBSCRIPTION_TEMPLATE_ROUTES.GET_ALL,
         'get',
         'Get all subscription templates (wihout content)',
+        { scope: 'list', kind: 'read' },
     );
 
     export const ResponseSchema = z.object({

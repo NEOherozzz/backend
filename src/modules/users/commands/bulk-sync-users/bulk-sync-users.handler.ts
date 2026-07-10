@@ -1,5 +1,5 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { UsersRepository } from '../../repositories/users.repository';
 import { BulkSyncUsersCommand } from './bulk-sync-users.command';

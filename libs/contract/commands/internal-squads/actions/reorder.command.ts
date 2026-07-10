@@ -12,6 +12,7 @@ export namespace ReorderInternalSquadCommand {
         INTERNAL_SQUADS_ROUTES.ACTIONS.REORDER,
         'post',
         'Reorder internal squads',
+        { scope: 'reorder', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

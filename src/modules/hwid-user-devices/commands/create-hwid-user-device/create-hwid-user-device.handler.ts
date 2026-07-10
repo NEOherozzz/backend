@@ -1,13 +1,13 @@
 import { ERRORS } from '@contract/constants';
 
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { fail, ok, TResult } from '@common/types';
 
+import { HwidUserDeviceEntity } from '../../entities/hwid-user-device.entity';
 import { HwidUserDevicesRepository } from '../../repositories/hwid-user-devices.repository';
 import { CreateHwidUserDeviceCommand } from './create-hwid-user-device.command';
-import { HwidUserDeviceEntity } from '../../entities/hwid-user-device.entity';
 
 @CommandHandler(CreateHwidUserDeviceCommand)
 export class CreateHwidUserDeviceHandler implements ICommandHandler<

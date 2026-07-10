@@ -1,13 +1,13 @@
 import { apiReference } from '@scalar/nestjs-api-reference';
+import { readPackageJSON } from 'pkg-types';
 import { SwaggerThemeNameEnum } from 'swagger-themes';
 import { SwaggerTheme } from 'swagger-themes';
-import { readPackageJSON } from 'pkg-types';
 
-import { DocumentBuilder } from '@nestjs/swagger';
 import { INestApplication } from '@nestjs/common';
+import { DocumentBuilder } from '@nestjs/swagger';
 import { SwaggerModule } from '@nestjs/swagger';
-import { ConfigService } from '@nestjs/config';
 
+import { TypedConfigService } from '@common/config/app-config';
 import { CONTROLLERS_INFO } from '@libs/contracts/api';
 
 import {
@@ -29,10 +29,10 @@ Remnawave is a powerful proxy management tool, built on top of Xray-core, with a
 * https://docs.rw
 `;
 
-export async function getDocs(app: INestApplication<unknown>, config: ConfigService) {
-    const isSwaggerEnabled = config.getOrThrow<string>('IS_DOCS_ENABLED');
+export async function getDocs(app: INestApplication<unknown>, config: TypedConfigService) {
+    const isSwaggerEnabled = config.getOrThrow('IS_DOCS_ENABLED');
 
-    if (isSwaggerEnabled === 'true') {
+    if (isSwaggerEnabled) {
         const pkg = await readPackageJSON();
 
         const configSwagger = new DocumentBuilder()
@@ -89,15 +89,10 @@ export async function getDocs(app: INestApplication<unknown>, config: ConfigServ
             },
         };
 
-        SwaggerModule.setup(
-            config.getOrThrow<string>('SWAGGER_PATH'),
-            app,
-            documentFactory,
-            options,
-        );
+        SwaggerModule.setup(config.getOrThrow('SWAGGER_PATH'), app, documentFactory, options);
 
         app.use(
-            config.getOrThrow<string>('SCALAR_PATH'),
+            config.getOrThrow('SCALAR_PATH'),
 
             apiReference({
                 orderSchemaPropertiesBy: 'preserve',
@@ -108,7 +103,6 @@ export async function getDocs(app: INestApplication<unknown>, config: ConfigServ
                 hideDownloadButton: false,
                 hideTestRequestButton: false,
                 isEditable: false,
-                isLoading: false,
                 hideDarkModeToggle: false,
                 withDefaultFonts: true,
                 hideSearch: false,

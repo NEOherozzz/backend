@@ -398,16 +398,6 @@ export const ERRORS = {
         message: 'Bulk disable hosts error',
         httpCode: 500,
     },
-    SET_INBOUND_TO_HOSTS_ERROR: {
-        code: 'A082',
-        message: 'Set inbound to hosts error',
-        httpCode: 500,
-    },
-    SET_PORT_TO_HOSTS_ERROR: {
-        code: 'A083',
-        message: 'Set port to hosts error',
-        httpCode: 500,
-    },
     BULK_DELETE_USERS_BY_UUID_ERROR: {
         code: 'A084',
         message: 'Bulk delete users by UUID error',
@@ -1143,5 +1133,20 @@ export const ERRORS = {
         code: 'A227',
         message: 'Get torrent blocker reports error',
         httpCode: 500,
+    },
+    UPDATE_HOSTS_ERROR: {
+        code: 'A228',
+        message: 'Update hosts error',
+        httpCode: 500,
+    },
+    INVALID_API_TOKEN_SCOPE: {
+        code: 'A229',
+        message: 'One or more provided API token scopes are invalid',
+        httpCode: 400,
+    },
+    CREATE_INFRA_BILLING_NODE_MISSING_TARGET: {
+        code: 'A230',
+        message: 'Either nodeUuid or name must be provided',
+        httpCode: 400,
     },
 } as const;

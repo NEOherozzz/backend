@@ -1,6 +1,6 @@
+import { Logger } from '@nestjs/common';
 import { IEventHandler, QueryBus } from '@nestjs/cqrs';
 import { EventsHandler } from '@nestjs/cqrs';
-import { Logger } from '@nestjs/common';
 
 import { AddUserCommand as AddUserToNodeCommandSdk } from '@remnawave/node-contract';
 
@@ -127,6 +127,7 @@ export class AddUserToNodeHandler implements IEventHandler<AddUserToNodeEvent> {
                         node: {
                             address: node.address,
                             port: node.port,
+                            proxyUrl: node.proxyUrl,
                         },
                     });
 
@@ -138,6 +139,7 @@ export class AddUserToNodeHandler implements IEventHandler<AddUserToNodeEvent> {
                     node: {
                         address: node.address,
                         port: node.port,
+                        proxyUrl: node.proxyUrl,
                     },
                 });
             }

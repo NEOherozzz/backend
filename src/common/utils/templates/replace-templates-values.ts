@@ -1,8 +1,8 @@
-import { transliterate } from 'transliteration';
 import dayjs from 'dayjs';
+import { transliterate } from 'transliteration';
 
-import { TemplateKeys } from '@libs/contracts/constants/templates/template-keys';
 import { USER_STATUSES_TEMPLATE } from '@libs/contracts/constants';
+import { TemplateKeys } from '@libs/contracts/constants/templates/template-keys';
 
 import { SubscriptionSettingsEntity } from '@modules/subscription-settings/entities';
 import { UserEntity } from '@modules/users/entities';
@@ -14,13 +14,29 @@ type LazyTemplateValues = {
     [key in TemplateKeys]: TemplateValueGetter;
 };
 
+type TemplateTransform = (input: string) => string;
+
 export class TemplateEngine {
     private static readonly TEMPLATE_REGEX = /\{\{(\w+)\}\}/g;
+    private static readonly BASE64_RESULT_PREFIX = 'base64:';
+
+    private static readonly TRANSFORMATIONS: ReadonlyArray<{
+        prefix: string;
+        transform: TemplateTransform;
+    }> = [
+        {
+            prefix: 'rwEncodeBase64:',
+            transform: (input) =>
+                TemplateEngine.BASE64_RESULT_PREFIX + Buffer.from(input, 'utf8').toString('base64'),
+        },
+    ];
 
     static replace(template: string, values: LazyTemplateValues): string {
+        const { body, transform } = this.parseTransform(template);
+
         let hasReplacement = false;
 
-        const result = template.replace(this.TEMPLATE_REGEX, (match, key: TemplateKeys) => {
+        const result = body.replace(this.TEMPLATE_REGEX, (match, key: TemplateKeys) => {
             const getter = values[key];
             if (getter !== undefined) {
                 hasReplacement = true;
@@ -29,19 +45,37 @@ export class TemplateEngine {
             return match;
         });
 
+        if (transform) {
+            return transform(hasReplacement ? result : body);
+        }
+
         return hasReplacement ? result : template;
     }
 
-    static formatWithUser(
-        template: string,
+    private static parseTransform(template: string): {
+        body: string;
+        transform: TemplateTransform | null;
+    } {
+        for (const { prefix, transform } of this.TRANSFORMATIONS) {
+            if (template.startsWith(prefix)) {
+                return { body: template.slice(prefix.length), transform };
+            }
+        }
+        return { body: template, transform: null };
+    }
+
+    static createUserValueMap(
         user: UserEntity,
         subscriptionSettings: SubscriptionSettingsEntity,
         subPublicDomain: string,
         forHeader: boolean = false,
-    ): string {
-        const trafficLeft = () => user.trafficLimitBytes - user.userTraffic.usedTrafficBytes;
+    ): LazyTemplateValues {
+        const trafficLeft = (): bigint =>
+            user.trafficLimitBytes === 0n
+                ? 0n
+                : user.trafficLimitBytes - user.userTraffic.usedTrafficBytes;
 
-        return this.replace(template, {
+        return {
             DAYS_LEFT: () => Math.max(0, dayjs(user.expireAt).diff(dayjs(), 'day')),
             TRAFFIC_USED: () => prettyBytesUtil(user.userTraffic.usedTrafficBytes, true, 3),
             TRAFFIC_LEFT: () => prettyBytesUtil(trafficLeft(), true, 3),
@@ -73,6 +107,20 @@ export class TemplateEngine {
                     ? user.hwidDeviceLimit
                     : (subscriptionSettings.hwidSettings.fallbackDeviceLimit ?? 0)
                 ).toString(),
-        });
+            DESCRIPTION: () => user.description ?? '',
+        };
+    }
+
+    static formatWithUser(
+        template: string,
+        user: UserEntity,
+        subscriptionSettings: SubscriptionSettingsEntity,
+        subPublicDomain: string,
+        forHeader: boolean = false,
+    ): string {
+        return this.replace(
+            template,
+            this.createUserValueMap(user, subscriptionSettings, subPublicDomain, forHeader),
+        );
     }
 }

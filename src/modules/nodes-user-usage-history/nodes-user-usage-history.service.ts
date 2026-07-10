@@ -3,16 +3,17 @@ import dayjs from 'dayjs';
 import { Injectable, Logger } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 
-import { getDateRangeArrayUtil } from '@common/utils/get-date-range-array.util';
 import { fail, ok, TResult } from '@common/types';
+import { getDateRangeArrayUtil } from '@common/utils/get-date-range-array.util';
 import { ERRORS } from '@libs/contracts/constants';
 
-import { GetUserByUniqueFieldQuery } from '@modules/users/queries/get-user-by-unique-field';
+import { GetAllNodesQuery } from '@modules/nodes/queries/get-all-nodes';
 import { GetNodeByUuidQuery } from '@modules/nodes/queries/get-node-by-uuid';
+import { GetUserByUniqueFieldQuery } from '@modules/users/queries/get-user-by-unique-field';
 
-import { NodesUserUsageHistoryRepository } from './repositories/nodes-user-usage-history.repository';
-import { GetStatsNodesUsersUsageResponseModel, GetStatsUserUsageResponseModel } from './models';
 import { IGetLegacyStatsNodesUsersUsage, IGetLegacyStatsUserUsage } from './interfaces';
+import { GetStatsNodesUsersUsageResponseModel, GetStatsUserUsageResponseModel } from './models';
+import { NodesUserUsageHistoryRepository } from './repositories/nodes-user-usage-history.repository';
 
 @Injectable()
 export class NodesUserUsageHistoryService {
@@ -150,6 +151,58 @@ export class NodesUserUsageHistoryService {
 
             const topUsers = await this.nodeUserUsageHistoryRepository.getTopNodeUsersByTraffic(
                 node.response.id,
+                startDate,
+                endDate,
+                topUsersLimit,
+            );
+
+            return ok(
+                new GetStatsNodesUsersUsageResponseModel({
+                    categories: dates,
+                    sparklineData: dailyTraffic,
+                    topUsers: topUsers,
+                }),
+            );
+        } catch (error) {
+            this.logger.error(error);
+            return fail(ERRORS.GET_USER_USAGE_BY_RANGE_ERROR);
+        }
+    }
+
+    public async getStatsNodesUsersUsageByNodesUuids(
+        nodesUuids: string[],
+        start: string,
+        end: string,
+        topUsersLimit: number,
+    ): Promise<TResult<GetStatsNodesUsersUsageResponseModel>> {
+        try {
+            const nodeIds = new Set<bigint>();
+
+            const nodes = await this.queryBus.execute(new GetAllNodesQuery());
+            if (!nodes.isOk) {
+                return fail(ERRORS.INTERNAL_SERVER_ERROR);
+            }
+
+            for (const node of nodes.response) {
+                if (nodesUuids.includes(node.uuid)) {
+                    nodeIds.add(node.id);
+                }
+            }
+
+            const { startDate, endDate, dates } = getDateRangeArrayUtil(
+                dayjs.utc(start).startOf('day').toDate(),
+                dayjs.utc(end).endOf('day').toDate(),
+            );
+
+            const dailyTraffic = await this.nodeUserUsageHistoryRepository.getNodesDailyTrafficSum(
+                Array.from(nodeIds),
+                startDate,
+                endDate,
+                dates,
+            );
+
+            const topUsers = await this.nodeUserUsageHistoryRepository.getTopNodesUsersByTraffic(
+                Array.from(nodeIds),
                 startDate,
                 endDate,
                 topUsersLimit,

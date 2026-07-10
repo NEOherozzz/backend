@@ -72,3 +72,5 @@ prisma/generated/types.ts
 f.json
 
 .claude
+
+frontend/

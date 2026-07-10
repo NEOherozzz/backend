@@ -11,6 +11,7 @@ export namespace GetStatsNodesUsageCommand {
         BANDWIDTH_STATS_ROUTES.NODES.GET,
         'get',
         'Get Nodes Usage by Range',
+        { scope: 'nodes-usage', kind: 'read' },
     );
 
     export const RequestQuerySchema = z.object({

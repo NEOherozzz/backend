@@ -12,6 +12,7 @@ export namespace CreateInternalSquadCommand {
         INTERNAL_SQUADS_ROUTES.CREATE,
         'post',
         'Create internal squad',
+        { scope: 'create', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

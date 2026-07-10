@@ -35,10 +35,9 @@ export class RecordUserUsageTask {
             await this.nodesQueuesService.recordUserUsageBulk(
                 nodesResponse.response.map((node) => ({
                     nodeUuid: node.uuid,
-                    nodeAddress: node.address,
-                    nodePort: node.port,
                     consumptionMultiplier: node.consumptionMultiplier.toString(),
                     nodeId: node.id.toString(),
+                    connectionOpts: node.connectionOpts,
                 })),
             );
 

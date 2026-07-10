@@ -11,6 +11,7 @@ export namespace GetUserMetadataCommand {
         METADATA_ROUTES.USER.GET(':uuid'),
         'get',
         'Get user metadata',
+        { scope: 'get-user', kind: 'read' },
     );
 
     export const RequestParamsSchema = z.object({

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../constants';
 import { REST_API, SYSTEM_ROUTES } from '../../api';
+import { getEndpointDetails } from '../../constants';
 
 export namespace GetRecapCommand {
     export const url = REST_API.SYSTEM.STATS.RECAP;
@@ -11,6 +11,7 @@ export namespace GetRecapCommand {
         SYSTEM_ROUTES.STATS.RECAP,
         'get',
         'Get Recap',
+        { scope: 'recap', kind: 'read' },
     );
 
     export const ResponseSchema = z.object({

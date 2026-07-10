@@ -1,7 +1,7 @@
-import { readFileSync, existsSync } from 'node:fs';
-import { z, ZodError } from 'zod';
-import { join } from 'node:path';
 import * as yaml from 'js-yaml';
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { z, ZodError } from 'zod';
 
 import { registerAs } from '@nestjs/config';
 

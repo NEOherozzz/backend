@@ -11,6 +11,7 @@ export namespace DropConnectionsCommand {
         IP_CONTROL_ROUTES.DROP_CONNECTIONS,
         'post',
         'Drop Connections for Users or IPs',
+        { scope: 'drop-connections', kind: 'write' },
     );
 
     export const DropBySchema = z.discriminatedUnion('by', [

@@ -12,6 +12,7 @@ export namespace UpdateSnippetCommand {
         SNIPPETS_ROUTES.UPDATE,
         'patch',
         'Update snippet',
+        { scope: 'update', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

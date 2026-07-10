@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../../constants';
 import { HOSTS_ROUTES, REST_API } from '../../../api';
+import { getEndpointDetails } from '../../../constants';
 import { HostsSchema } from '../../../models';
 
 export namespace BulkDisableHostsCommand {
@@ -12,6 +12,7 @@ export namespace BulkDisableHostsCommand {
         HOSTS_ROUTES.BULK.DISABLE_HOSTS,
         'post',
         'Disable hosts by UUIDs',
+        { scope: 'bulk-disable', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

@@ -101,3 +101,16 @@ export function fromNano(src: bigint | number | string) {
 export function fromNanoToNumber(src: bigint | number | string): number {
     return Number(fromNano(src));
 }
+
+export function multiplyConsumption(consumptionMultiplier: string, totalBytes: number): bigint {
+    const multiplier = BigInt(consumptionMultiplier);
+    if (multiplier === 0n) {
+        return 0n;
+    }
+
+    if (multiplier === 1000000000n) {
+        return BigInt(totalBytes);
+    }
+
+    return BigInt(Math.floor(fromNanoToNumber(multiplier) * totalBytes));
+}

@@ -13,6 +13,8 @@ export const CACHE_KEYS = {
     NODE_USERS_ONLINE: (uuid: string) => `node_users_online:${uuid}`,
     NODE_VERSIONS: (uuid: string) => `node_versions:${uuid}`,
     NODE_XRAY_UPTIME: (uuid: string) => `node_xray_uptime:${uuid}`,
+    RAW_INBOUND: (uuid: string) => `raw_inbound:${uuid}`,
+    XRAY_JSON_TEMPLATE: (uuid: string) => `xray_json_template:${uuid}`,
 } as const;
 
 export const CACHE_KEYS_TTL = {
@@ -22,6 +24,8 @@ export const CACHE_KEYS_TTL = {
     NODE_SYSTEM_STATS: 30, // 30 seconds
     NODE_USERS_ONLINE: 16, // 16 seconds
     NODE_XRAY_UPTIME: 16, // 16 seconds
+    RAW_INBOUND: 3_600, // 1 hour
+    XRAY_JSON_TEMPLATE: 3_600, // 1 hour
 } as const;
 
 export const INTERNAL_CACHE_KEYS = {

@@ -1,11 +1,11 @@
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
 import { fail, ok, TResult } from '@common/types';
 import { ERRORS } from '@libs/contracts/constants';
 
-import { SubscriptionSettingsRepository } from '../../repositories/subscription-settings.repository';
 import { SubscriptionSettingsEntity } from '../../entities/subscription-settings.entity';
+import { SubscriptionSettingsRepository } from '../../repositories/subscription-settings.repository';
 import { GetSubscriptionSettingsQuery } from './get-subscription-settings.query';
 
 @QueryHandler(GetSubscriptionSettingsQuery)

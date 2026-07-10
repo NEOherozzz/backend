@@ -1,3 +1,4 @@
+import { Body, Controller, HttpStatus, Param, Query, UseFilters, UseGuards } from '@nestjs/common';
 import {
     ApiBearerAuth,
     ApiNotFoundResponse,
@@ -6,14 +7,16 @@ import {
     ApiQuery,
     ApiTags,
 } from '@nestjs/swagger';
-import { Body, Controller, HttpStatus, Param, Query, UseFilters, UseGuards } from '@nestjs/common';
 
-import { HttpExceptionFilter } from '@common/exception/http-exception.filter';
-import { JwtDefaultGuard } from '@common/guards/jwt-guards/def-jwt-guard';
-import { errorHandler } from '@common/helpers/error-handler.helper';
 import { Endpoint } from '@common/decorators/base-endpoint';
 import { Roles } from '@common/decorators/roles/roles';
+import { ApiScopeResource } from '@common/decorators/scopes';
+import { HttpExceptionFilter } from '@common/exception/http-exception.filter';
+import { JwtDefaultGuard } from '@common/guards/jwt-guards/def-jwt-guard';
 import { RolesGuard } from '@common/guards/roles';
+import { ScopesGuard } from '@common/guards/scopes';
+import { errorHandler } from '@common/helpers/error-handler.helper';
+import { CONTROLLERS_INFO, HWID_CONTROLLER } from '@libs/contracts/api';
 import {
     CreateUserHwidDeviceCommand,
     DeleteAllUserHwidDevicesCommand,
@@ -23,7 +26,6 @@ import {
     GetTopUsersByHwidDevicesCommand,
     GetUserHwidDevicesCommand,
 } from '@libs/contracts/commands';
-import { CONTROLLERS_INFO, HWID_CONTROLLER } from '@libs/contracts/api';
 import { ROLE } from '@libs/contracts/constants';
 
 import {
@@ -41,13 +43,14 @@ import {
     GetUserHwidDevicesRequestDto,
     GetUserHwidDevicesResponseDto,
 } from './dtos';
-import { BaseUserHwidDevicesResponseModel, GetAllHwidDevicesResponseModel } from './models';
 import { HwidUserDevicesService } from './hwid-user-devices.service';
+import { BaseUserHwidDevicesResponseModel, GetAllHwidDevicesResponseModel } from './models';
 
 @ApiBearerAuth('Authorization')
+@ApiScopeResource(CONTROLLERS_INFO.HWID_USER_DEVICES.resource)
 @ApiTags(CONTROLLERS_INFO.HWID_USER_DEVICES.tag)
 @Roles(ROLE.ADMIN, ROLE.API)
-@UseGuards(JwtDefaultGuard, RolesGuard)
+@UseGuards(JwtDefaultGuard, RolesGuard, ScopesGuard)
 @UseFilters(HttpExceptionFilter)
 @Controller(HWID_CONTROLLER)
 export class HwidUserDevicesController {

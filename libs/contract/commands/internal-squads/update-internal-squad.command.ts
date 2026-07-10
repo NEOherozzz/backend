@@ -12,6 +12,7 @@ export namespace UpdateInternalSquadCommand {
         INTERNAL_SQUADS_ROUTES.UPDATE,
         'patch',
         'Update internal squad',
+        { scope: 'update', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

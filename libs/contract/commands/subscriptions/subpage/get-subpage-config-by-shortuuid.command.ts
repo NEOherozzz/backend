@@ -11,6 +11,7 @@ export namespace GetSubpageConfigByShortUuidCommand {
         SUBSCRIPTIONS_ROUTES.SUBPAGE.GET_CONFIG(':shortUuid'),
         'get',
         'Get Subpage Config by Short UUID',
+        { scope: 'subpage-config', kind: 'read' },
     );
 
     export const RequestSchema = z.object({

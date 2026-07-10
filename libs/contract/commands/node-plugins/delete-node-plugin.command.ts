@@ -11,6 +11,7 @@ export namespace DeleteNodePluginCommand {
         NODE_PLUGINS_ROUTES.DELETE(':uuid'),
         'delete',
         'Delete Node Plugin',
+        { scope: 'delete', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

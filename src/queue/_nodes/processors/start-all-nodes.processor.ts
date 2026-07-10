@@ -4,8 +4,8 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger, Scope } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 
-import { FindNodesByCriteriaQuery } from '@modules/nodes/queries/find-nodes-by-criteria';
 import { NodesEntity } from '@modules/nodes';
+import { FindNodesByCriteriaQuery } from '@modules/nodes/queries/find-nodes-by-criteria';
 
 import { NodesQueuesService } from '@queue/_nodes';
 

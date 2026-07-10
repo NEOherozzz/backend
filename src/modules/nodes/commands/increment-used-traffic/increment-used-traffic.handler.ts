@@ -1,8 +1,8 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { IncrementUsedTrafficCommand } from './increment-used-traffic.command';
 import { NodesRepository } from '../../repositories/nodes.repository';
+import { IncrementUsedTrafficCommand } from './increment-used-traffic.command';
 
 @CommandHandler(IncrementUsedTrafficCommand)
 export class IncrementUsedTrafficHandler implements ICommandHandler<IncrementUsedTrafficCommand> {

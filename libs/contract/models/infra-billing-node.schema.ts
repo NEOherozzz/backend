@@ -5,7 +5,8 @@ import { NodesSchema } from './nodes.schema';
 
 export const InfraBillingNodeSchema = z.object({
     uuid: z.string().uuid(),
-    nodeUuid: z.string().uuid(),
+    nodeUuid: z.string().uuid().nullable(),
+    name: z.string().nullable(),
     providerUuid: z.string().uuid(),
     provider: PartialInfraProviderSchema.pick({
         uuid: true,
@@ -18,7 +19,8 @@ export const InfraBillingNodeSchema = z.object({
         uuid: true,
         name: true,
         countryCode: true,
-    }),
+    }).nullable(),
+
     nextBillingAt: z
         .string()
         .datetime()

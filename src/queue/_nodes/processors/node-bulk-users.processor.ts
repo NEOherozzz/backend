@@ -7,6 +7,7 @@ import { AxiosService } from '@common/axios';
 
 import { QUEUES_NAMES } from '@queue/queue.enum';
 
+import { NODES_JOB_NAMES } from '../constants/nodes-job-name.constant';
 import {
     IAddUsersToNodePayload,
     IDropIpsConnectionsPayload,
@@ -18,7 +19,6 @@ import {
     IRecreateTablesPayload,
     IUnblockIpsPayload,
 } from '../interfaces/executor.payload.interface';
-import { NODES_JOB_NAMES } from '../constants/nodes-job-name.constant';
 
 @Processor(QUEUES_NAMES.NODES.BULK_USERS, {
     concurrency: 25,
@@ -56,7 +56,7 @@ export class NodeBulkUsersQueueProcessor extends WorkerHost {
     private async handleAddUsersToNode(job: Job<IAddUsersToNodePayload>) {
         try {
             const { data, node } = job.data;
-            const result = await this.axios.addUsers(data, node.address, node.port);
+            const result = await this.axios.addUsers(data, node);
 
             if (!result.isOk) {
                 this.logger.error(
@@ -76,7 +76,7 @@ export class NodeBulkUsersQueueProcessor extends WorkerHost {
     private async handleRemoveUsersFromNode(job: Job<IRemoveUsersFromNodePayload>) {
         try {
             const { data, node } = job.data;
-            const result = await this.axios.deleteUsers(data, node.address, node.port);
+            const result = await this.axios.deleteUsers(data, node);
 
             if (!result.isOk) {
                 this.logger.error(
@@ -96,7 +96,7 @@ export class NodeBulkUsersQueueProcessor extends WorkerHost {
     private async handleDropUsersConnections(job: Job<IDropUsersConnectionsPayload>) {
         try {
             const { data, node } = job.data;
-            const result = await this.axios.dropUsersConnections(data, node.address, node.port);
+            const result = await this.axios.dropUsersConnections(data, node);
 
             if (!result.isOk) {
                 this.logger.error(
@@ -115,7 +115,7 @@ export class NodeBulkUsersQueueProcessor extends WorkerHost {
     private async handleDropIpsConnections(job: Job<IDropIpsConnectionsPayload>) {
         try {
             const { data, node } = job.data;
-            const result = await this.axios.dropIpsConnections(data, node.address, node.port);
+            const result = await this.axios.dropIpsConnections(data, node);
 
             if (!result.isOk) {
                 this.logger.error(
@@ -134,7 +134,7 @@ export class NodeBulkUsersQueueProcessor extends WorkerHost {
     private async handleBlockIps(job: Job<IBlockIpsPayload>) {
         try {
             const { data, node } = job.data;
-            const result = await this.axios.blockIps(data, node.address, node.port);
+            const result = await this.axios.blockIps(data, node);
 
             if (!result.isOk) {
                 this.logger.error(
@@ -152,7 +152,7 @@ export class NodeBulkUsersQueueProcessor extends WorkerHost {
     private async handleUnblockIps(job: Job<IUnblockIpsPayload>) {
         try {
             const { data, node } = job.data;
-            const result = await this.axios.unblockIps(data, node.address, node.port);
+            const result = await this.axios.unblockIps(data, node);
 
             if (!result.isOk) {
                 this.logger.error(
@@ -170,7 +170,7 @@ export class NodeBulkUsersQueueProcessor extends WorkerHost {
     private async handleRecreateTables(job: Job<IRecreateTablesPayload>) {
         try {
             const { node } = job.data;
-            const result = await this.axios.recreateTables(node.address, node.port);
+            const result = await this.axios.recreateTables(node);
 
             if (!result.isOk) {
                 this.logger.error(

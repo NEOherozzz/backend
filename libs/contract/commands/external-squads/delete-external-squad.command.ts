@@ -11,6 +11,7 @@ export namespace DeleteExternalSquadCommand {
         EXTERNAL_SQUADS_ROUTES.DELETE(':uuid'),
         'delete',
         'Delete external squad',
+        { scope: 'delete', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

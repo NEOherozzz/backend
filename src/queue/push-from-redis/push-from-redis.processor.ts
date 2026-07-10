@@ -1,19 +1,19 @@
 import { Job } from 'bullmq';
 
-import { Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { ConfigService } from '@nestjs/config';
+import { Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 
+import { TypedConfigService } from '@common/config/app-config';
 import { RawCacheService } from '@common/raw-cache';
 import { INTERNAL_CACHE_KEYS } from '@libs/contracts/constants';
 
 import { BulkUpsertUserHistoryEntryCommand } from '@modules/nodes-user-usage-history/commands/bulk-upsert-user-history-entry';
 import { NodesUserUsageHistoryEntity } from '@modules/nodes-user-usage-history/entities';
 
-import { IRecordUserUsageFromRedisPayload } from './interfaces';
-import { PushFromRedisJobNames } from './enums';
 import { QUEUES_NAMES } from '../queue.enum';
+import { PushFromRedisJobNames } from './enums';
+import { IRecordUserUsageFromRedisPayload } from './interfaces';
 
 @Processor(QUEUES_NAMES.PUSH_TO_DB, {
     concurrency: 10,
@@ -29,11 +29,11 @@ export class PushFromRedisQueueProcessor extends WorkerHost implements OnApplica
     constructor(
         private readonly commandBus: CommandBus,
         private readonly rawCacheService: RawCacheService,
-        private readonly configService: ConfigService,
+        private readonly configService: TypedConfigService,
     ) {
         super();
 
-        this.disableUserUsageRecords = this.configService.getOrThrow<boolean>(
+        this.disableUserUsageRecords = this.configService.getOrThrow(
             'SERVICE_DISABLE_USER_USAGE_RECORDS',
         );
     }

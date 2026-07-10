@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 import { REST_API, SUBSCRIPTION_PAGE_CONFIGS_ROUTES } from '../../../api';
-import { SubscriptionPageConfigSchema } from '../../../models';
 import { getEndpointDetails } from '../../../constants';
+import { SubscriptionPageConfigSchema } from '../../../models';
 
 export namespace CloneSubscriptionPageConfigCommand {
     export const url = REST_API.SUBSCRIPTION_PAGE_CONFIGS.ACTIONS.CLONE;
@@ -12,6 +12,7 @@ export namespace CloneSubscriptionPageConfigCommand {
         SUBSCRIPTION_PAGE_CONFIGS_ROUTES.ACTIONS.CLONE,
         'post',
         'Clone subscription page config',
+        { scope: 'clone', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

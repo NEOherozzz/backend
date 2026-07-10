@@ -3,9 +3,10 @@ import { ConfigModule } from '@nestjs/config';
 
 import { validateEnvConfig } from '@common/utils/validate-env-config';
 
-import { NotificationsConfigService } from './notifications-config.service';
-import notificationsConfig from '../app-config/notifications.config';
 import { configSchema, Env } from '../app-config';
+import notificationsConfig from '../app-config/notifications.config';
+import { TypedConfigService } from '../app-config/typed-config.service';
+import { NotificationsConfigService } from './notifications-config.service';
 
 @Global()
 @Module({
@@ -18,7 +19,7 @@ import { configSchema, Env } from '../app-config';
             load: [notificationsConfig],
         }),
     ],
-    providers: [NotificationsConfigService],
-    exports: [NotificationsConfigService],
+    providers: [NotificationsConfigService, TypedConfigService],
+    exports: [NotificationsConfigService, TypedConfigService],
 })
 export class CommonConfigModule {}

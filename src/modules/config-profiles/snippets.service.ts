@@ -5,9 +5,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { fail, ok, TResult } from '@common/types';
 import { ERRORS } from '@libs/contracts/constants/errors';
 
-import { SnippetsRepository } from './repositories/snippets.repository';
-import { GetSnippetsResponseModel } from './models';
 import { SnippetEntity } from './entities';
+import { GetSnippetsResponseModel } from './models';
+import { SnippetsRepository } from './repositories/snippets.repository';
 
 @Injectable()
 export class SnippetsService {

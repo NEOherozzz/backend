@@ -11,21 +11,20 @@ process.env.REDIS_HOST = 'localhost';
 process.env.REDIS_PORT = '6379';
 process.env.INSTANCE_TYPE = 'api';
 
-import { utilities as nestWinstonModuleUtilities, WinstonModule } from 'nest-winston';
-import { patchNestJsSwagger, ZodValidationPipe } from 'nestjs-zod';
+import { ROOT } from '@contract/api';
+import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+import { utilities as nestWinstonModuleUtilities, WinstonModule } from 'nest-winston';
+import { patchNestJsSwagger, ZodValidationPipe } from 'nestjs-zod';
 import { createLogger } from 'winston';
 import * as winston from 'winston';
-import utc from 'dayjs/plugin/utc';
-import dayjs from 'dayjs';
-
-import { ROOT } from '@contract/api';
 
 import { NestFactory } from '@nestjs/core';
 
-import { ghActionsDocs } from '@common/utils/startup-app/gh-actions-docs';
 import { isDevelopment } from '@common/utils/startup-app';
+import { ghActionsDocs } from '@common/utils/startup-app/gh-actions-docs';
 
 import { AppModule } from '../../app.module';
 

@@ -1,14 +1,17 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../constants';
 import { NODES_ROUTES, REST_API } from '../../api';
+import { getEndpointDetails } from '../../constants';
 import { NodesSchema } from '../../models';
 
 export namespace UpdateNodeCommand {
     export const url = REST_API.NODES.UPDATE;
     export const TSQ_url = url;
 
-    export const endpointDetails = getEndpointDetails(NODES_ROUTES.UPDATE, 'patch', 'Update node');
+    export const endpointDetails = getEndpointDetails(NODES_ROUTES.UPDATE, 'patch', 'Update node', {
+        scope: 'update',
+        kind: 'write',
+    });
 
     export const RequestSchema = NodesSchema.pick({
         uuid: true,
@@ -21,6 +24,14 @@ export namespace UpdateNodeCommand {
                 .min(1, 'Port must be greater than 0')
                 .max(65535, 'Port must be less than 65535'),
         ),
+        proxyUrl: z
+            .string()
+            .regex(
+                /^socks5:\/\/(?:[^:@/\s]+(?::[^@/\s]*)?@)?[^:@/\s]+:\d{1,5}$/,
+                'Expected socks5://[user:pass@]host:port',
+            )
+            .nullable()
+            .optional(),
         isTrafficTrackingActive: z.optional(z.boolean()),
         trafficLimitBytes: z.optional(z.number().min(0, 'Traffic limit must be greater than 0')),
         notifyPercent: z.optional(
@@ -43,6 +54,13 @@ export namespace UpdateNodeCommand {
                 .number()
                 .min(0.0, 'Consumption multiplier must be greater than 0.0')
                 .max(100.0, 'Consumption multiplier must be less than 100.0')
+                .transform((n) => Number(n.toFixed(1))),
+        ),
+        nodeConsumptionMultiplier: z.optional(
+            z
+                .number()
+                .min(0.0, 'Node consumption multiplier must be greater than 0.0')
+                .max(100.0, 'Node consumption multiplier must be less than 100.0')
                 .transform((n) => Number(n.toFixed(1))),
         ),
         configProfile: z
@@ -69,6 +87,7 @@ export namespace UpdateNodeCommand {
                 .max(10, 'Maximum 10 tags'),
         ),
         activePluginUuid: z.optional(z.nullable(z.string().uuid())),
+        note: z.optional(z.string().max(255, 'Note must be less than 255 characters').nullable()),
     });
 
     export type Request = z.infer<typeof RequestSchema>;

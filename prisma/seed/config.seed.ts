@@ -1,10 +1,11 @@
-import relativeTime from 'dayjs/plugin/relativeTime';
+import 'reflect-metadata';
 import { PrismaClient } from '@prisma/client';
+import consola from 'consola';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { Redis } from 'ioredis';
-import consola from 'consola';
-import dayjs from 'dayjs';
 
 import { getRedisConnectionOptions } from '@common/utils';
 

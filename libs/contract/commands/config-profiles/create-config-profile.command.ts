@@ -12,6 +12,7 @@ export namespace CreateConfigProfileCommand {
         CONFIG_PROFILES_ROUTES.CREATE,
         'post',
         'Create config profile',
+        { scope: 'create', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

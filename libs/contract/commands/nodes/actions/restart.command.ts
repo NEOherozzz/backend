@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../../constants';
 import { NODES_ROUTES, REST_API } from '../../../api';
+import { getEndpointDetails } from '../../../constants';
 
 export namespace RestartNodeCommand {
     export const url = REST_API.NODES.ACTIONS.RESTART;
@@ -11,6 +11,7 @@ export namespace RestartNodeCommand {
         NODES_ROUTES.ACTIONS.RESTART(':uuid'),
         'post',
         'Restart node',
+        { scope: 'restart', kind: 'write' },
     );
 
     export const RequestSchema = z.object({
@@ -18,6 +19,12 @@ export namespace RestartNodeCommand {
     });
 
     export type Request = z.infer<typeof RequestSchema>;
+
+    export const RequestBodySchema = z.object({
+        forceRestart: z.boolean(),
+    });
+
+    export type RequestBody = z.infer<typeof RequestBodySchema>;
 
     export const ResponseSchema = z.object({
         response: z.object({

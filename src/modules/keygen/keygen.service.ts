@@ -1,12 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-import { encodeCertPayload } from '@common/utils/certs/encode-node-payload';
 import { fail, ok, TResult } from '@common/types';
 import { generateNodeCert } from '@common/utils';
+import { encodeCertPayload } from '@common/utils/certs/encode-node-payload';
 import { ERRORS } from '@libs/contracts/constants/errors';
 
-import { KeygenRepository } from './repositories/keygen.repository';
 import { KeygenEntity } from './entities/keygen.entity';
+import { KeygenRepository } from './repositories/keygen.repository';
 
 @Injectable()
 export class KeygenService {

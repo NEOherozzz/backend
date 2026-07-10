@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
+import { REST_API, USERS_ROUTES } from '../../../api';
 import { getEndpointDetails } from '../../../constants';
 import { ExtendedUsersSchema } from '../../../models';
-import { REST_API, USERS_ROUTES } from '../../../api';
 
 export namespace GetUserByShortUuidCommand {
     export const url = REST_API.USERS.GET_BY.SHORT_UUID;
@@ -12,6 +12,7 @@ export namespace GetUserByShortUuidCommand {
         USERS_ROUTES.GET_BY.SHORT_UUID(':shortUuid'),
         'get',
         'Get user by Short UUID',
+        { scope: 'by-short-uuid', kind: 'read' },
     );
 
     export const RequestSchema = z.object({

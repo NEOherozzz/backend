@@ -1,5 +1,5 @@
-import { CqrsModule } from '@nestjs/cqrs';
 import { Module } from '@nestjs/common';
+import { CqrsModule } from '@nestjs/cqrs';
 
 import { IpControlController } from './ip-control.controller';
 import { IpControlService } from './ip-control.service';

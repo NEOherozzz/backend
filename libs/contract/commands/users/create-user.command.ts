@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
+import { REST_API, USERS_ROUTES } from '../../api';
 import { getEndpointDetails, RESET_PERIODS, USERS_STATUS } from '../../constants';
 import { ExtendedUsersSchema, UsersSchema } from '../../models';
-import { REST_API, USERS_ROUTES } from '../../api';
 
 export namespace CreateUserCommand {
     export const url = REST_API.USERS.CREATE;
@@ -12,6 +12,7 @@ export namespace CreateUserCommand {
         USERS_ROUTES.CREATE,
         'post',
         'Create a new user',
+        { scope: 'create', kind: 'write' },
     );
 
     export const RequestSchema = z.object({
@@ -66,7 +67,6 @@ export namespace CreateUserCommand {
             .number({
                 invalid_type_error: 'Traffic limit must be a number',
             })
-            .int('Traffic limit must be an integer')
             .min(0, 'Traffic limit must be greater than 0')
             .optional()
             .describe('Optional. Traffic limit in bytes. Set to 0 for unlimited traffic.'),

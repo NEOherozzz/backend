@@ -2,14 +2,14 @@ import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { BullBoardModule } from '@bull-board/nestjs';
 
 import { BullModule } from '@nestjs/bullmq';
-import { CqrsModule } from '@nestjs/cqrs';
 import { Module } from '@nestjs/common';
+import { CqrsModule } from '@nestjs/cqrs';
 
 import { useBullBoard, useQueueProcessor } from '@common/utils/startup-app';
 
+import { QUEUES_NAMES } from '../queue.enum';
 import { PushFromRedisQueueProcessor } from './push-from-redis.processor';
 import { PushFromRedisQueueService } from './push-from-redis.service';
-import { QUEUES_NAMES } from '../queue.enum';
 
 const requiredModules = [CqrsModule];
 

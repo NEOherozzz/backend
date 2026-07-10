@@ -1,6 +1,6 @@
 import { Prisma, PrismaClient } from '@prisma/client';
-import isEqual from 'lodash/isEqual';
 import consola from 'consola';
+import isEqual from 'lodash/isEqual';
 
 import { XRayConfig } from '@common/helpers/xray-config';
 

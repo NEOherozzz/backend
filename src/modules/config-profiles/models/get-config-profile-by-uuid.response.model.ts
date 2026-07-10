@@ -1,5 +1,5 @@
-import { ConfigProfileInboundEntity } from '../entities/config-profile-inbound.entity';
 import { ConfigProfileWithInboundsAndNodesEntity } from '../entities';
+import { ConfigProfileInboundEntity } from '../entities/config-profile-inbound.entity';
 
 export class GetConfigProfileByUuidResponseModel {
     public readonly uuid: string;

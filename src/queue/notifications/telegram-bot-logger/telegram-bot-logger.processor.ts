@@ -1,47 +1,50 @@
-import { Context, GrammyError, InlineKeyboard } from 'grammy';
-import { InjectBot } from '@kastov/grammy-nestjs';
-import { parseMode } from '@grammyjs/parse-mode';
 import { Job } from 'bullmq';
-import { Bot } from 'grammy';
 
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { Logger, Optional } from '@nestjs/common';
+import { Logger, OnModuleInit, Optional } from '@nestjs/common';
 
-import { BOT_NAME } from '@integration-modules/notifications/telegram-bot/constants';
+import { TelegramApiError } from '@integration-modules/notifications/telegram-bot/telegram-api.error';
+import { TelegramApiService } from '@integration-modules/notifications/telegram-bot/telegram-api.service';
 
-import { TelegramBotLoggerQueueService } from './telegram-bot-logger.service';
-import { IInlineKeyboard } from './interfaces/inline-keyboard.interface';
+import { QUEUES_NAMES } from '../../queue.enum';
 import { TelegramBotLoggerJobNames } from './enums';
 import { IMessageEventPayload } from './interfaces';
-import { QUEUES_NAMES } from '../../queue.enum';
+import { TelegramBotLoggerQueueService } from './telegram-bot-logger.service';
 
 @Processor(QUEUES_NAMES.NOTIFICATIONS.TELEGRAM, {
     concurrency: 100,
+    autorun: false,
     limiter: {
         max: 20,
         duration: 1_000,
     },
 })
-export class TelegramBotLoggerQueueProcessor extends WorkerHost {
+export class TelegramBotLoggerQueueProcessor extends WorkerHost implements OnModuleInit {
     private readonly logger = new Logger(TelegramBotLoggerQueueProcessor.name);
 
     constructor(
         @Optional()
-        @InjectBot(BOT_NAME)
-        private readonly bot: Bot<Context>,
+        private readonly telegramApiService: TelegramApiService,
         private readonly telegramBotLoggerQueueService: TelegramBotLoggerQueueService,
     ) {
         super();
-        if (this.bot) {
-            this.bot.api.config.use(parseMode('html'));
+    }
+
+    async onModuleInit() {
+        if (!this.telegramApiService) return;
+
+        const isHealthy = await this.telegramApiService.healthcheck();
+        if (!isHealthy) {
+            this.logger.error('Telegram API is not healthy. Worker will not start.');
+            return;
         }
+
+        this.worker.run();
     }
 
     async process(job: Job) {
-        if (!this.bot) {
-            this.logger.debug(
-                `Bot is not initialized. Skipping job "${job.name}" with ID: ${job?.id || ''}`,
-            );
+        if (!this.telegramApiService) {
+            this.logger.error('Telegram API is not healthy. Skipping job.');
             return;
         }
 
@@ -57,47 +60,20 @@ export class TelegramBotLoggerQueueProcessor extends WorkerHost {
     private async handleSendTelegramMessage(job: Job<IMessageEventPayload>) {
         const { message, chatId, threadId, keyboard } = job.data;
 
-        const replyMarkup = this.buildReplyMarkup(keyboard);
-
         try {
-            await this.bot.api.sendMessage(chatId, message, {
-                link_preview_options: {
-                    is_disabled: true,
-                },
-                ...(threadId ? { message_thread_id: parseInt(threadId, 10) } : {}),
-                ...(replyMarkup && { reply_markup: replyMarkup }),
+            await this.telegramApiService.sendMessage(chatId, message, {
+                threadId: threadId ? parseInt(threadId, 10) : undefined,
+                keyboard,
             });
         } catch (error) {
-            if (error instanceof GrammyError) {
-                if (error.error_code === 429) {
-                    const retryAfter = error.parameters.retry_after;
-                    if (retryAfter) {
-                        this.logger.warn(`Rate limit exceeded. Retrying in ${retryAfter} seconds.`);
-                        await this.telegramBotLoggerQueueService.rateLimit(retryAfter);
-                        return;
-                    }
-                }
+            if (error instanceof TelegramApiError && error.retryAfter) {
+                this.logger.warn(`Rate limit exceeded. Retrying in ${error.retryAfter} seconds.`);
+                await this.telegramBotLoggerQueueService.rateLimit(error.retryAfter);
+                return;
             }
             this.logger.error(
                 `Error handling "${TelegramBotLoggerJobNames.sendTelegramMessage}" job: ${error}`,
             );
         }
-    }
-
-    private buildReplyMarkup(keyboard?: IInlineKeyboard[]): InlineKeyboard | undefined {
-        if (!keyboard || !keyboard.length) return undefined;
-
-        return InlineKeyboard.from(
-            keyboard.map((item) => [
-                InlineKeyboard.url(
-                    {
-                        text: item.text,
-                        ...(item.customEmoji && { icon_custom_emoji_id: item.customEmoji }),
-                        ...(item.style && { style: item.style }),
-                    },
-                    item.url,
-                ),
-            ]),
-        );
     }
 }

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../constants';
 import { NODES_ROUTES, REST_API } from '../../api';
+import { getEndpointDetails } from '../../constants';
 import { NodesSchema } from '../../models';
 
 export namespace GetOneNodeCommand {
@@ -12,6 +12,7 @@ export namespace GetOneNodeCommand {
         NODES_ROUTES.GET_BY_UUID(':uuid'),
         'get',
         'Get node by UUID',
+        { scope: 'get', kind: 'read' },
     );
 
     export const RequestSchema = z.object({

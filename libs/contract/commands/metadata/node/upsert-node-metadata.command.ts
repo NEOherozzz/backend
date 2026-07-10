@@ -11,6 +11,7 @@ export namespace UpsertNodeMetadataCommand {
         METADATA_ROUTES.NODE.UPSERT(':uuid'),
         'put',
         'Update or create Node Metadata',
+        { scope: 'upsert-node', kind: 'write' },
     );
 
     export const RequestParamsSchema = z.object({

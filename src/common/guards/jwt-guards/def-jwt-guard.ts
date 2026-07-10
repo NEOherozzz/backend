@@ -1,6 +1,6 @@
 import { ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { QueryBus } from '@nestjs/cqrs';
+import { AuthGuard } from '@nestjs/passport';
 
 import { RawCacheService } from '@common/raw-cache';
 import { TResult } from '@common/types';
@@ -10,10 +10,10 @@ import {
     ROLE,
 } from '@libs/contracts/constants';
 
-import { GetAdminByUsernameQuery } from '@modules/admin/queries/get-admin-by-username';
-import { GetTokenByUuidQuery } from '@modules/api-tokens/queries/get-token-by-uuid';
-import { ApiTokenEntity } from '@modules/api-tokens/entities/api-token.entity';
 import { AdminEntity } from '@modules/admin/entities/admin.entity';
+import { GetAdminByUsernameQuery } from '@modules/admin/queries/get-admin-by-username';
+import { ApiTokenEntity } from '@modules/api-tokens/entities/api-token.entity';
+import { GetTokenByUuidQuery } from '@modules/api-tokens/queries/get-token-by-uuid';
 import { IJWTAuthPayload } from '@modules/auth/interfaces';
 
 @Injectable()
@@ -39,7 +39,7 @@ export class JwtDefaultGuard extends AuthGuard('registeredUserJWT') {
 
         switch (user.role) {
             case ROLE.API: {
-                return await this.verifyApiToken(user.uuid);
+                return await this.verifyApiToken(user, user.uuid);
             }
 
             case ROLE.ADMIN: {
@@ -88,9 +88,10 @@ export class JwtDefaultGuard extends AuthGuard('registeredUserJWT') {
         );
     }
 
-    private async verifyApiToken(apiTokenUuid: string): Promise<boolean> {
-        const cached = await this.rawCacheService.get<string>(`api:${apiTokenUuid}`);
+    private async verifyApiToken(user: IJWTAuthPayload, apiTokenUuid: string): Promise<boolean> {
+        const cached = await this.rawCacheService.get<string[]>(`api:${apiTokenUuid}`);
         if (cached) {
+            user.scopes = cached;
             return true;
         }
 
@@ -99,7 +100,10 @@ export class JwtDefaultGuard extends AuthGuard('registeredUserJWT') {
             return false;
         }
 
-        await this.rawCacheService.set(`api:${apiTokenUuid}`, '1', 3600);
+        const scopes = token.response.scopes ?? [];
+
+        await this.rawCacheService.set(`api:${apiTokenUuid}`, scopes, 3600);
+        user.scopes = scopes;
         return true;
     }
 }

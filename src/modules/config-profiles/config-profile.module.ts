@@ -1,14 +1,14 @@
-import { CqrsModule } from '@nestjs/cqrs';
 import { Module } from '@nestjs/common';
+import { CqrsModule } from '@nestjs/cqrs';
 
-import { ConfigProfileRepository } from './repositories/config-profile.repository';
-import { ConfigProfileConverter, SnippetsConverter } from './converters';
-import { SnippetsRepository } from './repositories/snippets.repository';
 import { ConfigProfileController } from './config-profile.controller';
 import { ConfigProfileService } from './config-profile.service';
+import { ConfigProfileConverter, SnippetsConverter } from './converters';
+import { QUERIES } from './queries';
+import { ConfigProfileRepository } from './repositories/config-profile.repository';
+import { SnippetsRepository } from './repositories/snippets.repository';
 import { SnippetsController } from './snippets.controller';
 import { SnippetsService } from './snippets.service';
-import { QUERIES } from './queries';
 
 @Module({
     imports: [CqrsModule],

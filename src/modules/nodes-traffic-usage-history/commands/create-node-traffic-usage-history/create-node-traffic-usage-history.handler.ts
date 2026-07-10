@@ -1,5 +1,5 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { NodesTrafficUsageHistoryRepository } from '../../repositories/nodes-traffic-usage-history.repository';
 import { CreateNodeTrafficUsageHistoryCommand } from './create-node-traffic-usage-history.command';

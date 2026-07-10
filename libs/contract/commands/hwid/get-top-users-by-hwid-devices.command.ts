@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../constants';
 import { HWID_ROUTES, REST_API } from '../../api';
+import { getEndpointDetails } from '../../constants';
 
 export namespace GetTopUsersByHwidDevicesCommand {
     export const url = REST_API.HWID.TOP_USERS_BY_DEVICES;
@@ -11,6 +11,7 @@ export namespace GetTopUsersByHwidDevicesCommand {
         HWID_ROUTES.TOP_USERS_BY_DEVICES,
         'get',
         'Get top users by HWID devices',
+        { scope: 'top-users', kind: 'read' },
     );
 
     export const RequestQuerySchema = z.object({

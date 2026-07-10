@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 
-import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Injectable, Logger } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Cron } from '@nestjs/schedule';
 
 import { TResult } from '@common/types';
@@ -9,8 +9,8 @@ import { TResult } from '@common/types';
 import { CreateNodeTrafficUsageHistoryCommand } from '@modules/nodes-traffic-usage-history/commands/create-node-traffic-usage-history';
 import { NodesTrafficUsageHistoryEntity } from '@modules/nodes-traffic-usage-history/entities/nodes-traffic-usage-history.entity';
 import { UpdateNodeCommand } from '@modules/nodes/commands/update-node';
-import { GetAllNodesQuery } from '@modules/nodes/queries/get-all-nodes';
 import { NodesEntity } from '@modules/nodes/entities/nodes.entity';
+import { GetAllNodesQuery } from '@modules/nodes/queries/get-all-nodes';
 
 import { JOBS_INTERVALS } from '@scheduler/intervals';
 

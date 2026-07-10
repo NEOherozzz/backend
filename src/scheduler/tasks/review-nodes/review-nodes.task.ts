@@ -1,14 +1,14 @@
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
 import { QueryBus } from '@nestjs/cqrs';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Cron } from '@nestjs/schedule';
 
 import { EVENTS } from '@libs/contracts/constants/events/events';
 
 import { NodeEvent } from '@integration-modules/notifications/interfaces';
 
-import { GetEnabledNodesQuery } from '@modules/nodes/queries/get-enabled-nodes/get-enabled-nodes.query';
 import { NodesEntity } from '@modules/nodes/entities/nodes.entity';
+import { GetEnabledNodesQuery } from '@modules/nodes/queries/get-enabled-nodes/get-enabled-nodes.query';
 
 import { JOBS_INTERVALS } from '../../intervals';
 

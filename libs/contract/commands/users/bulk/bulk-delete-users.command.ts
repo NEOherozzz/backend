@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../../constants';
 import { REST_API, USERS_ROUTES } from '../../../api';
+import { getEndpointDetails } from '../../../constants';
 
 export namespace BulkDeleteUsersCommand {
     export const url = REST_API.USERS.BULK.DELETE;
@@ -11,6 +11,7 @@ export namespace BulkDeleteUsersCommand {
         USERS_ROUTES.BULK.DELETE,
         'post',
         'Bulk delete users by UUIDs',
+        { scope: 'bulk-delete', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

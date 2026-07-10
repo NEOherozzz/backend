@@ -1,18 +1,18 @@
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { BullBoardModule } from '@bull-board/nestjs';
 
-import { ConditionalModule } from '@nestjs/config';
-import { BullModule } from '@nestjs/bullmq';
 import { HttpModule } from '@nestjs/axios';
+import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
+import { ConditionalModule } from '@nestjs/config';
 
 import { useBullBoard, useQueueProcessor } from '@common/utils/startup-app';
 
 import { WebhookModule } from '@integration-modules/notifications/webhook-module/webhook.module';
 
+import { QUEUES_NAMES } from '../../queue.enum';
 import { WebhookLoggerQueueProcessor } from './webhook-logger.processor';
 import { WebhookLoggerQueueService } from './webhook-logger.service';
-import { QUEUES_NAMES } from '../../queue.enum';
 
 const requiredModules = [
     HttpModule,

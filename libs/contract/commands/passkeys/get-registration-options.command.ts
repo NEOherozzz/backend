@@ -11,6 +11,7 @@ export namespace GetPasskeyRegistrationOptionsCommand {
         PASSKEYS_ROUTES.GET_REGISTRATION_OPTIONS,
         'get',
         'Get registration options for passkey',
+        { scope: 'registration-options', kind: 'read' },
     );
 
     export const ResponseSchema = z.object({

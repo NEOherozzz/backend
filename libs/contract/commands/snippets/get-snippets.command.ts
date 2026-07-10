@@ -8,7 +8,10 @@ export namespace GetSnippetsCommand {
     export const url = REST_API.SNIPPETS.GET;
     export const TSQ_url = url;
 
-    export const endpointDetails = getEndpointDetails(SNIPPETS_ROUTES.GET, 'get', 'Get snippets');
+    export const endpointDetails = getEndpointDetails(SNIPPETS_ROUTES.GET, 'get', 'Get snippets', {
+        scope: 'list',
+        kind: 'read',
+    });
 
     export const ResponseSchema = z.object({
         response: z.object({

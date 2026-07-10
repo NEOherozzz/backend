@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { TanstackQuerySortingSchema } from './tanstask-query-sorting.schema';
 import { TanstackQueryFilterSchema } from './tanstask-query-filter.schema';
+import { TanstackQuerySortingSchema } from './tanstask-query-sorting.schema';
 
 export const TanstackQueryRequestQuerySchema = z.object({
     start: z.coerce

@@ -11,6 +11,7 @@ export namespace DeletePasskeyCommand {
         PASSKEYS_ROUTES.DELETE_PASSKEY,
         'delete',
         'Delete a passkey by ID',
+        { scope: 'delete', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

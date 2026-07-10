@@ -1,5 +1,5 @@
-import { NextFunction, Request, Response } from 'express';
 import { getClientIp } from '@kastov/request-ip';
+import { NextFunction, Request, Response } from 'express';
 import morgan from 'morgan';
 
 import { REMNAWAVE_REAL_IP_HEADER } from '@libs/contracts/constants';

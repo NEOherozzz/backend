@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { Cron, SchedulerRegistry } from '@nestjs/schedule';
-import { ConfigService } from '@nestjs/config';
+
+import { TypedConfigService } from '@common/config/app-config';
 
 import { UsersQueuesService } from '@queue/_users';
 
@@ -13,22 +14,22 @@ export class FindUsersForThresholdNotificationTask implements OnApplicationBoots
 
     constructor(
         private readonly usersQueuesService: UsersQueuesService,
-        private readonly configService: ConfigService,
+        private readonly configService: TypedConfigService,
         private schedulerRegistry: SchedulerRegistry,
     ) {}
 
     public async onApplicationBootstrap() {
-        const isBandwidthUsageNotificationsEnabled = this.configService.getOrThrow<string>(
+        const isBandwidthUsageNotificationsEnabled = this.configService.getOrThrow(
             'BANDWIDTH_USAGE_NOTIFICATIONS_ENABLED',
         );
-        const isTelegramLoggerEnabled = this.configService.getOrThrow<string>(
+        const isTelegramLoggerEnabled = this.configService.getOrThrow(
             'IS_TELEGRAM_NOTIFICATIONS_ENABLED',
         );
-        const isWebhookLoggerEnabled = this.configService.getOrThrow<string>('WEBHOOK_ENABLED');
+        const isWebhookLoggerEnabled = this.configService.getOrThrow('WEBHOOK_ENABLED');
 
         if (
-            isBandwidthUsageNotificationsEnabled === 'true' &&
-            (isTelegramLoggerEnabled === 'true' || isWebhookLoggerEnabled === 'true')
+            isBandwidthUsageNotificationsEnabled &&
+            (isTelegramLoggerEnabled || isWebhookLoggerEnabled)
         ) {
             const job = this.schedulerRegistry.getCronJob(
                 FindUsersForThresholdNotificationTask.CRON_NAME,

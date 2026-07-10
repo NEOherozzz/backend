@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../constants';
 import { REST_API, USERS_ROUTES } from '../../api';
+import { getEndpointDetails } from '../../constants';
 
 export namespace DeleteUserCommand {
     export const url = REST_API.USERS.DELETE;
@@ -11,6 +11,7 @@ export namespace DeleteUserCommand {
         USERS_ROUTES.DELETE(':uuid'),
         'delete',
         'Delete user',
+        { scope: 'delete', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

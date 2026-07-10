@@ -12,6 +12,7 @@ export namespace GetExternalSquadByUuidCommand {
         EXTERNAL_SQUADS_ROUTES.GET_BY_UUID(':uuid'),
         'get',
         'Get external squad by uuid',
+        { scope: 'get', kind: 'read' },
     );
 
     export const RequestSchema = z.object({

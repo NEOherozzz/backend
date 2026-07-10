@@ -1,20 +1,19 @@
+import { ERRORS, EVENTS, NODES_BULK_ACTIONS } from '@contract/constants';
 import { Prisma } from '@prisma/client';
 
-import { ERRORS, EVENTS, NODES_BULK_ACTIONS } from '@contract/constants';
-
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Injectable, Logger } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
-import { mapDefined, wrapBigInt } from '@common/utils';
 import { fail, ok, TResult } from '@common/types';
+import { mapDefined, wrapBigInt } from '@common/utils';
 import { toNano } from '@common/utils/nano';
 
 import { NodeEvent } from '@integration-modules/notifications/interfaces';
 
+import { GetConfigProfileByUuidQuery } from '@modules/config-profiles/queries/get-config-profile-by-uuid';
 import { CreateNodeTrafficUsageHistoryCommand } from '@modules/nodes-traffic-usage-history/commands/create-node-traffic-usage-history';
 import { NodesTrafficUsageHistoryEntity } from '@modules/nodes-traffic-usage-history/entities/nodes-traffic-usage-history.entity';
-import { GetConfigProfileByUuidQuery } from '@modules/config-profiles/queries/get-config-profile-by-uuid';
 
 import { NodesQueuesService } from '@queue/_nodes';
 
@@ -26,6 +25,7 @@ import {
     ReorderNodeRequestDto,
     UpdateNodeRequestDto,
 } from './dtos';
+import { NodesEntity } from './entities';
 import {
     BaseEventResponseModel,
     DeleteNodeResponseModel,
@@ -34,7 +34,6 @@ import {
 } from './models';
 import { NodesSystemCacheService } from './nodes-system-cache.service';
 import { NodesRepository } from './repositories/nodes.repository';
-import { NodesEntity } from './entities';
 
 @Injectable()
 export class NodesService {
@@ -61,6 +60,7 @@ export class NodesService {
                 isDisabled: false,
                 trafficLimitBytes: wrapBigInt(nodeData.trafficLimitBytes),
                 consumptionMultiplier: mapDefined(nodeData.consumptionMultiplier, toNano),
+                nodeConsumptionMultiplier: mapDefined(nodeData.nodeConsumptionMultiplier, toNano),
                 activeConfigProfileUuid: configProfile.activeConfigProfileUuid,
             });
 
@@ -151,7 +151,10 @@ export class NodesService {
         }
     }
 
-    public async restartNode(uuid: string): Promise<TResult<RestartNodeResponseModel>> {
+    public async restartNode(
+        uuid: string,
+        force: boolean,
+    ): Promise<TResult<RestartNodeResponseModel>> {
         try {
             const node = await this.nodesRepository.findByUUID(uuid);
             if (!node) {
@@ -164,6 +167,7 @@ export class NodesService {
 
             await this.nodesQueuesService.startNode({
                 nodeUuid: node.uuid,
+                force,
             });
 
             return ok(new RestartNodeResponseModel(true));
@@ -203,7 +207,7 @@ export class NodesService {
     }
 
     public async restartAllNodes(
-        forceRestart?: boolean,
+        forceRestart: boolean,
     ): Promise<TResult<RestartNodeResponseModel>> {
         try {
             const nodes = await this.nodesRepository.findByCriteria({
@@ -215,7 +219,7 @@ export class NodesService {
 
             await this.nodesQueuesService.startAllNodes({
                 emitter: NodesService.name,
-                force: forceRestart ?? false,
+                force: forceRestart,
             });
 
             return ok(new RestartNodeResponseModel(true));
@@ -304,6 +308,7 @@ export class NodesService {
                 address: nodeData.address ? nodeData.address.trim() : undefined,
                 trafficLimitBytes: wrapBigInt(nodeData.trafficLimitBytes),
                 consumptionMultiplier: mapDefined(nodeData.consumptionMultiplier, toNano),
+                nodeConsumptionMultiplier: mapDefined(nodeData.nodeConsumptionMultiplier, toNano),
                 activeConfigProfileUuid: configProfile?.activeConfigProfileUuid,
             });
 
@@ -547,7 +552,7 @@ export class NodesService {
             const actionMap: Record<string, (uuid: string) => Promise<unknown>> = {
                 [NODES_BULK_ACTIONS.ENABLE]: (uuid) => this.enableNode(uuid),
                 [NODES_BULK_ACTIONS.DISABLE]: (uuid) => this.disableNode(uuid),
-                [NODES_BULK_ACTIONS.RESTART]: (uuid) => this.restartNode(uuid),
+                [NODES_BULK_ACTIONS.RESTART]: (uuid) => this.restartNode(uuid, true),
                 [NODES_BULK_ACTIONS.RESET_TRAFFIC]: (uuid) => this.resetNodeTraffic(uuid),
             };
 
@@ -577,9 +582,11 @@ export class NodesService {
             const fieldsToUpdate: Partial<NodesEntity> = {
                 countryCode: fields.countryCode,
                 consumptionMultiplier: mapDefined(fields.consumptionMultiplier, toNano),
+                nodeConsumptionMultiplier: mapDefined(fields.nodeConsumptionMultiplier, toNano),
                 providerUuid: fields.providerUuid,
                 tags: fields.tags,
                 activePluginUuid: fields.activePluginUuid,
+                note: fields.note,
             };
 
             await this.nodesRepository.updateMany(uuids, fieldsToUpdate);

@@ -1,5 +1,5 @@
-import { ConditionalModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
+import { ConditionalModule } from '@nestjs/config';
 
 import { TelegramBotModule } from './notifications/telegram-bot/telegram-bot.module';
 import { WebhookModule } from './notifications/webhook-module/webhook.module';

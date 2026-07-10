@@ -1,9 +1,10 @@
-import { randomBytes, scrypt, scryptSync, timingSafeEqual } from 'node:crypto';
 import { NextFunction, Request, Response } from 'express';
+import { randomBytes, scrypt, scryptSync, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
 
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+
+import { TypedConfigService } from '@common/config/app-config';
 
 @Injectable()
 export class BasicAuthMiddleware implements NestMiddleware {
@@ -13,9 +14,9 @@ export class BasicAuthMiddleware implements NestMiddleware {
     private readonly salt: Buffer;
     private readonly scryptAsync = promisify(scrypt);
 
-    constructor(private readonly configService: ConfigService) {
-        this.username = this.configService.get<string>('METRICS_USER') || '';
-        this.password = this.configService.get<string>('METRICS_PASS') || '';
+    constructor(private readonly configService: TypedConfigService) {
+        this.username = this.configService.getOrThrow('METRICS_USER');
+        this.password = this.configService.getOrThrow('METRICS_PASS');
         this.salt = randomBytes(16);
         this.passwordHash = this.hashPassword(this.password);
     }

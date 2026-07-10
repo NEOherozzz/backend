@@ -1,6 +1,6 @@
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Injectable, Logger } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import { fail, ok, TResult } from '@common/types';
 import { GetAllHwidDevicesCommand } from '@libs/contracts/commands';
@@ -9,14 +9,14 @@ import { THwidSettings } from '@libs/contracts/models';
 
 import { UserHwidDeviceEvent } from '@integration-modules/notifications/interfaces';
 
-import { GetCachedSubscriptionSettingsQuery } from '@modules/subscription-settings/queries/get-cached-subscrtipion-settings';
 import { GetCachedExternalSquadSettingsQuery } from '@modules/external-squads/queries/get-cached-external-squad-settings';
+import { GetCachedSubscriptionSettingsQuery } from '@modules/subscription-settings/queries/get-cached-subscrtipion-settings';
 import { GetUserByUniqueFieldQuery } from '@modules/users/queries/get-user-by-unique-field';
 
+import { CreateUserHwidDeviceRequestDto } from './dtos';
+import { HwidUserDeviceEntity } from './entities/hwid-user-device.entity';
 import { GetHwidDevicesStatsResponseModel, GetTopUsersByHwidDevicesResponseModel } from './models';
 import { HwidUserDevicesRepository } from './repositories/hwid-user-devices.repository';
-import { HwidUserDeviceEntity } from './entities/hwid-user-device.entity';
-import { CreateUserHwidDeviceRequestDto } from './dtos';
 
 @Injectable()
 export class HwidUserDevicesService {
@@ -49,7 +49,7 @@ export class HwidUserDevicesService {
 
             const isDeviceExists = await this.hwidUserDevicesRepository.checkHwidExists(
                 dto.hwid,
-                dto.userUuid,
+                user.response.tId,
             );
 
             if (isDeviceExists) {
@@ -81,7 +81,7 @@ export class HwidUserDevicesService {
             }
 
             if (hwidSettings && hwidSettings.enabled) {
-                const count = await this.hwidUserDevicesRepository.countByUserUuid(dto.userUuid);
+                const count = await this.hwidUserDevicesRepository.countByUserId(user.response.tId);
 
                 const deviceLimit =
                     user.response.hwidDeviceLimit ?? hwidSettings.fallbackDeviceLimit;
@@ -92,7 +92,15 @@ export class HwidUserDevicesService {
             }
 
             const result = await this.hwidUserDevicesRepository.create(
-                new HwidUserDeviceEntity(dto),
+                new HwidUserDeviceEntity({
+                    hwid: dto.hwid,
+                    userId: user.response.tId,
+                    platform: dto.platform,
+                    osVersion: dto.osVersion,
+                    deviceModel: dto.deviceModel,
+                    userAgent: dto.userAgent,
+                    requestIp: dto.requestIp,
+                }),
             );
 
             this.eventEmitter.emit(
@@ -101,7 +109,7 @@ export class HwidUserDevicesService {
             );
 
             const userHwidDevices = await this.hwidUserDevicesRepository.findByCriteria({
-                userUuid: dto.userUuid,
+                userId: user.response.tId,
             });
 
             return ok(userHwidDevices);
@@ -129,7 +137,7 @@ export class HwidUserDevicesService {
             }
 
             const userHwidDevices = await this.hwidUserDevicesRepository.findByCriteria({
-                userUuid,
+                userId: user.response.tId,
             });
 
             return ok(userHwidDevices);
@@ -161,14 +169,14 @@ export class HwidUserDevicesService {
 
             const hwidDevice = await this.hwidUserDevicesRepository.findFirstByCriteria({
                 hwid,
-                userUuid,
+                userId: user.response.tId,
             });
 
             if (!hwidDevice) {
                 return fail(ERRORS.HWID_DEVICE_NOT_FOUND);
             }
 
-            await this.hwidUserDevicesRepository.deleteByHwidAndUserUuid(hwid, userUuid);
+            await this.hwidUserDevicesRepository.deleteByHwidAndUserId(hwid, user.response.tId);
 
             this.eventEmitter.emit(
                 EVENTS.USER_HWID_DEVICES.DELETED,
@@ -180,7 +188,7 @@ export class HwidUserDevicesService {
             );
 
             const userHwidDevices = await this.hwidUserDevicesRepository.findByCriteria({
-                userUuid,
+                userId: user.response.tId,
             });
 
             return ok(userHwidDevices);
@@ -209,10 +217,10 @@ export class HwidUserDevicesService {
                 return fail(ERRORS.USER_NOT_FOUND);
             }
 
-            await this.hwidUserDevicesRepository.deleteByUserUuid(userUuid);
+            await this.hwidUserDevicesRepository.deleteByUserId(user.response.tId);
 
             const userHwidDevices = await this.hwidUserDevicesRepository.findByCriteria({
-                userUuid,
+                userId: user.response.tId,
             });
 
             return ok(userHwidDevices);
@@ -245,7 +253,6 @@ export class HwidUserDevicesService {
             return ok(
                 new GetHwidDevicesStatsResponseModel({
                     byPlatform: stats.byPlatform,
-                    byApp: stats.byApp,
                     stats: stats.stats,
                 }),
             );

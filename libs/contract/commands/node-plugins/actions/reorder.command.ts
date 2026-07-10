@@ -12,6 +12,7 @@ export namespace ReorderNodePluginCommand {
         NODE_PLUGINS_ROUTES.ACTIONS.REORDER,
         'post',
         'Reorder Node Plugins',
+        { scope: 'reorder', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

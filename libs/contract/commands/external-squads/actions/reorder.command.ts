@@ -12,6 +12,7 @@ export namespace ReorderExternalSquadCommand {
         EXTERNAL_SQUADS_ROUTES.ACTIONS.REORDER,
         'post',
         'Reorder external squads',
+        { scope: 'reorder', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

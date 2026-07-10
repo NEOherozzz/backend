@@ -11,6 +11,7 @@ export namespace DeleteInfraProviderByUuidCommand {
         INFRA_BILLING_ROUTES.DELETE_PROVIDER(':uuid'),
         'delete',
         'Delete infra provider by uuid',
+        { scope: 'delete-provider', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

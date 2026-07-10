@@ -1,3 +1,4 @@
+import { Body, Controller, HttpStatus, Param, UseFilters, UseGuards } from '@nestjs/common';
 import {
     ApiBearerAuth,
     ApiNotFoundResponse,
@@ -5,21 +6,22 @@ import {
     ApiParam,
     ApiTags,
 } from '@nestjs/swagger';
-import { Body, Controller, HttpStatus, Param, UseFilters, UseGuards } from '@nestjs/common';
 
-import { HttpExceptionFilter } from '@common/exception/http-exception.filter';
-import { JwtDefaultGuard } from '@common/guards/jwt-guards/def-jwt-guard';
-import { errorHandler } from '@common/helpers/error-handler.helper';
 import { Endpoint } from '@common/decorators/base-endpoint';
 import { Roles } from '@common/decorators/roles/roles';
+import { ApiScopeResource } from '@common/decorators/scopes';
+import { HttpExceptionFilter } from '@common/exception/http-exception.filter';
+import { JwtDefaultGuard } from '@common/guards/jwt-guards/def-jwt-guard';
 import { RolesGuard } from '@common/guards/roles';
+import { ScopesGuard } from '@common/guards/scopes';
+import { errorHandler } from '@common/helpers/error-handler.helper';
+import { CONTROLLERS_INFO, METADATA_CONTROLLER } from '@libs/contracts/api';
 import {
     GetNodeMetadataCommand,
     GetUserMetadataCommand,
     UpsertNodeMetadataCommand,
     UpsertUserMetadataCommand,
 } from '@libs/contracts/commands';
-import { CONTROLLERS_INFO, METADATA_CONTROLLER } from '@libs/contracts/api';
 import { ERRORS, ROLE } from '@libs/contracts/constants';
 
 import {
@@ -35,9 +37,10 @@ import {
 import { MetadataService } from './metadata.service';
 
 @ApiBearerAuth('Authorization')
+@ApiScopeResource(CONTROLLERS_INFO.METADATA.resource)
 @ApiTags(CONTROLLERS_INFO.METADATA.tag)
 @Roles(ROLE.ADMIN, ROLE.API)
-@UseGuards(JwtDefaultGuard, RolesGuard)
+@UseGuards(JwtDefaultGuard, RolesGuard, ScopesGuard)
 @UseFilters(HttpExceptionFilter)
 @Controller(METADATA_CONTROLLER)
 export class MetadataController {

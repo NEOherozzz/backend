@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 import { REST_API, SUBSCRIPTION_PAGE_CONFIGS_ROUTES } from '../../../api';
-import { SubscriptionPageConfigSchema } from '../../../models';
 import { getEndpointDetails } from '../../../constants';
+import { SubscriptionPageConfigSchema } from '../../../models';
 
 export namespace ReorderSubscriptionPageConfigsCommand {
     export const url = REST_API.SUBSCRIPTION_PAGE_CONFIGS.ACTIONS.REORDER;
@@ -12,6 +12,7 @@ export namespace ReorderSubscriptionPageConfigsCommand {
         SUBSCRIPTION_PAGE_CONFIGS_ROUTES.ACTIONS.REORDER,
         'post',
         'Reorder subscription page configs',
+        { scope: 'reorder', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

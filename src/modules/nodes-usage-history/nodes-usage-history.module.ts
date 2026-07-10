@@ -1,12 +1,12 @@
-import { CqrsModule } from '@nestjs/cqrs';
 import { Module } from '@nestjs/common';
+import { CqrsModule } from '@nestjs/cqrs';
 
-import { NodesUsageHistoryRepository } from './repositories/nodes-usage-history.repository';
+import { COMMANDS } from './commands';
 import { NodesUsageHistoryController } from './nodes-usage-history.controller';
 import { NodesUsageHistoryConverter } from './nodes-usage-history.converter';
 import { NodesUsageHistoryService } from './nodes-usage-history.service';
-import { COMMANDS } from './commands';
 import { QUERIES } from './queries';
+import { NodesUsageHistoryRepository } from './repositories/nodes-usage-history.repository';
 
 @Module({
     imports: [CqrsModule],

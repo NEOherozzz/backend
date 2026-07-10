@@ -1,17 +1,19 @@
+import { Body, Controller, HttpStatus, UseFilters } from '@nestjs/common';
 import {
     ApiForbiddenResponse,
     ApiResponse,
     ApiTags,
     ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { Body, Controller, HttpStatus, UseFilters } from '@nestjs/common';
 
-import { GetRemnawaveSettings } from '@common/decorators/get-remnawave-settings';
-import { HttpExceptionFilter } from '@common/exception/http-exception.filter';
-import { UserAgent } from '@common/decorators/get-useragent/get-useragent';
-import { errorHandler } from '@common/helpers/error-handler.helper';
-import { IpAddress } from '@common/decorators/get-ip/get-ip';
 import { Endpoint } from '@common/decorators/base-endpoint';
+import { IpAddress } from '@common/decorators/get-ip/get-ip';
+import { GetRemnawaveSettings } from '@common/decorators/get-remnawave-settings';
+import { UserAgent } from '@common/decorators/get-useragent/get-useragent';
+import { HttpExceptionFilter } from '@common/exception/http-exception.filter';
+import { errorHandler } from '@common/helpers/error-handler.helper';
+import { CONTROLLERS_INFO } from '@libs/contracts/api';
+import { AUTH_CONTROLLER } from '@libs/contracts/api/controllers/auth';
 import {
     GetStatusCommand,
     LoginCommand,
@@ -21,11 +23,10 @@ import {
     GetPasskeyAuthenticationOptionsCommand,
     VerifyPasskeyAuthenticationCommand,
 } from '@libs/contracts/commands';
-import { AUTH_CONTROLLER } from '@libs/contracts/api/controllers/auth';
-import { CONTROLLERS_INFO } from '@libs/contracts/api';
 
 import { RemnawaveSettingsEntity } from '@modules/remnawave-settings/entities';
 
+import { AuthService } from './auth.service';
 import {
     GetStatusResponseDto,
     LoginRequestDto,
@@ -40,9 +41,8 @@ import {
     VerifyPasskeyAuthenticationRequestDto,
     VerifyPasskeyAuthenticationResponseDto,
 } from './dtos';
-import { RegisterResponseModel } from './model/register.response.model';
 import { AuthResponseModel } from './model/auth-response.model';
-import { AuthService } from './auth.service';
+import { RegisterResponseModel } from './model/register.response.model';
 
 @ApiTags(CONTROLLERS_INFO.AUTH.tag)
 @UseFilters(HttpExceptionFilter)

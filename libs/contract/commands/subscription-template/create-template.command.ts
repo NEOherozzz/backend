@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { SUBSCRIPTION_TEMPLATE_TYPE, getEndpointDetails } from '../../constants';
 import { REST_API, SUBSCRIPTION_TEMPLATE_ROUTES } from '../../api';
+import { SUBSCRIPTION_TEMPLATE_TYPE, getEndpointDetails } from '../../constants';
 import { SubscriptionTemplateSchema } from '../../models';
 
 export namespace CreateSubscriptionTemplateCommand {
@@ -12,6 +12,7 @@ export namespace CreateSubscriptionTemplateCommand {
         SUBSCRIPTION_TEMPLATE_ROUTES.CREATE,
         'post',
         'Create subscription template',
+        { scope: 'create', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

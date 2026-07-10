@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
+import { HWID_ROUTES, REST_API } from '../../api';
 import { getEndpointDetails } from '../../constants';
 import { HwidUserDeviceSchema } from '../../models';
-import { HWID_ROUTES, REST_API } from '../../api';
 
 export namespace CreateUserHwidDeviceCommand {
     export const url = REST_API.HWID.CREATE_USER_HWID_DEVICE;
@@ -12,6 +12,7 @@ export namespace CreateUserHwidDeviceCommand {
         HWID_ROUTES.CREATE_USER_HWID_DEVICE,
         'post',
         'Create a user HWID device',
+        { scope: 'create', kind: 'write' },
     );
 
     export const RequestSchema = z.object({
@@ -21,6 +22,7 @@ export namespace CreateUserHwidDeviceCommand {
         osVersion: z.optional(z.string()),
         deviceModel: z.optional(z.string()),
         userAgent: z.optional(z.string()),
+        requestIp: z.optional(z.string()),
     });
 
     export type Request = z.infer<typeof RequestSchema>;

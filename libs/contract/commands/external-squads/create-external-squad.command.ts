@@ -12,6 +12,7 @@ export namespace CreateExternalSquadCommand {
         EXTERNAL_SQUADS_ROUTES.CREATE,
         'post',
         'Create external squad',
+        { scope: 'create', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

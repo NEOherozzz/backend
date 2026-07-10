@@ -11,6 +11,7 @@ export namespace PluginExecutorCommand {
         NODE_PLUGINS_ROUTES.EXECUTOR,
         'post',
         'Execute command on node plugins',
+        { scope: 'executor', kind: 'write' },
     );
 
     export const CommandSchema = z.discriminatedUnion('command', [

@@ -11,6 +11,7 @@ export namespace DeleteSubscriptionPageConfigCommand {
         SUBSCRIPTION_PAGE_CONFIGS_ROUTES.DELETE(':uuid'),
         'delete',
         'Delete subscription page config',
+        { scope: 'delete', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

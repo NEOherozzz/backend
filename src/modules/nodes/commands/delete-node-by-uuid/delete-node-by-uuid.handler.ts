@@ -1,8 +1,8 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { DeleteNodeByUuidCommand } from './delete-node-by-uuid.command';
 import { NodesRepository } from '../../repositories/nodes.repository';
+import { DeleteNodeByUuidCommand } from './delete-node-by-uuid.command';
 
 @CommandHandler(DeleteNodeByUuidCommand)
 export class DeleteNodeByUuidHandler implements ICommandHandler<DeleteNodeByUuidCommand> {

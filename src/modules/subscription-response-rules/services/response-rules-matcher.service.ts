@@ -1,3 +1,10 @@
+import type {
+    TResponseRule,
+    TResponseRuleCondition,
+    ISrrMatchedResult,
+    TResponseRulesConfig,
+} from '../types/response-rules.types';
+
 import { Injectable, Logger } from '@nestjs/common';
 
 import {
@@ -9,13 +16,6 @@ import {
     TResponseRulesConditionOperator,
 } from '@libs/contracts/constants';
 
-import type {
-    TResponseRule,
-    TResponseRuleCondition,
-    ISrrMatchedResult,
-    TResponseRulesConfig,
-} from '../types/response-rules.types';
-
 @Injectable()
 export class ResponseRulesMatcherService {
     private readonly logger = new Logger(ResponseRulesMatcherService.name);
@@ -25,8 +25,6 @@ export class ResponseRulesMatcherService {
         requestHeaders: Record<string, string | string[] | undefined>,
         overrideClientType: TRequestTemplateTypeKeys | undefined,
     ): ISrrMatchedResult {
-        this.logger.debug('Matching rules against context');
-
         if (overrideClientType) {
             if (responseRules.settings && responseRules.settings.disableSubscriptionAccessByPath) {
                 return {
@@ -40,14 +38,12 @@ export class ResponseRulesMatcherService {
 
         for (const rule of responseRules.rules) {
             if (!rule.enabled) {
-                this.logger.debug(`Rule "${rule.name}" is disabled, skipping...`);
                 continue;
             }
 
             const matched = this.matchRule(rule, requestHeaders);
 
             if (matched) {
-                this.logger.debug(`Rule "${rule.name}" matched...`);
                 return {
                     matched: true,
                     matchedRule: rule,
@@ -68,14 +64,14 @@ export class ResponseRulesMatcherService {
             return true;
         }
 
-        const results = rule.conditions.map((condition) =>
-            this.matchCondition(condition, requestHeaders),
-        );
-
         if (rule.operator === RESPONSE_RULES_OPERATORS.AND) {
-            return results.every((result) => result === true);
+            return rule.conditions.every((condition) =>
+                this.matchCondition(condition, requestHeaders),
+            );
         } else if (rule.operator === RESPONSE_RULES_OPERATORS.OR) {
-            return results.some((result) => result === true);
+            return rule.conditions.some((condition) =>
+                this.matchCondition(condition, requestHeaders),
+            );
         }
 
         throw new Error(`Unknown operator: ${rule.operator}`);

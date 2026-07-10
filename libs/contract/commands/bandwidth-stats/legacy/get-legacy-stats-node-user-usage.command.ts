@@ -11,6 +11,7 @@ export namespace GetLegacyStatsNodeUserUsageCommand {
         BANDWIDTH_STATS_ROUTES.LEGACY.NODES.GET_USERS(':uuid'),
         'get',
         'Get Node User Usage by Range and Node UUID (Legacy)',
+        { scope: 'node-users-usage-legacy', kind: 'read' },
     );
 
     export const RequestSchema = z.object({

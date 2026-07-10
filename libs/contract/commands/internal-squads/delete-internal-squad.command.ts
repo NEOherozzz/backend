@@ -11,6 +11,7 @@ export namespace DeleteInternalSquadCommand {
         INTERNAL_SQUADS_ROUTES.DELETE(':uuid'),
         'delete',
         'Delete internal squad',
+        { scope: 'delete', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

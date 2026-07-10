@@ -1,6 +1,6 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { QueryBus } from '@nestjs/cqrs';
+import { AuthGuard } from '@nestjs/passport';
 
 import { TResult } from '@common/types';
 import {
@@ -9,8 +9,8 @@ import {
     ROLE,
 } from '@libs/contracts/constants';
 
-import { GetAdminByUsernameQuery } from '@modules/admin/queries/get-admin-by-username';
 import { AdminEntity } from '@modules/admin/entities/admin.entity';
+import { GetAdminByUsernameQuery } from '@modules/admin/queries/get-admin-by-username';
 import { IJWTAuthPayload } from '@modules/auth/interfaces';
 
 @Injectable()

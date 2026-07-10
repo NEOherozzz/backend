@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../../constants';
 import { REST_API, USERS_ROUTES } from '../../../api';
+import { getEndpointDetails } from '../../../constants';
 
 export namespace BulkExtendExpirationDateCommand {
     export const url = REST_API.USERS.BULK.EXTEND_EXPIRATION_DATE;
@@ -11,6 +11,7 @@ export namespace BulkExtendExpirationDateCommand {
         USERS_ROUTES.BULK.EXTEND_EXPIRATION_DATE,
         'post',
         'Extend expiration date for specified users by days',
+        { scope: 'bulk-extend-expiration-date', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

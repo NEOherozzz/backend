@@ -70,21 +70,17 @@ ${userBasicInfo(e)}
 ${userHeader("<tg-emoji emoji-id='5379999674193172777'>🔭</tg-emoji>", 'first_connected')}
 ${userBasicInfo(e)}`,
 
-    [EVENTS.USER.EXPIRE_NOTIFY_EXPIRES_IN_72_HOURS]: (e) => `
-${userHeader("<tg-emoji emoji-id='5382194935057372936'>⏱️</tg-emoji>", 'expires_in_72_hours')}
-${userBasicInfo(e)}`,
+    [EVENTS.USER.EXPIRATION]: (e) => {
+        if (e.skipTelegramNotification || !e.meta || e.meta.expiration === undefined) return null;
 
-    [EVENTS.USER.EXPIRE_NOTIFY_EXPIRES_IN_48_HOURS]: (e) => `
-${userHeader("<tg-emoji emoji-id='5382194935057372936'>⏱️</tg-emoji>", 'expires_in_48_hours')}
-${userBasicInfo(e)}`,
+        const hours = e.meta.expiration;
+        const tag =
+            hours < 0 ? `expires_in_${Math.abs(hours)}_hours` : `expired_${hours}_hours_ago`;
 
-    [EVENTS.USER.EXPIRE_NOTIFY_EXPIRES_IN_24_HOURS]: (e) => `
-${userHeader("<tg-emoji emoji-id='5382194935057372936'>⏱️</tg-emoji>", 'expires_in_24_hours')}
-${userBasicInfo(e)}`,
-
-    [EVENTS.USER.EXPIRE_NOTIFY_EXPIRED_24_HOURS_AGO]: (e) => `
-${userHeader("<tg-emoji emoji-id='5382194935057372936'>⏱️</tg-emoji>", 'expired_24_hours_ago')}
-${userBasicInfo(e)}`,
+        return `
+${userHeader("<tg-emoji emoji-id='5382194935057372936'>⏱️</tg-emoji>", tag)}
+${userBasicInfo(e)}`;
+    },
 
     [EVENTS.USER.BANDWIDTH_USAGE_THRESHOLD_REACHED]: (e) => {
         if (e.skipTelegramNotification) return null;

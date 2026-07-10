@@ -12,6 +12,7 @@ export namespace GetExternalSquadsCommand {
         EXTERNAL_SQUADS_ROUTES.GET,
         'get',
         'Get all external squads',
+        { scope: 'list', kind: 'read' },
     );
 
     export const ResponseSchema = z.object({

@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { hasher } from 'node-object-hash';
 import consola from 'consola';
+import { hasher } from 'node-object-hash';
 
 import { SRR_DEFAULT_CONFIG, PREV_SRR_CONFIG_HASH } from '../default';
 

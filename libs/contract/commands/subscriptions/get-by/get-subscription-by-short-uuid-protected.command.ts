@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 import { REST_API, SUBSCRIPTIONS_ROUTES } from '../../../api';
-import { SubscriptionInfoSchema } from '../../../models';
 import { getEndpointDetails } from '../../../constants';
+import { SubscriptionInfoSchema } from '../../../models';
 
 export namespace GetSubscriptionByShortUuidProtectedCommand {
     export const url = REST_API.SUBSCRIPTIONS.GET_BY.SHORT_UUID;
@@ -12,6 +12,7 @@ export namespace GetSubscriptionByShortUuidProtectedCommand {
         SUBSCRIPTIONS_ROUTES.GET_BY.SHORT_UUID(':shortUuid'),
         'get',
         'Get subscription by short uuid (protected route)',
+        { scope: 'by-short-uuid-protected', kind: 'read' },
     );
 
     export const RequestSchema = z.object({

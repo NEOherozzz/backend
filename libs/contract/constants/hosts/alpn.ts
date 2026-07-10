@@ -8,4 +8,5 @@ export const ALPN = {
 } as const;
 
 export type TAlpn = [keyof typeof ALPN][number];
+export type TAlpnValues = (typeof ALPN)[keyof typeof ALPN];
 export const ALPN_VALUES = Object.values(ALPN);

@@ -1,12 +1,12 @@
-import { CqrsModule } from '@nestjs/cqrs';
 import { Module } from '@nestjs/common';
+import { CqrsModule } from '@nestjs/cqrs';
 
-import { ExternalSquadRepository } from './repositories/external-squad.repository';
+import { COMMANDS } from './commands';
 import { ExternalSquadController } from './external-squads.controller';
 import { ExternalSquadConverter } from './external-squads.converter';
 import { ExternalSquadService } from './external-squads.service';
-import { COMMANDS } from './commands';
 import { QUERIES } from './queries';
+import { ExternalSquadRepository } from './repositories/external-squad.repository';
 
 @Module({
     imports: [CqrsModule],

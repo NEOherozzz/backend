@@ -1,19 +1,21 @@
+import { TransactionHost } from '@nestjs-cls/transactional';
+import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 import { Prisma } from '@prisma/client';
 import { sql } from 'kysely';
 
-import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
-import { TransactionHost } from '@nestjs-cls/transactional';
 import { Injectable } from '@nestjs/common';
 
-import { getKyselyUuid } from '@common/helpers/kysely/get-kysely-uuid';
+import { INodeConnectionOpts } from '@common/axios';
 import { TxKyselyService } from '@common/database';
+import { getKyselyUuid } from '@common/helpers/kysely/get-kysely-uuid';
+import { values } from '@common/helpers/kysely/values';
 import { ICrud } from '@common/types/crud-port';
 
+import { NodesEntity } from '../entities/nodes.entity';
+import { IReorderNode } from '../interfaces';
+import { NodesConverter } from '../nodes.converter';
 import { IGetEnabledNodesPartialResponse } from '../queries/get-enabled-nodes-partial/get-enabled-nodes-partial.query';
 import { IGetOnlineNodesPartialResponse } from '../queries/get-online-nodes';
-import { NodesEntity } from '../entities/nodes.entity';
-import { NodesConverter } from '../nodes.converter';
-import { IReorderNode } from '../interfaces';
 
 export type INodesWithResolvedInbounds = Prisma.NodesGetPayload<{
     include: {
@@ -72,39 +74,65 @@ export class NodesRepository implements ICrud<NodesEntity> {
     public async findConnectedNodesPartial(): Promise<IGetOnlineNodesPartialResponse[]> {
         const nodesList = await this.qb.kysely
             .selectFrom('nodes')
-            .select(['uuid', 'address', 'port', 'consumptionMultiplier', 'id'])
+            .select([
+                'uuid',
+                'consumptionMultiplier',
+                'nodeConsumptionMultiplier',
+                'id',
+                'address',
+                'port',
+                'proxyUrl',
+            ])
             .where('isConnected', '=', true)
             .where('isDisabled', '=', false)
             .where('isConnecting', '=', false)
             .where('activeConfigProfileUuid', 'is not', null)
             .execute();
 
-        return nodesList;
+        return nodesList.map((value) => ({
+            uuid: value.uuid,
+            consumptionMultiplier: value.consumptionMultiplier,
+            nodeConsumptionMultiplier: value.nodeConsumptionMultiplier,
+            id: value.id,
+            connectionOpts: {
+                address: value.address,
+                port: value.port,
+                proxyUrl: value.proxyUrl,
+            },
+        }));
     }
 
     public async findEnabledNodesPartial(): Promise<IGetEnabledNodesPartialResponse[]> {
         const nodesList = await this.qb.kysely
             .selectFrom('nodes')
-            .select(['uuid', 'address', 'port', 'isConnected'])
+            .select(['uuid', 'isConnected', 'address', 'port', 'proxyUrl'])
             .where('isDisabled', '=', false)
             .where('isConnecting', '=', false)
             .execute();
 
-        return nodesList;
+        return nodesList.map((value) => ({
+            uuid: value.uuid,
+            isConnected: value.isConnected,
+            connectionOpts: {
+                address: value.address,
+                port: value.port,
+                proxyUrl: value.proxyUrl,
+            },
+        }));
     }
 
     public async findConnectedNodesWithoutInbounds(): Promise<
         {
             uuid: string;
-            address: string;
-            port: number | null;
+            connectionOpts: INodeConnectionOpts;
         }[]
     > {
-        return await this.prisma.tx.nodes.findMany({
+        const result = await this.prisma.tx.nodes.findMany({
             select: {
                 uuid: true,
                 address: true,
                 port: true,
+                proxyUrl: true,
             },
             where: {
                 isConnected: true,
@@ -114,6 +142,15 @@ export class NodesRepository implements ICrud<NodesEntity> {
                 },
             },
         });
+
+        return result.map((value) => ({
+            uuid: value.uuid,
+            connectionOpts: {
+                address: value.address,
+                port: value.port,
+                proxyUrl: value.proxyUrl,
+            },
+        }));
     }
 
     public async findAllNodes(): Promise<NodesEntity[]> {
@@ -200,14 +237,22 @@ export class NodesRepository implements ICrud<NodesEntity> {
     }
 
     public async reorderMany(dto: IReorderNode[]): Promise<boolean> {
-        await this.prisma.withTransaction(async () => {
-            for (const { uuid, viewPosition } of dto) {
-                await this.prisma.tx.nodes.updateMany({
-                    where: { uuid },
-                    data: { viewPosition },
-                });
-            }
-        });
+        if (dto.length === 0) return true;
+
+        const v = values(
+            dto.map(({ uuid, viewPosition }) => ({
+                uuid: sql<string>`${uuid}::uuid`,
+                viewPosition: sql<number>`${viewPosition}::int`,
+            })),
+            'v',
+        );
+
+        await this.qb.kysely
+            .updateTable('nodes as n')
+            .from(v)
+            .set((eb) => ({ viewPosition: eb.ref('v.viewPosition') }))
+            .whereRef('n.uuid', '=', 'v.uuid')
+            .execute();
 
         await this.prisma.tx
             .$executeRaw`SELECT setval('nodes_view_position_seq', (SELECT MAX(view_position) FROM nodes) + 1)`;
@@ -304,11 +349,14 @@ export class NodesRepository implements ICrud<NodesEntity> {
         return result.map((value) => value.tag);
     }
 
-    public async getNodeUuidsByPluginUuid(pluginUuid: string): Promise<string[]> {
+    public async getEnabledNodesByPluginUuid(pluginUuid: string): Promise<string[]> {
         const result = await this.qb.kysely
             .selectFrom('nodes')
             .select('uuid')
             .where('activePluginUuid', '=', getKyselyUuid(pluginUuid))
+            .where('isDisabled', '=', false)
+            .where('isConnected', '=', true)
+            .where('isConnecting', '=', false)
             .execute();
 
         return result.map((value) => value.uuid);

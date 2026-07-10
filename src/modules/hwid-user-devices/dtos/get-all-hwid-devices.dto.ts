@@ -1,6 +1,5 @@
-import { createZodDto } from 'nestjs-zod';
-
 import { GetAllHwidDevicesCommand } from '@contract/commands';
+import { createZodDto } from 'nestjs-zod';
 
 export class GetAllHwidDevicesRequestQueryDto extends createZodDto(
     GetAllHwidDevicesCommand.RequestQuerySchema,

@@ -7,9 +7,9 @@ import { QueryBus } from '@nestjs/cqrs';
 
 import { AxiosService } from '@common/axios/axios.service';
 
+import { NodesEntity } from '@modules/nodes';
 import { FindNodesByCriteriaQuery } from '@modules/nodes/queries/find-nodes-by-criteria';
 import { GetNodeByUuidQuery } from '@modules/nodes/queries/get-node-by-uuid';
-import { NodesEntity } from '@modules/nodes';
 
 import { QUEUES_NAMES } from '../../queue.enum';
 import { NODES_JOB_NAMES } from '../constants';
@@ -20,7 +20,7 @@ import { NODES_JOB_NAMES } from '../constants';
         scope: Scope.REQUEST,
     },
     {
-        concurrency: 5,
+        concurrency: 10,
     },
 )
 export class QueryNodesQueueProcessor extends WorkerHost {
@@ -83,8 +83,11 @@ export class QueryNodesQueueProcessor extends WorkerHost {
                 try {
                     const ipsListResponse = await this.axios.getIpsList(
                         { userId: job.data.userId },
-                        node.address,
-                        node.port,
+                        {
+                            address: node.address,
+                            port: node.port,
+                            proxyUrl: node.proxyUrl,
+                        },
                     );
 
                     if (!ipsListResponse.isOk || !ipsListResponse.response.response.ips.length) {
@@ -168,10 +171,11 @@ export class QueryNodesQueueProcessor extends WorkerHost {
                 };
             }
 
-            const result = await this.axios.getUsersIpsList(
-                nodeResult.response.address,
-                nodeResult.response.port,
-            );
+            const result = await this.axios.getUsersIpsList({
+                address: nodeResult.response.address,
+                port: nodeResult.response.port,
+                proxyUrl: nodeResult.response.proxyUrl,
+            });
 
             if (!result.isOk) {
                 return {

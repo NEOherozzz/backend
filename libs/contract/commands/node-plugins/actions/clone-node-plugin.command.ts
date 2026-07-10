@@ -12,6 +12,7 @@ export namespace CloneNodePluginCommand {
         NODE_PLUGINS_ROUTES.ACTIONS.CLONE,
         'post',
         'Clone Node Plugin',
+        { scope: 'clone', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

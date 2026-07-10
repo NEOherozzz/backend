@@ -1,25 +1,25 @@
 import { Job } from 'bullmq';
 
-import { CommandBus, EventBus, QueryBus } from '@nestjs/cqrs';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Logger } from '@nestjs/common';
+import { CommandBus, EventBus, QueryBus } from '@nestjs/cqrs';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import { EVENTS } from '@libs/contracts/constants/events/events';
 
 import { TorrentBlockerEvent, UserEvent } from '@integration-modules/notifications/interfaces';
 
 import { CreateTorrentReportCommand } from '@modules/node-plugins/commands/create-torrent-report';
-import { GetUserByUniqueFieldQuery } from '@modules/users/queries/get-user-by-unique-field';
-import { RemoveUserFromNodeEvent } from '@modules/nodes/events/remove-user-from-node';
 import { BaseTorrentBlockerReportEntity } from '@modules/node-plugins/entities';
-import { GetNodeByUuidQuery } from '@modules/nodes/queries/get-node-by-uuid';
 import { AddUserToNodeEvent } from '@modules/nodes/events/add-user-to-node';
+import { RemoveUserFromNodeEvent } from '@modules/nodes/events/remove-user-from-node';
+import { GetNodeByUuidQuery } from '@modules/nodes/queries/get-node-by-uuid';
+import { GetUserByUniqueFieldQuery } from '@modules/users/queries/get-user-by-unique-field';
 
 import { QUEUES_NAMES } from '@queue/queue.enum';
 
-import { IFireTorrentBlockerEventJobData, IFireUserEventJobData } from '../interfaces';
 import { USERS_JOB_NAMES } from '../constants/users-job-name.constant';
+import { IFireTorrentBlockerEventJobData, IFireUserEventJobData } from '../interfaces';
 
 @Processor(QUEUES_NAMES.USERS.USER_EVENTS, {
     concurrency: 50,
@@ -110,10 +110,18 @@ export class UserEventsQueueProcessor extends WorkerHost {
                     );
 
                     break;
-                case EVENTS.USER.EXPIRE_NOTIFY_EXPIRES_IN_72_HOURS:
-                case EVENTS.USER.EXPIRE_NOTIFY_EXPIRES_IN_48_HOURS:
-                case EVENTS.USER.EXPIRE_NOTIFY_EXPIRES_IN_24_HOURS:
-                case EVENTS.USER.EXPIRE_NOTIFY_EXPIRED_24_HOURS_AGO:
+                case EVENTS.USER.EXPIRATION:
+                    this.eventEmitter.emit(
+                        userEvent as string,
+                        new UserEvent({
+                            user,
+                            event: userEvent,
+                            meta,
+                            skipTelegramNotification,
+                        }),
+                    );
+
+                    break;
                 case EVENTS.USER.FIRST_CONNECTED:
                     this.eventEmitter.emit(
                         userEvent as string,

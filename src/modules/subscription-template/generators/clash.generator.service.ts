@@ -1,7 +1,9 @@
-import yaml from 'yaml';
 import _ from 'lodash';
+import yaml from 'yaml';
 
 import { Injectable, Logger } from '@nestjs/common';
+
+import { FINGERPRINTS } from '@libs/contracts/constants';
 
 import { SubscriptionTemplateService } from '@modules/subscription-template/subscription-template.service';
 
@@ -46,6 +48,7 @@ interface ClashData {
 
 const UNSUPPORTED_TRANSPORTS = new Set(['hysteria', 'kcp', 'xhttp']);
 const UNSUPPORTED_PROTOCOLS = new Set(['hysteria', 'vless']);
+
 @Injectable()
 export class ClashGeneratorService {
     private readonly logger = new Logger(ClashGeneratorService.name);
@@ -141,7 +144,8 @@ export class ClashGeneratorService {
                     node.alpn = opts.alpn.split(',');
                 }
 
-                if (opts.allowInsecure) {
+                // allowInsecure
+                if (opts.pinnedPeerCertSha256) {
                     node['skip-cert-verify'] = true;
                 }
                 break;
@@ -154,12 +158,12 @@ export class ClashGeneratorService {
     }
 
     private resolveFingerprint(host: ResolvedProxyConfig): string {
-        switch (host.security) {
-            case 'tls':
-                return host.securityOptions.fingerprint ?? 'chrome';
-            default:
-                return 'chrome';
+        const raw = host.securityOptions?.fingerprint?.toLowerCase();
+        if (!raw) {
+            return 'chrome';
         }
+
+        return FINGERPRINTS.find((fp) => raw.includes(fp)) ?? 'chrome';
     }
 
     private resolveClashNetwork(host: ResolvedProxyConfig): string {

@@ -1,3 +1,5 @@
+import { hasher } from 'node-object-hash';
+import { readFileSync } from 'node:fs';
 import {
     BalancingRule,
     InboundConfig,
@@ -9,8 +11,6 @@ import {
     VLessInboundConfig,
     XrayConfig,
 } from 'xray-typed';
-import { hasher } from 'node-object-hash';
-import { readFileSync } from 'node:fs';
 
 import { HashedSet } from '@remnawave/hashed-set';
 
@@ -30,6 +30,7 @@ const ALLOWED_PROTOCOLS = new Set([
     'mixed',
     'shadowsocks',
     'trojan',
+    'tun',
     'tunnel',
     'vless',
     'wireguard',

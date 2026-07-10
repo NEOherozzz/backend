@@ -12,7 +12,7 @@ RUN apk add --no-cache curl unzip ca-certificates \
     && curl -L https://validator.remna.dev/xray.schema.cn.json -o frontend_temp/dist/assets/xray.schema.cn.json \
     && curl -L https://validator.remna.dev/main.wasm -o frontend_temp/dist/assets/main.wasm
 
-FROM node:24.14-trixie-slim AS backend-build
+FROM node:24.18-trixie-slim AS backend-build
 WORKDIR /opt/app
 
 # RUN apk add python3 python3-dev build-base pkgconfig libunwind-dev
@@ -27,7 +27,7 @@ COPY prisma.config.ts ./prisma.config.ts
 COPY patches ./patches
 
 
-RUN npm ci
+RUN npm ci --prefer-offline --no-audit --no-fund
 
 COPY . .
 
@@ -39,7 +39,7 @@ RUN npm cache clean --force
 
 RUN npm prune --omit=dev
 
-FROM node:24.14-trixie-slim
+FROM node:24.18-trixie-slim
 
 LABEL org.opencontainers.image.title="Remnawave"
 LABEL org.opencontainers.image.description="Powerful proxy management tool"
@@ -88,13 +88,11 @@ ENV __RW_METADATA_BUILD_NUMBER=${__RW_METADATA_BUILD_NUMBER}
 COPY --from=backend-build /opt/app/dist ./dist
 COPY --from=frontend /opt/frontend/frontend_temp/dist ./frontend
 COPY --from=backend-build /opt/app/prisma ./prisma
-COPY --from=backend-build /opt/app/patches ./patches
 COPY --from=backend-build /opt/app/node_modules ./node_modules
 
 COPY configs /var/lib/remnawave/configs
 COPY package*.json ./
 COPY prisma.config.ts ./prisma.config.ts
-COPY libs ./libs
 
 COPY ecosystem.config.js ./
 COPY docker-entrypoint.sh ./

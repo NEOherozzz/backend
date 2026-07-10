@@ -2,16 +2,16 @@ import { InjectMetric } from '@willsoto/nestjs-prometheus';
 import { Counter, Gauge } from 'prom-client';
 
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
 import { QueryBus } from '@nestjs/cqrs';
+import { Cron } from '@nestjs/schedule';
 
 import { resolveCountryEmoji } from '@common/utils/resolve-country-emoji';
 import { METRIC_NAMES } from '@libs/contracts/constants';
 
 import { GetAllNodesQuery } from '@modules/nodes/queries/get-all-nodes/get-all-nodes.query';
 
-import { INodeBaseMetricLabels } from '@scheduler/metrics-providers';
 import { JOBS_INTERVALS } from '@scheduler/intervals';
+import { INodeBaseMetricLabels } from '@scheduler/metrics-providers';
 
 @Injectable()
 export class SyncMetricsTask {
@@ -49,6 +49,12 @@ export class SyncMetricsTask {
         public nodeSystemInfo: Gauge<string>,
         @InjectMetric(METRIC_NAMES.NODE_BASIC_INFO)
         public nodeBasicInfo: Gauge<string>,
+        @InjectMetric(METRIC_NAMES.NODE_CPU_LOAD_AVG_1M)
+        public nodeCpuLoadAvg1m: Gauge<string>,
+        @InjectMetric(METRIC_NAMES.NODE_CPU_LOAD_AVG_5M)
+        public nodeCpuLoadAvg5m: Gauge<string>,
+        @InjectMetric(METRIC_NAMES.NODE_CPU_LOAD_AVG_15M)
+        public nodeCpuLoadAvg15m: Gauge<string>,
         private readonly queryBus: QueryBus,
     ) {}
 
@@ -97,6 +103,9 @@ export class SyncMetricsTask {
                 this.nodeNetworkTxBytesTotal,
                 this.nodeBasicInfo,
                 this.nodeSystemInfo,
+                this.nodeCpuLoadAvg1m,
+                this.nodeCpuLoadAvg5m,
+                this.nodeCpuLoadAvg15m,
                 this.nodeInboundUploadBytes,
                 this.nodeInboundDownloadBytes,
                 this.nodeOutboundUploadBytes,

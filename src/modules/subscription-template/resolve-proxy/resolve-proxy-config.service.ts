@@ -1,3 +1,5 @@
+import { filter, shuffle } from 'lodash';
+import { customAlphabet } from 'nanoid';
 import {
     GRPCConfig,
     HTTPUpgradeConfig,
@@ -9,26 +11,25 @@ import {
     TCPConfig,
     WebSocketConfig,
 } from 'xray-typed';
-import { filter, shuffle } from 'lodash';
-import { customAlphabet } from 'nanoid';
 
-import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 
+import { TypedConfigService } from '@common/config/app-config';
 import {
     resolveEncryptionFromDecryption,
     resolveInboundAndMlDsa65PublicKey,
     resolveInboundAndPublicKey,
 } from '@common/helpers/xray-config';
 import { getSsPassword, isSS2022MethodFromMethod } from '@common/helpers/xray-config/ss-cipher';
+import { getVlessFlow } from '@common/utils/flow';
 import { TemplateEngine } from '@common/utils/templates/replace-templates-values';
 import { setVlessRouteForUuid } from '@common/utils/vless-route';
-import { getVlessFlow } from '@common/utils/flow';
 import { SECURITY_LAYERS, USERS_STATUS } from '@libs/contracts/constants';
 
-import { SubscriptionSettingsEntity } from '@modules/subscription-settings/entities/subscription-settings.entity';
-import { HostWithRawInbound } from '@modules/hosts/entities/host-with-inbound-tag.entity';
 import { ExternalSquadEntity } from '@modules/external-squads/entities';
+import { HostWithRawInbound } from '@modules/hosts/entities/host-with-inbound-tag.entity';
+import { ISRRContext } from '@modules/subscription-response-rules/interfaces';
+import { SubscriptionSettingsEntity } from '@modules/subscription-settings/entities/subscription-settings.entity';
 import { UserEntity } from '@modules/users/entities';
 
 import {
@@ -46,7 +47,7 @@ import {
 } from './interfaces';
 import { override, toNonEmptyRecord } from './utils';
 
-interface IResolveProxyConfigOptions {
+export interface IResolveProxyConfigOptions {
     subscriptionSettings: SubscriptionSettingsEntity | null;
     hosts: HostWithRawInbound[];
     user: UserEntity;
@@ -55,6 +56,7 @@ interface IResolveProxyConfigOptions {
         showHwidMaxDeviceRemarks?: boolean;
         showHwidNotSupportedRemarks?: boolean;
     };
+    excludeHostsByTags?: ISRRContext['excludeHostsByTags'];
 }
 
 @Injectable()
@@ -64,7 +66,7 @@ export class ResolveProxyConfigService {
     private readonly domainRegex =
         /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
 
-    constructor(private readonly configService: ConfigService) {
+    constructor(private readonly configService: TypedConfigService) {
         this.nanoid = customAlphabet('0123456789abcdefghjkmnopqrstuvwxyz', 10);
         this.subPublicDomain = this.configService.getOrThrow('SUB_PUBLIC_DOMAIN');
     }
@@ -72,10 +74,17 @@ export class ResolveProxyConfigService {
     public async resolveProxyConfig(
         options: IResolveProxyConfigOptions,
     ): Promise<ResolvedProxyConfig[]> {
-        const { user, hostsOverrides, subscriptionSettings, fallbackOptions } = options;
+        const { user, hostsOverrides, subscriptionSettings, fallbackOptions, excludeHostsByTags } =
+            options;
 
         if (subscriptionSettings === null) {
             return [];
+        }
+
+        if (excludeHostsByTags) {
+            options.hosts = options.hosts.filter(
+                (h) => !h.tags.some((tag) => excludeHostsByTags.has(tag)),
+            );
         }
 
         const earlyRemarks = this.resolveEarlyExitRemarks(
@@ -102,16 +111,17 @@ export class ResolveProxyConfigService {
         const knownRemarks = new Map<string, number>();
         const resolvedProxyConfigs: ResolvedProxyConfig[] = [];
 
+        const userValueMap = TemplateEngine.createUserValueMap(
+            user,
+            subscriptionSettings,
+            this.subPublicDomain,
+        );
+
         for (const inputHost of hosts) {
             this.applyHostOverrides(inputHost, hostsOverrides);
 
             const finalRemark = this.deduplicateRemark(
-                TemplateEngine.formatWithUser(
-                    inputHost.remark,
-                    user,
-                    subscriptionSettings,
-                    this.subPublicDomain,
-                ),
+                TemplateEngine.replace(inputHost.remark, userValueMap),
                 knownRemarks,
             );
 
@@ -169,7 +179,10 @@ export class ResolveProxyConfigService {
     private resolveTransport(
         streamSettings: StreamSettingsConfig | undefined,
         inputHost: HostWithRawInbound,
-        vlessUuid: string,
+        protocol: ProtocolVariant,
+        authOptions: {
+            vlessUuid: string;
+        },
     ): TransportVariant {
         const rawNetwork = streamSettings?.network;
 
@@ -198,7 +211,12 @@ export class ResolveProxyConfigService {
             case 'kcp':
                 return this.resolveKcp(streamSettings.kcpSettings);
             case 'hysteria':
-                return this.resolveHysteria(streamSettings.hysteriaSettings, vlessUuid);
+                return this.resolveHysteria(
+                    streamSettings.hysteriaSettings,
+                    authOptions.vlessUuid,
+                    protocol,
+                    inputHost.vlessRouteId,
+                );
             default:
                 return {
                     transport: 'tcp',
@@ -219,7 +237,7 @@ export class ResolveProxyConfigService {
                 path: override(inputHost.path, settings?.path),
                 host: this.resolveRandomizedValue(override(inputHost.host, settings?.host) ?? ''),
                 mode: settings?.mode ?? 'auto',
-                extra: override(toNonEmptyRecord(inputHost.xHttpExtraParams), settings?.extra),
+                extra: override(toNonEmptyRecord(inputHost.xhttpExtraParams), settings?.extra),
             },
         };
     }
@@ -321,7 +339,7 @@ export class ResolveProxyConfigService {
             transport: 'kcp',
             transportOptions: {
                 clientMtu: settings?.clientMtu || settings?.mtu || 1350,
-                tti: settings?.tti || 50,
+                clientTti: settings?.clientTti || settings?.tti || 50,
                 congestion: settings?.congestion || false,
             },
         };
@@ -330,12 +348,21 @@ export class ResolveProxyConfigService {
     private resolveHysteria(
         settings: HysteriaConfig | undefined,
         vlessUuid: string,
+        protocol: ProtocolVariant,
+        vlessRouteId: number | null,
     ): HysteriaTransport {
+        let auth: string = '';
+        if (protocol.protocol === 'hysteria') {
+            auth = setVlessRouteForUuid(vlessUuid, vlessRouteId);
+        } else if (settings?.auth) {
+            auth = settings.auth;
+        }
+
         return {
             transport: 'hysteria',
             transportOptions: {
                 version: 2,
-                auth: vlessUuid,
+                auth,
             },
         };
     }
@@ -378,7 +405,6 @@ export class ResolveProxyConfigService {
                 return {
                     security: 'tls',
                     securityOptions: {
-                        allowInsecure: inputHost.allowInsecure,
                         alpn,
                         enableSessionResumption: !!tls?.enableSessionResumption,
                         fingerprint: override(inputHost.fingerprint, tls?.fingerprint) ?? 'chrome',
@@ -389,16 +415,15 @@ export class ResolveProxyConfigService {
                         ),
                         echConfigList: tls?.echConfigList || null,
                         echForceQuery: tls?.echForceQuery || null,
+                        pinnedPeerCertSha256: inputHost.pinnedPeerCertSha256,
+                        verifyPeerCertByName: inputHost.verifyPeerCertByName,
                     },
                 };
             }
             case 'reality': {
                 const reality = streamSettings.realitySettings;
                 const shortIds = reality?.shortIds || [];
-                const shortId =
-                    shortIds.length > 0
-                        ? shortIds[Math.floor(Math.random() * shortIds.length)]
-                        : '';
+                const shortId = shortIds.length > 0 ? shortIds[0] : '';
 
                 return {
                     security: 'reality',
@@ -531,7 +556,9 @@ export class ResolveProxyConfigService {
             return null;
         }
 
-        const transport = this.resolveTransport(inbound.streamSettings, inputHost, user.vlessUuid);
+        const transport = this.resolveTransport(inbound.streamSettings, inputHost, protocol, {
+            vlessUuid: user.vlessUuid,
+        });
 
         const security = this.resolveSecurity(
             inbound.streamSettings,
@@ -557,6 +584,7 @@ export class ResolveProxyConfigService {
             clientOverrides: {
                 shuffleHost: inputHost.shuffleHost,
                 mihomoX25519: inputHost.mihomoX25519,
+                mihomoIpVersion: inputHost.mihomoIpVersion,
                 serverDescription: inputHost.serverDescription
                     ? Buffer.from(inputHost.serverDescription).toString('base64')
                     : null,
@@ -564,7 +592,7 @@ export class ResolveProxyConfigService {
             },
             metadata: {
                 uuid: inputHost.uuid,
-                tag: inputHost.tag,
+                tags: inputHost.tags,
                 excludeFromSubscriptionTypes: inputHost.excludeFromSubscriptionTypes,
                 inboundTag: inputHost.inboundTag,
                 configProfileUuid: inputHost.configProfileUuid,
@@ -673,10 +701,11 @@ export class ResolveProxyConfigService {
                         mihomoX25519: false,
                         serverDescription: null,
                         xrayJsonTemplate: null,
+                        mihomoIpVersion: null,
                     },
                     metadata: {
                         uuid: '00000000-0000-0000-0000-000000000000',
-                        tag: null,
+                        tags: [],
                         excludeFromSubscriptionTypes: [],
                         inboundTag: '',
                         configProfileUuid: null,

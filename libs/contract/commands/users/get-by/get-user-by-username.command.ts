@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
+import { REST_API, USERS_ROUTES } from '../../../api';
 import { getEndpointDetails } from '../../../constants';
 import { ExtendedUsersSchema } from '../../../models';
-import { REST_API, USERS_ROUTES } from '../../../api';
 
 export namespace GetUserByUsernameCommand {
     export const url = REST_API.USERS.GET_BY.USERNAME;
@@ -12,6 +12,7 @@ export namespace GetUserByUsernameCommand {
         USERS_ROUTES.GET_BY.USERNAME(':username'),
         'get',
         'Get user by username',
+        { scope: 'by-username', kind: 'read' },
     );
 
     export const RequestSchema = z.object({

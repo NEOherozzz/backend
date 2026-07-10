@@ -1,5 +1,5 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { NodesUserUsageHistoryRepository } from '../../repositories/nodes-user-usage-history.repository';
 import { TruncateNodesUserUsageHistoryCommand } from './truncate-nodes-user-usage-history.command';

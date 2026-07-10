@@ -1,5 +1,3 @@
-import { createZodDto } from 'nestjs-zod';
-
 import {
     FetchIpsCommand,
     FetchIpsResultCommand,
@@ -7,6 +5,7 @@ import {
     FetchUsersIpsResultCommand,
     FetchUsersIpsCommand,
 } from '@contract/commands';
+import { createZodDto } from 'nestjs-zod';
 
 export class FetchIpsRequestDto extends createZodDto(FetchIpsCommand.RequestSchema) {}
 

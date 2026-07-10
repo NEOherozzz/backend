@@ -38,3 +38,11 @@ export function hasContent<T>(value: T | undefined | null): value is NonNullable
 export function isNonEmptyObject(value: unknown): value is Record<string, unknown> {
     return value != null && typeof value === 'object' && Object.keys(value).length > 0;
 }
+
+export function nullifyEmpty<T extends object>(value: T | null | undefined): T | null | undefined;
+export function nullifyEmpty(value: unknown): object | null | undefined;
+export function nullifyEmpty(value: unknown): object | null | undefined {
+    if (value === null || value === undefined) return value;
+    if (typeof value === 'object' && Object.keys(value).length === 0) return null;
+    return value as object;
+}

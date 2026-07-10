@@ -1,13 +1,13 @@
 import { z } from 'zod';
 
+import { REST_API, SUBSCRIPTION_SETTINGS_ROUTES } from '../../api';
+import { getEndpointDetails } from '../../constants';
 import {
     CustomRemarksSchema,
     HwidSettingsSchema,
     ResponseRulesConfigSchema,
     SubscriptionSettingsSchema,
 } from '../../models';
-import { REST_API, SUBSCRIPTION_SETTINGS_ROUTES } from '../../api';
-import { getEndpointDetails } from '../../constants';
 
 export namespace UpdateSubscriptionSettingsCommand {
     export const url = REST_API.SUBSCRIPTION_SETTINGS.UPDATE;
@@ -17,6 +17,7 @@ export namespace UpdateSubscriptionSettingsCommand {
         SUBSCRIPTION_SETTINGS_ROUTES.UPDATE,
         'patch',
         'Update subscription settings',
+        { scope: 'update', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

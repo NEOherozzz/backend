@@ -1,13 +1,13 @@
 import { NestJsPrismaKyselyModule } from '@kastov/nestjs-prisma-kysely';
+import { TransactionHost } from '@nestjs-cls/transactional';
+import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 import { CamelCasePlugin } from 'kysely';
 
-import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
-import { TransactionHost } from '@nestjs-cls/transactional';
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
-import { TxKyselyService } from './tx-kysely.service';
 import { PrismaService } from './prisma.service';
+import { TxKyselyService } from './tx-kysely.service';
 
 @Global()
 @Module({

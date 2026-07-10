@@ -2,12 +2,12 @@ import dayjs from 'dayjs';
 
 import { Injectable, Logger } from '@nestjs/common';
 
-import { getDateRangeArrayUtil } from '@common/utils';
 import { fail, ok, TResult } from '@common/types';
+import { getDateRangeArrayUtil } from '@common/utils';
 import { ERRORS } from '@libs/contracts/constants';
 
-import { NodesUsageHistoryRepository } from './repositories/nodes-usage-history.repository';
 import { GetStatsNodesUsageResponseModel } from './models';
+import { NodesUsageHistoryRepository } from './repositories/nodes-usage-history.repository';
 
 @Injectable()
 export class NodesUsageHistoryService {

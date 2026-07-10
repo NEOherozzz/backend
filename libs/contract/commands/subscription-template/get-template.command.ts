@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 import { REST_API, SUBSCRIPTION_TEMPLATE_ROUTES } from '../../api';
-import { SubscriptionTemplateSchema } from '../../models';
 import { getEndpointDetails } from '../../constants';
+import { SubscriptionTemplateSchema } from '../../models';
 
 export namespace GetSubscriptionTemplateCommand {
     export const url = REST_API.SUBSCRIPTION_TEMPLATE.GET;
@@ -12,6 +12,7 @@ export namespace GetSubscriptionTemplateCommand {
         SUBSCRIPTION_TEMPLATE_ROUTES.GET(':uuid'),
         'get',
         'Get subscription template by uuid',
+        { scope: 'get', kind: 'read' },
     );
 
     export const RequestSchema = z.object({

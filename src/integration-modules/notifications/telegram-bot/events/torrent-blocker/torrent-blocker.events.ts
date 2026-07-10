@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ConfigService } from '@nestjs/config';
 
+import { TypedConfigService } from '@common/config/app-config';
 import { NotificationsConfigService } from '@common/config/common-config';
 import { TTorrentBlockerEvents } from '@libs/contracts/constants';
 
@@ -25,11 +25,11 @@ export class TorrentBlockerEvents implements OnApplicationBootstrap {
         private readonly eventEmitter: EventEmitter2,
         private readonly notificationsConfig: NotificationsConfigService,
         private readonly telegramQueue: TelegramBotLoggerQueueService,
-        private readonly configService: ConfigService,
+        private readonly configService: TypedConfigService,
     ) {
-        this.panelDomain = this.configService.get<string>('PANEL_DOMAIN');
+        this.panelDomain = this.configService.get('PANEL_DOMAIN');
 
-        const chatId = this.configService.get<string>('TELEGRAM_NOTIFY_TBLOCKER');
+        const chatId = this.configService.get('TELEGRAM_NOTIFY_TBLOCKER');
         if (chatId) {
             [this.chatId, this.threadId] = chatId.split(':');
         }

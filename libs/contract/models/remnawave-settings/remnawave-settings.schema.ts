@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
-import { PasswordAuthSettingsSchema } from './password-auth-settings.schema';
 import { BrandingSettingsSchema } from './branding-settings.schema';
-import { PasskeySettingsSchema } from './passkey-settings.schema';
 import { Oauth2SettingsSchema } from './oauth2-settings.schema';
+import { PasskeySettingsSchema } from './passkey-settings.schema';
+import { PasswordAuthSettingsSchema } from './password-auth-settings.schema';
 
 export const RemnawaveSettingsSchema = z.object({
     passkeySettings: z.nullable(PasskeySettingsSchema),

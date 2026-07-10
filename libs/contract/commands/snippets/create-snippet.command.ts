@@ -12,6 +12,7 @@ export namespace CreateSnippetCommand {
         SNIPPETS_ROUTES.CREATE,
         'post',
         'Create snippet',
+        { scope: 'create', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

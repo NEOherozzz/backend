@@ -1,11 +1,11 @@
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
 import { fail, ok, TResult } from '@common/types';
 import { ERRORS } from '@libs/contracts/constants';
 
-import { GetUserSubpageConfigQuery } from './get-user-subpage-config.query';
 import { UsersRepository } from '../../repositories/users.repository';
+import { GetUserSubpageConfigQuery } from './get-user-subpage-config.query';
 
 @QueryHandler(GetUserSubpageConfigQuery)
 export class GetUserSubpageConfigHandler implements IQueryHandler<

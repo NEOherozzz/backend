@@ -1,12 +1,12 @@
 import { Job } from 'bullmq';
 
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { CommandBus } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { CommandBus } from '@nestjs/cqrs';
 
+import { ResetUserTrafficCommand } from '@modules/users/commands/reset-user-traffic';
 import { RevokeUserSubscriptionCommand } from '@modules/users/commands/revoke-user-subscription';
 import { UpdateUserWithServiceCommand } from '@modules/users/commands/update-user-with-service';
-import { ResetUserTrafficCommand } from '@modules/users/commands/reset-user-traffic';
 
 import { QUEUES_NAMES } from '@queue/queue.enum';
 

@@ -12,6 +12,7 @@ export namespace GetConfigProfileByUuidCommand {
         CONFIG_PROFILES_ROUTES.GET_BY_UUID(':uuid'),
         'get',
         'Get config profile by uuid',
+        { scope: 'get', kind: 'read' },
     );
 
     export const RequestSchema = z.object({

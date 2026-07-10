@@ -1,8 +1,8 @@
 import { PrometheusController } from '@willsoto/nestjs-prometheus';
 import { Response } from 'express';
 
-import { ApiBasicAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Controller, Get, Res, UseGuards } from '@nestjs/common';
+import { ApiBasicAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { METRICS_ROOT } from '@libs/contracts/api';
 

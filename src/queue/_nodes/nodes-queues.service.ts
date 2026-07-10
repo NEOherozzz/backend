@@ -1,12 +1,15 @@
 import { Queue } from 'bullmq';
 
-import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
+
+import { INodeConnectionOpts } from '@common/axios';
 
 import { IGetEnabledNodesPartialResponse } from '@modules/nodes/queries/get-enabled-nodes-partial/get-enabled-nodes-partial.query';
 
 import { QUEUES_NAMES } from '@queue/queue.enum';
 
+import { NODES_JOB_NAMES } from './constants/nodes-job-name.constant';
 import {
     IAddUsersToNodePayload,
     IAddUserToNodePayload,
@@ -26,7 +29,6 @@ import {
     IUnblockIpsPayload,
     IRecreateTablesPayload,
 } from './interfaces/executor.payload.interface';
-import { NODES_JOB_NAMES } from './constants/nodes-job-name.constant';
 
 @Injectable()
 export class NodesQueuesService implements OnApplicationBootstrap {
@@ -79,7 +81,7 @@ export class NodesQueuesService implements OnApplicationBootstrap {
         await this.startAllNodesQueue.setGlobalConcurrency(1);
     }
 
-    public async startNode(payload: { nodeUuid: string }) {
+    public async startNode(payload: { nodeUuid: string; force?: boolean }) {
         return this.startNodeQueue.add(NODES_JOB_NAMES.START_NODE, payload, {
             jobId: `${NODES_JOB_NAMES.START_NODE}-${payload.nodeUuid}`,
             removeOnComplete: true,
@@ -102,9 +104,8 @@ export class NodesQueuesService implements OnApplicationBootstrap {
                     name: NODES_JOB_NAMES.NODE_HEALTH_CHECK,
                     data: {
                         nodeUuid: node.uuid,
-                        nodeAddress: node.address,
-                        nodePort: node.port,
                         isConnected: node.isConnected,
+                        connectionOpts: node.connectionOpts,
                     } satisfies INodeHealthCheckPayload,
                     opts: {
                         jobId: `${NODES_JOB_NAMES.NODE_HEALTH_CHECK}-${node.uuid}`,
@@ -328,8 +329,7 @@ export class NodesQueuesService implements OnApplicationBootstrap {
 
     public async collectReports(payload: {
         nodeUuid: string;
-        address: string;
-        port: number | null;
+        connectionOpts: INodeConnectionOpts;
     }) {
         return this.nodePluginsQueue.add(NODES_JOB_NAMES.COLLECT_REPORTS, payload);
     }

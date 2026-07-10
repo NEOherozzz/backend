@@ -21,9 +21,13 @@ export const InfraProviderSchema = z.object({
     }),
     billingNodes: z.array(
         z.object({
-            nodeUuid: z.string().uuid(),
             name: z.string(),
-            countryCode: z.string(),
+            details: z
+                .object({
+                    nodeUuid: z.string().uuid(),
+                    countryCode: z.string(),
+                })
+                .nullable(),
         }),
     ),
 });

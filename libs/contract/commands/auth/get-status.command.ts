@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails, OAUTH2_PROVIDERS } from '../../constants';
 import { AUTH_ROUTES, REST_API } from '../../api';
+import { getEndpointDetails, OAUTH2_PROVIDERS } from '../../constants';
 
 export namespace GetStatusCommand {
     export const url = REST_API.AUTH.GET_STATUS;
@@ -11,6 +11,7 @@ export namespace GetStatusCommand {
         AUTH_ROUTES.GET_STATUS,
         'get',
         'Get the status of the authentication',
+        { scope: 'get-status', kind: 'read' },
     );
 
     export const ResponseSchema = z.object({

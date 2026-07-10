@@ -3,7 +3,7 @@ import { ISubscriptionHeaders } from '../interfaces/subscription-headers.interfa
 export class SubscriptionWithConfigResponse {
     headers: ISubscriptionHeaders;
     contentType: string;
-    body: unknown;
+    body: string;
 
     constructor(data: SubscriptionWithConfigResponse) {
         this.headers = data.headers;

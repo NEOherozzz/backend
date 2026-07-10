@@ -1,18 +1,19 @@
+import { Job } from 'bullmq';
 import { createHmac } from 'node:crypto';
-import { retry } from 'rxjs/operators';
 import { firstValueFrom } from 'rxjs';
 import { throwError } from 'rxjs';
 import { catchError } from 'rxjs';
-import { Job } from 'bullmq';
+import { retry } from 'rxjs/operators';
 
-import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
+import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 
-import { IBaseWebhookLogger } from './interfaces';
-import { WebhookLoggerJobNames } from './enums';
+import { TypedConfigService } from '@common/config/app-config';
+
 import { QUEUES_NAMES } from '../../queue.enum';
+import { WebhookLoggerJobNames } from './enums';
+import { IBaseWebhookLogger } from './interfaces';
 
 @Processor(QUEUES_NAMES.NOTIFICATIONS.WEBHOOK, {
     concurrency: 100,
@@ -24,10 +25,10 @@ export class WebhookLoggerQueueProcessor extends WorkerHost {
 
     constructor(
         private readonly httpService: HttpService,
-        private readonly configService: ConfigService,
+        private readonly configService: TypedConfigService,
     ) {
         super();
-        this.webhookSecret = this.configService.get<string>('WEBHOOK_SECRET_HEADER');
+        this.webhookSecret = this.configService.get('WEBHOOK_SECRET_HEADER');
     }
 
     async process(job: Job) {
@@ -83,7 +84,7 @@ export class WebhookLoggerQueueProcessor extends WorkerHost {
                 `Error handling "${WebhookLoggerJobNames.sendWebhook}" job: ${error}`,
             );
 
-            return { isOk: false };
+            throw new Error(error instanceof Error ? error.message : 'Unknown error');
         }
     }
 }

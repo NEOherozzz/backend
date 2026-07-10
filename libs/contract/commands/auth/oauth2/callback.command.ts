@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails, OAUTH2_PROVIDERS } from '../../../constants';
 import { AUTH_ROUTES, REST_API } from '../../../api';
+import { getEndpointDetails, OAUTH2_PROVIDERS } from '../../../constants';
 
 export namespace OAuth2CallbackCommand {
     export const url = REST_API.AUTH.OAUTH2.CALLBACK;
@@ -11,6 +11,7 @@ export namespace OAuth2CallbackCommand {
         AUTH_ROUTES.OAUTH2.CALLBACK,
         'post',
         'Callback from OAuth2',
+        { scope: 'callback', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

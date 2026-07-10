@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-import { InfraBillingAvailableNodeSchema, InfraBillingNodeSchema } from '../../models';
 import { INFRA_BILLING_ROUTES, REST_API } from '../../api';
 import { getEndpointDetails } from '../../constants';
+import { InfraBillingAvailableNodeSchema, InfraBillingNodeSchema } from '../../models';
 
 export namespace UpdateInfraBillingNodeCommand {
     export const url = REST_API.INFRA_BILLING.UPDATE_BILLING_NODE;
@@ -12,6 +12,7 @@ export namespace UpdateInfraBillingNodeCommand {
         INFRA_BILLING_ROUTES.UPDATE_BILLING_NODE,
         'patch',
         'Update infra billing nodes',
+        { scope: 'update-billing-node', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

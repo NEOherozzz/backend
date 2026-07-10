@@ -1,11 +1,11 @@
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
 import { fail, ok, TResult } from '@common/types';
 import { ERRORS } from '@libs/contracts/constants';
 
-import { NodePluginRepository } from '../../repositories/node-plugins.repository';
 import { NodePluginEntity } from '../../entities/node-plugin.entity';
+import { NodePluginRepository } from '../../repositories/node-plugins.repository';
 import { GetPluginByUuidQuery } from './get-plugin-by-uuid.query';
 
 @QueryHandler(GetPluginByUuidQuery)

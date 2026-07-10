@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../../constants';
 import { NODES_ROUTES, REST_API } from '../../../api';
+import { getEndpointDetails } from '../../../constants';
 import { NodesSchema } from '../../../models';
 
 export namespace ReorderNodeCommand {
@@ -12,6 +12,7 @@ export namespace ReorderNodeCommand {
         NODES_ROUTES.ACTIONS.REORDER,
         'post',
         'Reorder nodes',
+        { scope: 'reorder', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

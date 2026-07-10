@@ -11,6 +11,7 @@ export namespace DeleteUsersFromExternalSquadCommand {
         EXTERNAL_SQUADS_ROUTES.BULK_ACTIONS.REMOVE_USERS(':uuid'),
         'delete',
         'Delete users from external squad',
+        { scope: 'remove-users', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

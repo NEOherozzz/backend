@@ -1,5 +1,5 @@
-import { GetExternalSquadByUuidResponseModel } from './get-external-squad-by-uuid.response.model';
 import { ExternalSquadWithInfoEntity } from '../entities';
+import { GetExternalSquadByUuidResponseModel } from './get-external-squad-by-uuid.response.model';
 
 export class GetExternalSquadsResponseModel {
     public readonly total: number;

@@ -11,6 +11,7 @@ export namespace GetConnectionKeysByUuidCommand {
         SUBSCRIPTIONS_ROUTES.GET_CONNECTION_KEYS_BY_UUID(':uuid'),
         'get',
         'Get connection keys (base64 format) by uuid',
+        { scope: 'connection-keys', kind: 'read' },
     );
 
     export const RequestSchema = z.object({

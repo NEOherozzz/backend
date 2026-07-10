@@ -11,6 +11,7 @@ export namespace GetTorrentBlockerReportsStatsCommand {
         NODE_PLUGINS_ROUTES.TORRENT_BLOCKER.GET_REPORTS_STATS,
         'get',
         'Get Torrent Blocker Reports Stats',
+        { scope: 'torrent-blocker-stats', kind: 'read' },
     );
 
     export const ResponseSchema = z.object({

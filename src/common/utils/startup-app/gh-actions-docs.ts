@@ -1,8 +1,8 @@
-import { readPackageJSON } from 'pkg-types';
 import fs from 'node:fs';
+import { readPackageJSON } from 'pkg-types';
 
-import { DocumentBuilder } from '@nestjs/swagger';
 import { INestApplication } from '@nestjs/common';
+import { DocumentBuilder } from '@nestjs/swagger';
 import { SwaggerModule } from '@nestjs/swagger';
 
 import { CONTROLLERS_INFO } from '@libs/contracts/api/controllers-info';

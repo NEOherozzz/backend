@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { Cron, SchedulerRegistry } from '@nestjs/schedule';
-import { ConfigService } from '@nestjs/config';
+
+import { TypedConfigService } from '@common/config/app-config';
 
 import { JOBS_INTERVALS } from '@scheduler/intervals';
 
@@ -13,13 +14,12 @@ export class CleanOldUsageRecordsTask implements OnApplicationBootstrap {
 
     constructor(
         private readonly serviceQueueService: ServiceQueueService,
-        private readonly configService: ConfigService,
+        private readonly configService: TypedConfigService,
         private schedulerRegistry: SchedulerRegistry,
     ) {}
 
     public async onApplicationBootstrap() {
-        const isServiceEnabled =
-            this.configService.getOrThrow<string>('SERVICE_CLEAN_USAGE_HISTORY') === 'true';
+        const isServiceEnabled = this.configService.getOrThrow('SERVICE_CLEAN_USAGE_HISTORY');
 
         if (isServiceEnabled) {
             const job = this.schedulerRegistry.getCronJob(CleanOldUsageRecordsTask.CRON_NAME);

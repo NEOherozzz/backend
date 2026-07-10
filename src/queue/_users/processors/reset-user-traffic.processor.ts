@@ -12,8 +12,8 @@ import { EVENTS } from '@libs/contracts/constants/events/events';
 import { BatchResetLimitedUsersTrafficCommand } from '@modules/users/commands/batch-reset-limited-users-traffic';
 import { BatchResetUserTrafficCommand } from '@modules/users/commands/batch-reset-user-traffic';
 
-import { PushFromRedisQueueService } from '@queue/push-from-redis/push-from-redis.service';
 import { NodesQueuesService } from '@queue/_nodes';
+import { PushFromRedisQueueService } from '@queue/push-from-redis/push-from-redis.service';
 import { QUEUES_NAMES } from '@queue/queue.enum';
 
 import { USERS_JOB_NAMES } from '../constants/users-job-name.constant';

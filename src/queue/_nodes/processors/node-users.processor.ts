@@ -7,8 +7,8 @@ import { AxiosService } from '@common/axios';
 
 import { QUEUES_NAMES } from '@queue/queue.enum';
 
-import { IAddUserToNodePayload, IRemoveUserFromNodePayload } from '../interfaces';
 import { NODES_JOB_NAMES } from '../constants/nodes-job-name.constant';
+import { IAddUserToNodePayload, IRemoveUserFromNodePayload } from '../interfaces';
 
 @Processor(QUEUES_NAMES.NODES.USERS, {
     concurrency: 75,
@@ -35,7 +35,11 @@ export class NodeUsersQueueProcessor extends WorkerHost {
     private async handleAddUserToNode(job: Job<IAddUserToNodePayload>) {
         try {
             const { data, node } = job.data;
-            const result = await this.axios.addUser(data, node.address, node.port);
+            const result = await this.axios.addUser(data, {
+                address: node.address,
+                port: node.port,
+                proxyUrl: node.proxyUrl,
+            });
 
             if (!result.isOk) {
                 this.logger.error(
@@ -54,7 +58,11 @@ export class NodeUsersQueueProcessor extends WorkerHost {
         try {
             const { data, node } = job.data;
 
-            const result = await this.axios.deleteUser(data, node.address, node.port);
+            const result = await this.axios.deleteUser(data, {
+                address: node.address,
+                port: node.port,
+                proxyUrl: node.proxyUrl,
+            });
 
             if (!result.isOk) {
                 this.logger.error(

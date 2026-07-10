@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-import { ExtendedUsersSchema, ResolvedProxyConfigSchema } from '../../../models';
 import { REST_API, SUBSCRIPTIONS_ROUTES } from '../../../api';
 import { getEndpointDetails } from '../../../constants';
+import { ExtendedUsersSchema, ResolvedProxyConfigSchema } from '../../../models';
 
 export namespace GetRawSubscriptionByShortUuidCommand {
     export const url = REST_API.SUBSCRIPTIONS.GET_BY.SHORT_UUID_RAW;
@@ -12,6 +12,7 @@ export namespace GetRawSubscriptionByShortUuidCommand {
         SUBSCRIPTIONS_ROUTES.GET_BY.SHORT_UUID_RAW(':shortUuid'),
         'get',
         'Get Raw Subscription by Short UUID',
+        { scope: 'raw', kind: 'read' },
     );
 
     export const RequestSchema = z.object({
@@ -38,7 +39,14 @@ export namespace GetRawSubscriptionByShortUuidCommand {
                 trafficLimit: z.string(),
                 trafficUsed: z.string(),
                 lifetimeTrafficUsed: z.string(),
-                isHwidLimited: z.boolean(),
+                hwidCheckup: z
+                    .object({
+                        subscriptionAllowed: z.boolean(),
+                        maxDeviceReached: z.boolean(),
+                        hwidNotSupported: z.boolean(),
+                        limitBypassed: z.boolean(),
+                    })
+                    .nullable(),
             }),
             headers: z.record(z.string(), z.string().optional()),
             resolvedProxyConfigs: z.array(ResolvedProxyConfigSchema),

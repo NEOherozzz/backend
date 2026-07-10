@@ -1,5 +1,5 @@
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
 import { fail, ok, TResult } from '@common/types';
 import { ERRORS } from '@libs/contracts/constants';
@@ -19,7 +19,7 @@ export class CheckHwidExistsHandler implements IQueryHandler<
         try {
             const result = await this.hwidUserDevicesRepository.checkHwidExists(
                 query.hwid,
-                query.userUuid,
+                query.userId,
             );
 
             return ok({ exists: result });

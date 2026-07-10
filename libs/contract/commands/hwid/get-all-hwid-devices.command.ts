@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-import { HwidUserDeviceSchema, TanstackQueryRequestQuerySchema } from '../../models';
-import { getEndpointDetails } from '../../constants';
 import { HWID_ROUTES, REST_API } from '../../api';
+import { getEndpointDetails } from '../../constants';
+import { HwidUserDeviceSchema, TanstackQueryRequestQuerySchema } from '../../models';
 
 export namespace GetAllHwidDevicesCommand {
     export const url = REST_API.HWID.GET_ALL_HWID_DEVICES;
@@ -12,6 +12,7 @@ export namespace GetAllHwidDevicesCommand {
         HWID_ROUTES.GET_ALL_HWID_DEVICES,
         'get',
         'Get all HWID devices',
+        { scope: 'list', kind: 'read' },
     );
 
     export const RequestQuerySchema = TanstackQueryRequestQuerySchema;

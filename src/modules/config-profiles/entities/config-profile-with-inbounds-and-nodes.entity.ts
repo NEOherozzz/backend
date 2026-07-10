@@ -1,5 +1,5 @@
-import { JsonArray, JsonObject } from '@prisma/client/runtime/library';
 import { ConfigProfiles } from '@prisma/client';
+import { JsonArray, JsonObject } from '@prisma/client/runtime/library';
 
 import { ConfigProfileInboundEntity } from './config-profile-inbound.entity';
 

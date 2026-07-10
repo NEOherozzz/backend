@@ -1,5 +1,5 @@
-import { BaseSnippetResponseModel } from './base-snippet.response.model';
 import { SnippetEntity } from '../entities';
+import { BaseSnippetResponseModel } from './base-snippet.response.model';
 
 export class GetSnippetsResponseModel {
     public readonly total: number;

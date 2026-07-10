@@ -11,6 +11,7 @@ export namespace DeleteConfigProfileCommand {
         CONFIG_PROFILES_ROUTES.DELETE(':uuid'),
         'delete',
         'Delete config profile',
+        { scope: 'delete', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

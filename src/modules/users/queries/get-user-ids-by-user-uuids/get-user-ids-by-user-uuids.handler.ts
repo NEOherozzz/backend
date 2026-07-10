@@ -1,11 +1,11 @@
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
 import { fail, ok, TResult } from '@common/types';
 import { ERRORS } from '@libs/contracts/constants';
 
-import { GetUserIdsByUserUuidsQuery } from './get-user-ids-by-user-uuids.query';
 import { UsersRepository } from '../../repositories/users.repository';
+import { GetUserIdsByUserUuidsQuery } from './get-user-ids-by-user-uuids.query';
 
 @QueryHandler(GetUserIdsByUserUuidsQuery)
 export class GetUserIdsByUserUuidsHandler implements IQueryHandler<

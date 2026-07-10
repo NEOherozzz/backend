@@ -1,9 +1,10 @@
 import { Queue } from 'bullmq';
 import { chunk } from 'lodash';
 
-import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 
+import { TypedConfigService } from '@common/config/app-config';
 import { md5 } from '@common/utils';
 import { TUsersStatus } from '@libs/contracts/constants';
 
@@ -11,6 +12,7 @@ import { BulkAllUpdateUsersRequestDto, BulkUpdateUsersRequestDto } from '@module
 
 import { QUEUES_NAMES } from '@queue/queue.enum';
 
+import { USERS_JOB_NAMES } from './constants/users-job-name.constant';
 import {
     IAddUserSubscriptionRequestHistoryPayload,
     ICheckAndUpsertHwidDevicePayload,
@@ -18,13 +20,13 @@ import {
     IFireUserEventJobData,
     IFireUserEventPayload,
 } from './interfaces';
-import { USERS_JOB_NAMES } from './constants/users-job-name.constant';
 
 @Injectable()
 export class UsersQueuesService implements OnApplicationBootstrap {
     protected readonly logger: Logger = new Logger(UsersQueuesService.name);
-
+    private readonly disableSrhRecords: boolean;
     constructor(
+        private readonly configService: TypedConfigService,
         @InjectQueue(QUEUES_NAMES.USERS.MODIFY_MANY) private readonly modifyManyUsersQueue: Queue,
         @InjectQueue(QUEUES_NAMES.USERS.SERIAL_OPERATIONS)
         private readonly serialUsersOperationsQueue: Queue,
@@ -38,7 +40,9 @@ export class UsersQueuesService implements OnApplicationBootstrap {
         private readonly userEventsQueue: Queue,
         @InjectQueue(QUEUES_NAMES.USERS.UPDATE_USERS_USAGE)
         private readonly updateUsersUsageQueue: Queue,
-    ) {}
+    ) {
+        this.disableSrhRecords = this.configService.getOrThrow('SERVICE_DISABLE_SRH_RECORDS');
+    }
 
     get queues() {
         return {
@@ -136,6 +140,10 @@ export class UsersQueuesService implements OnApplicationBootstrap {
     }
 
     public async addSubscriptionRequestRecord(payload: IAddUserSubscriptionRequestHistoryPayload) {
+        if (this.disableSrhRecords) {
+            return;
+        }
+
         return this.subscriptionRequestsQueue.add(
             USERS_JOB_NAMES.ADD_SUBSCRIPTION_REQUEST_RECORD,
             payload,
@@ -148,7 +156,7 @@ export class UsersQueuesService implements OnApplicationBootstrap {
                     age: 24 * 3_600,
                 },
                 deduplication: {
-                    id: md5(`${payload.userUuid}_AR`),
+                    id: md5(`${payload.userId}_AR`),
                 },
             },
         );
@@ -164,7 +172,7 @@ export class UsersQueuesService implements OnApplicationBootstrap {
                 age: 24 * 3_600,
             },
             deduplication: {
-                id: md5(`${payload.userUuid}-${payload.hwid}_CAUHD`),
+                id: md5(`${payload.userId}-${payload.hwid}_CAUHD`),
             },
         });
     }

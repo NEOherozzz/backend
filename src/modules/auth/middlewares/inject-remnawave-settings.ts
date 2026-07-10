@@ -3,8 +3,8 @@ import { Request, Response, NextFunction } from 'express';
 import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 
-import { GetCachedRemnawaveSettingsQuery } from '@modules/remnawave-settings/queries/get-cached-remnawave-settings/get-cached-remnawave-settings.query';
 import { RemnawaveSettingsEntity } from '@modules/remnawave-settings/entities';
+import { GetCachedRemnawaveSettingsQuery } from '@modules/remnawave-settings/queries/get-cached-remnawave-settings/get-cached-remnawave-settings.query';
 
 @Injectable()
 export class InjectRemnawaveSettingsMiddleware implements NestMiddleware {

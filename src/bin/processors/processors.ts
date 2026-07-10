@@ -2,21 +2,23 @@
     return this.toString();
 };
 
-import { utilities as nestWinstonModuleUtilities, WinstonModule } from 'nest-winston';
+process.title = 'rw-processor';
+
+import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+import { utilities as nestWinstonModuleUtilities, WinstonModule } from 'nest-winston';
 import { createLogger } from 'winston';
 import * as winston from 'winston';
-import utc from 'dayjs/plugin/utc';
-import dayjs from 'dayjs';
 
 import { NestFactory } from '@nestjs/core';
 
+import { AxiosService } from '@common/axios';
 import { NotFoundExceptionFilter } from '@common/exception/not-found-exception.filter';
 import { WorkerRoutesGuard } from '@common/guards/worker-routes/worker-routes.guard';
 import { customLogFilter } from '@common/utils/filter-logs/filter-logs';
 import { isDevOrDebugLogsEnabled } from '@common/utils/startup-app';
-import { AxiosService } from '@common/axios';
 import { METRICS_ROOT } from '@libs/contracts/api';
 
 import { ProcessorsRootModule } from './processors.root.module';

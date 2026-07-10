@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../../constants';
 import { REST_API, USERS_ROUTES } from '../../../api';
+import { getEndpointDetails } from '../../../constants';
 import { UsersSchema } from '../../../models';
 
 export namespace BulkDeleteUsersByStatusCommand {
@@ -12,6 +12,7 @@ export namespace BulkDeleteUsersByStatusCommand {
         USERS_ROUTES.BULK.DELETE_BY_STATUS,
         'post',
         'Bulk delete users by status',
+        { scope: 'bulk-delete-by-status', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

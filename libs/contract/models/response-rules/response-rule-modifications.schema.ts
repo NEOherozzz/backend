@@ -1,5 +1,10 @@
 import z from 'zod';
 
+export const ResponseRuleEncryptionSchema = z.object({
+    method: z.enum(['age1', 'age1pq1']),
+    key: z.string(),
+});
+
 export const ResponseRuleModificationsSchema = z
     .object({
         headers: z
@@ -106,6 +111,39 @@ export const ResponseRuleModificationsSchema = z
                         '- `^Happ/`\n' +
                         '- `^INCY/`\n\n' +
                         '**Example:** `["^MyClient/", "^CustomApp\\\\/v2"]`',
+                }),
+            ),
+        disableHwidCheck: z
+            .boolean()
+            .optional()
+            .describe(
+                JSON.stringify({
+                    markdownDescription:
+                        'If you set this flag to **true**, the HWID check will be disabled. **This modification have higher priority than settings from Subscription Settings.**',
+                }),
+            ),
+        encryption: ResponseRuleEncryptionSchema.optional().describe(
+            JSON.stringify({
+                markdownDescription:
+                    'Encrypt response body with given parameters. Generate keypairs with Rescue CLI: `docker exec -it remnawave cli`, select "Generate keypairs".',
+            }),
+        ),
+        excludeHostsByTags: z
+            .array(
+                z
+                    .string()
+                    .regex(
+                        /^[A-Z0-9_:]+$/,
+                        'Tag can only contain uppercase letters, numbers, underscores and colons',
+                    )
+                    .max(36, 'Each tag must be less than 36 characters'),
+            )
+            .min(1)
+            .optional()
+            .describe(
+                JSON.stringify({
+                    markdownDescription:
+                        'Excludes hosts from the subscription output if at least one tag in the host matches the given tags.',
                 }),
             ),
     })

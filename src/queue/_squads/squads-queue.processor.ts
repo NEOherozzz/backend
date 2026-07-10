@@ -1,17 +1,17 @@
 import { Job } from 'bullmq';
 
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 
-import { GetAffectedConfigProfilesBySquadUuidQuery } from '@modules/internal-squads/queries/get-affected-config-profiles-by-squad-uuid';
 import { ExternalSquadBulkActionsCommand } from '@modules/external-squads/commands/external-squad-bulk-actions';
 import { InternalSquadBulkActionsCommand } from '@modules/internal-squads/commands/internal-squad-bulk-actions';
+import { GetAffectedConfigProfilesBySquadUuidQuery } from '@modules/internal-squads/queries/get-affected-config-profiles-by-squad-uuid';
 
 import { NodesQueuesService } from '@queue/_nodes';
 
-import { SQUADS_JOB_NAMES } from './constants';
 import { QUEUES_NAMES } from '../queue.enum';
+import { SQUADS_JOB_NAMES } from './constants';
 
 @Processor(QUEUES_NAMES.SQUADS.ACTIONS, {
     concurrency: 1,

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../../constants';
 import { HOSTS_ROUTES, REST_API } from '../../../api';
+import { getEndpointDetails } from '../../../constants';
 import { HostsSchema } from '../../../models';
 
 export namespace BulkEnableHostsCommand {
@@ -12,6 +12,7 @@ export namespace BulkEnableHostsCommand {
         HOSTS_ROUTES.BULK.ENABLE_HOSTS,
         'post',
         'Enable hosts by UUIDs',
+        { scope: 'bulk-enable', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

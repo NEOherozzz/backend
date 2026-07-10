@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../constants';
 import { REST_API, USERS_ROUTES } from '../../api';
+import { getEndpointDetails } from '../../constants';
 
 export namespace GetUserAccessibleNodesCommand {
     export const url = REST_API.USERS.ACCESSIBLE_NODES;
@@ -11,6 +11,7 @@ export namespace GetUserAccessibleNodesCommand {
         USERS_ROUTES.ACCESSIBLE_NODES(':uuid'),
         'get',
         'Get user accessible nodes',
+        { scope: 'accessible-nodes', kind: 'read' },
     );
 
     export const RequestSchema = z.object({

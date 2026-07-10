@@ -1,7 +1,7 @@
 import { CqrsModule } from '@nestjs/cqrs';
 
-import { createDomainQueueModule } from '@queue/queue.factory';
 import { QUEUES_NAMES } from '@queue/queue.enum';
+import { createDomainQueueModule } from '@queue/queue.factory';
 
 import {
     UsersModifyManyQueueProcessor,

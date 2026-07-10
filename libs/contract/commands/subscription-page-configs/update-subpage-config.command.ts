@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 import { REST_API, SUBSCRIPTION_PAGE_CONFIGS_ROUTES } from '../../api';
-import { SubscriptionPageConfigSchema } from '../../models';
 import { getEndpointDetails } from '../../constants';
+import { SubscriptionPageConfigSchema } from '../../models';
 
 export namespace UpdateSubscriptionPageConfigCommand {
     export const url = REST_API.SUBSCRIPTION_PAGE_CONFIGS.UPDATE;
@@ -12,6 +12,7 @@ export namespace UpdateSubscriptionPageConfigCommand {
         SUBSCRIPTION_PAGE_CONFIGS_ROUTES.UPDATE,
         'patch',
         'Update subscription page config',
+        { scope: 'update', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

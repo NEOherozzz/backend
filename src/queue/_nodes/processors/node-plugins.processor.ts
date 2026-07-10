@@ -4,6 +4,7 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 
+import { INodeConnectionOpts } from '@common/axios';
 import { AxiosService } from '@common/axios/axios.service';
 import { EVENTS } from '@libs/contracts/constants/events/events';
 
@@ -67,8 +68,11 @@ export class NodePluginsProcessor extends WorkerHost {
                     {
                         plugin: null,
                     },
-                    node.address,
-                    node.port,
+                    {
+                        address: node.address,
+                        port: node.port,
+                        proxyUrl: node.proxyUrl,
+                    },
                 );
 
                 if (!response.isOk) {
@@ -102,8 +106,11 @@ export class NodePluginsProcessor extends WorkerHost {
                         name: nodePlugin.name,
                     },
                 },
-                node.address,
-                node.port,
+                {
+                    address: node.address,
+                    port: node.port,
+                    proxyUrl: node.proxyUrl,
+                },
             );
 
             if (!syncNodePluginsResponse.isOk) {
@@ -127,12 +134,15 @@ export class NodePluginsProcessor extends WorkerHost {
     }
 
     private async handleCollectReports(
-        job: Job<{ nodeUuid: string; address: string; port: number | null }>,
+        job: Job<{
+            nodeUuid: string;
+            connectionOpts: INodeConnectionOpts;
+        }>,
     ) {
         try {
-            const { nodeUuid, address, port } = job.data;
+            const { nodeUuid, connectionOpts } = job.data;
 
-            const response = await this.axios.collectTorrentBlockerReports(address, port);
+            const response = await this.axios.collectTorrentBlockerReports(connectionOpts);
 
             if (!response.isOk) {
                 this.logger.error(`Failed to collect reports: ${response.message}`);

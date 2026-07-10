@@ -1,3 +1,4 @@
+import { Body, Controller, HttpStatus, Param, UseFilters, UseGuards } from '@nestjs/common';
 import {
     ApiBearerAuth,
     ApiConflictResponse,
@@ -6,14 +7,16 @@ import {
     ApiOkResponse,
     ApiTags,
 } from '@nestjs/swagger';
-import { Body, Controller, HttpStatus, Param, UseFilters, UseGuards } from '@nestjs/common';
 
-import { HttpExceptionFilter } from '@common/exception/http-exception.filter';
-import { JwtDefaultGuard } from '@common/guards/jwt-guards/def-jwt-guard';
-import { errorHandler } from '@common/helpers/error-handler.helper';
 import { Endpoint } from '@common/decorators/base-endpoint';
 import { Roles } from '@common/decorators/roles/roles';
+import { ApiScopeResource } from '@common/decorators/scopes';
+import { HttpExceptionFilter } from '@common/exception/http-exception.filter';
+import { JwtDefaultGuard } from '@common/guards/jwt-guards/def-jwt-guard';
 import { RolesGuard } from '@common/guards/roles';
+import { ScopesGuard } from '@common/guards/scopes';
+import { errorHandler } from '@common/helpers/error-handler.helper';
+import { CONFIG_PROFILES_CONTROLLER, CONTROLLERS_INFO } from '@libs/contracts/api';
 import {
     CreateConfigProfileCommand,
     DeleteConfigProfileCommand,
@@ -25,9 +28,9 @@ import {
     ReorderConfigProfileCommand,
     UpdateConfigProfileCommand,
 } from '@libs/contracts/commands';
-import { CONFIG_PROFILES_CONTROLLER, CONTROLLERS_INFO } from '@libs/contracts/api';
 import { ROLE } from '@libs/contracts/constants';
 
+import { ConfigProfileService } from './config-profile.service';
 import {
     CreateConfigProfileRequestDto,
     CreateConfigProfileResponseDto,
@@ -42,12 +45,12 @@ import {
     UpdateConfigProfileRequestDto,
     UpdateConfigProfileResponseDto,
 } from './dtos';
-import { ConfigProfileService } from './config-profile.service';
 
 @ApiBearerAuth('Authorization')
+@ApiScopeResource(CONTROLLERS_INFO.CONFIG_PROFILES.resource)
 @ApiTags(CONTROLLERS_INFO.CONFIG_PROFILES.tag)
 @Roles(ROLE.ADMIN, ROLE.API)
-@UseGuards(JwtDefaultGuard, RolesGuard)
+@UseGuards(JwtDefaultGuard, RolesGuard, ScopesGuard)
 @UseFilters(HttpExceptionFilter)
 @Controller(CONFIG_PROFILES_CONTROLLER)
 export class ConfigProfileController {

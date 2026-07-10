@@ -11,6 +11,7 @@ export namespace FetchIpsResultCommand {
         IP_CONTROL_ROUTES.GET_FETCH_IPS_RESULT(':jobId'),
         'get',
         'Get IP List Result by Job ID',
+        { scope: 'fetch-ips-result', kind: 'read' },
     );
 
     export const RequestSchema = z.object({

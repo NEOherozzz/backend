@@ -1,12 +1,12 @@
-import { IEventHandler, EventsHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { IEventHandler, EventsHandler } from '@nestjs/cqrs';
 
 import { RemoveUserCommand as RemoveUserFromNodeCommandSdk } from '@remnawave/node-contract';
 
 import { NodesQueuesService } from '@queue/_nodes';
 
-import { RemoveUserFromNodeEvent } from './remove-user-from-node.event';
 import { NodesRepository } from '../../repositories/nodes.repository';
+import { RemoveUserFromNodeEvent } from './remove-user-from-node.event';
 
 @EventsHandler(RemoveUserFromNodeEvent)
 export class RemoveUserFromNodeHandler implements IEventHandler<RemoveUserFromNodeEvent> {
@@ -34,10 +34,7 @@ export class RemoveUserFromNodeHandler implements IEventHandler<RemoveUserFromNo
             await this.nodesQueuesService.removeUserFromNodeBulk(
                 nodes.map((node) => ({
                     data: userData,
-                    node: {
-                        address: node.address,
-                        port: node.port,
-                    },
+                    node: node.connectionOpts,
                 })),
             );
 

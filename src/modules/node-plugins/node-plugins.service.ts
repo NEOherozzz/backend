@@ -1,7 +1,6 @@
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { nanoid } from 'nanoid';
-
 import { NodePluginSchema } from 'libs/node-plugins';
+import { nanoid } from 'nanoid';
 
 import { Injectable, Logger } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
@@ -10,12 +9,16 @@ import { fail, ok, TResult } from '@common/types';
 import { GetTorrentBlockerReportsCommand } from '@libs/contracts/commands';
 import { ERRORS } from '@libs/contracts/constants';
 
-import { GetNodesByPluginUuidQuery } from '@modules/nodes/queries/get-nodes-by-plugin-uuid';
-import { FindNodesByCriteriaQuery } from '@modules/nodes/queries/find-nodes-by-criteria';
 import { NodesEntity } from '@modules/nodes/entities/nodes.entity';
+import { FindNodesByCriteriaQuery } from '@modules/nodes/queries/find-nodes-by-criteria';
+import { GetNodesByPluginUuidQuery } from '@modules/nodes/queries/get-nodes-by-plugin-uuid';
 
 import { NodesQueuesService } from '@queue/_nodes';
 
+import { EXAMPLE_NODE_PLUGIN_CONFIG } from './constants';
+import { PluginExecutorRequestDto } from './dtos';
+import { ExtendedTorrentBlockerReportEntity } from './entities';
+import { NodePluginEntity } from './entities/node-plugin.entity';
 import {
     DeleteNodePluginResponseModel,
     BaseNodePluginResponseModel,
@@ -23,13 +26,9 @@ import {
     BaseEventResponseModel,
     TorrentBlockerReportsStatsResponseModel,
 } from './models';
-import { TorrentBlockerReportsRepository } from './repositories/torrent-blocker-report.repository';
-import { NodePluginRepository } from './repositories/node-plugins.repository';
-import { NodePluginEntity } from './entities/node-plugin.entity';
-import { ExtendedTorrentBlockerReportEntity } from './entities';
 import {} from './models/base-node-plugin.response.model';
-import { EXAMPLE_NODE_PLUGIN_CONFIG } from './constants';
-import { PluginExecutorRequestDto } from './dtos';
+import { NodePluginRepository } from './repositories/node-plugins.repository';
+import { TorrentBlockerReportsRepository } from './repositories/torrent-blocker-report.repository';
 
 @Injectable()
 export class NodePluginService {
@@ -273,6 +272,7 @@ export class NodePluginService {
                             node: {
                                 address: node.address,
                                 port: node.port,
+                                proxyUrl: node.proxyUrl,
                             },
                         });
                     }
@@ -286,6 +286,7 @@ export class NodePluginService {
                             node: {
                                 address: node.address,
                                 port: node.port,
+                                proxyUrl: node.proxyUrl,
                             },
                         });
                     }
@@ -296,6 +297,7 @@ export class NodePluginService {
                             node: {
                                 address: node.address,
                                 port: node.port,
+                                proxyUrl: node.proxyUrl,
                             },
                         });
                     }

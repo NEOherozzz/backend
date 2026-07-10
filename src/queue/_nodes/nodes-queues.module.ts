@@ -1,8 +1,9 @@
 import { CqrsModule } from '@nestjs/cqrs';
 
-import { createDomainQueueModule } from '@queue/queue.factory';
 import { QUEUES_NAMES } from '@queue/queue.enum';
+import { createDomainQueueModule } from '@queue/queue.factory';
 
+import { NodesQueuesService } from './nodes-queues.service';
 import {
     NodeHealthCheckQueueProcessor,
     NodeBulkUsersQueueProcessor,
@@ -16,7 +17,6 @@ import {
     QueryNodesQueueProcessor,
     NodePluginsProcessor,
 } from './processors';
-import { NodesQueuesService } from './nodes-queues.service';
 
 const queues = [
     { name: QUEUES_NAMES.NODES.START, processor: StartNodeProcessor },

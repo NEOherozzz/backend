@@ -1,5 +1,5 @@
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
 import { fail, ok, TResult } from '@common/types';
 import { ERRORS } from '@libs/contracts/constants';
@@ -17,7 +17,7 @@ export class CountUsersDevicesHandler implements IQueryHandler<
 
     async execute(query: CountUsersDevicesQuery): Promise<TResult<number>> {
         try {
-            const count = await this.hwidUserDevicesRepository.countByUserUuid(query.userUuid);
+            const count = await this.hwidUserDevicesRepository.countByUserId(query.userId);
 
             return ok(count);
         } catch (error) {

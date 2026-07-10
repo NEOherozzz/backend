@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../../constants';
 import { NODES_ROUTES, REST_API } from '../../../api';
+import { getEndpointDetails } from '../../../constants';
 
 export namespace BulkNodesUpdateCommand {
     export const url = REST_API.NODES.BULK_ACTIONS.UPDATE;
@@ -11,6 +11,7 @@ export namespace BulkNodesUpdateCommand {
         NODES_ROUTES.BULK_ACTIONS.UPDATE,
         'post',
         'Update many nodes',
+        { scope: 'bulk-update', kind: 'write' },
     );
 
     export const RequestSchema = z.object({
@@ -24,6 +25,13 @@ export namespace BulkNodesUpdateCommand {
                     .number()
                     .min(0.0, 'Consumption multiplier must be greater than 0.0')
                     .max(100.0, 'Consumption multiplier must be less than 100.0')
+                    .transform((n) => Number(n.toFixed(1))),
+            ),
+            nodeConsumptionMultiplier: z.optional(
+                z
+                    .number()
+                    .min(0.0, 'Node consumption multiplier must be greater than 0.0')
+                    .max(100.0, 'Node consumption multiplier must be less than 100.0')
                     .transform((n) => Number(n.toFixed(1))),
             ),
             providerUuid: z.optional(z.nullable(z.string().uuid())),
@@ -41,6 +49,9 @@ export namespace BulkNodesUpdateCommand {
                     .max(10, 'Maximum 10 tags'),
             ),
             activePluginUuid: z.optional(z.nullable(z.string().uuid())),
+            note: z.optional(
+                z.string().max(255, 'Note must be less than 255 characters').nullable(),
+            ),
         }),
     });
 

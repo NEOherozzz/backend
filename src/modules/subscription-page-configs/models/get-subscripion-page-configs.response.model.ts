@@ -1,5 +1,5 @@
-import { BaseSubscriptionPageConfigResponseModel } from './base-subpage-config.response.model';
 import { SubscriptionPageConfigEntity } from '../entities/sub-page-config.entity';
+import { BaseSubscriptionPageConfigResponseModel } from './base-subpage-config.response.model';
 
 export class GetSubscriptionPageConfigsResponseModel {
     public readonly total: number;

@@ -1,21 +1,29 @@
+import { TResetPeriods, TUsersStatus, USERS_STATUS } from '@contract/constants';
+import { Transactional, TransactionHost } from '@nestjs-cls/transactional';
+import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
+import dayjs from 'dayjs';
 import { SelectExpression, sql, ExpressionBuilder } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
-import dayjs from 'dayjs';
-
-import { TResetPeriods, TUsersStatus, USERS_STATUS } from '@contract/constants';
 import { DB } from 'prisma/generated/types';
 
-import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
-import { Transactional, TransactionHost } from '@nestjs-cls/transactional';
 import { Injectable, Logger } from '@nestjs/common';
 
-import { formatExecutionTime, getTime } from '@common/utils/get-elapsed-time';
-import { getKyselyUuid, paginateQuery } from '@common/helpers/kysely';
 import { TxKyselyService } from '@common/database/tx-kysely.service';
-import { GetAllUsersCommand } from '@libs/contracts/commands';
+import { getKyselyUuid, paginateQuery } from '@common/helpers/kysely';
+import { formatExecutionTime, getTime } from '@common/utils/get-elapsed-time';
+import { GetAllUsersCommand, GetUsersStreamCommand } from '@libs/contracts/commands';
 
 import { ConfigProfileInboundEntity } from '@modules/config-profiles/entities';
 
+import { BulkDeleteByStatusBuilder, BulkUpdateUserUsedTrafficBuilder } from '../builders';
+import { TriggerThresholdNotificationsBuilder } from '../builders/trigger-threshold-notifications-builder';
+import {
+    BaseUserEntity,
+    UserForConfigEntity,
+    UserEntity,
+    UserWithResolvedInboundEntity,
+} from '../entities';
+import { UserTrafficEntity } from '../entities/user-traffic.entity';
 import {
     IGetUserAccessibleNodes,
     IGetUserAccessibleNodesResponse,
@@ -23,15 +31,6 @@ import {
     IUserOnlineStats,
     IUserStats,
 } from '../interfaces';
-import {
-    BaseUserEntity,
-    UserForConfigEntity,
-    UserEntity,
-    UserWithResolvedInboundEntity,
-} from '../entities';
-import { TriggerThresholdNotificationsBuilder } from '../builders/trigger-threshold-notifications-builder';
-import { BulkDeleteByStatusBuilder, BulkUpdateUserUsedTrafficBuilder } from '../builders';
-import { UserTrafficEntity } from '../entities/user-traffic.entity';
 import { UserConverter } from '../users.converter';
 
 const USERS_FILTER_COLUMN_MAP = {
@@ -56,12 +55,13 @@ const USERS_FILTER_COLUMN_MAP = {
     'userTraffic.lifetimeUsedTrafficBytes': sql.ref('user_traffic.lifetime_used_traffic_bytes'),
     usedTrafficBytes: sql.ref('user_traffic.used_traffic_bytes'),
     hwidDeviceLimit: sql.ref('users.hwid_device_limit'),
+    trafficLimitBytes: sql.ref('users.traffic_limit_bytes'),
 
     activeInternalSquads: null,
     nodeName: null,
 } as const;
 
-const NUMERIC_FILTER_IDS = new Set(['hwidDeviceLimit', 'tId']);
+const NUMERIC_FILTER_IDS = new Set(['hwidDeviceLimit', 'tId', 'trafficLimitBytes']);
 
 type AllowedUsersFilterId = keyof typeof USERS_FILTER_COLUMN_MAP;
 
@@ -215,6 +215,19 @@ export class UsersRepository {
 
         if (sorting?.length) {
             for (const sort of sorting) {
+                if (sort.id === 'usedTrafficPercentage') {
+                    qb = qb.orderBy(
+                        (eb) =>
+                            eb(
+                                eb.cast<number>('userTraffic.usedTrafficBytes', 'numeric'),
+                                '/',
+                                eb.fn<number>('nullif', ['users.trafficLimitBytes', sql.lit(0)]),
+                            ),
+                        (ob) => (sort.desc ? ob.desc() : ob.asc()).nullsLast(),
+                    );
+                    continue;
+                }
+
                 const sortId = sort.id === 'id' ? 'users.tId' : sort.id;
                 qb = qb.orderBy(sql.ref(sortId), (ob) =>
                     (sort.desc ? ob.desc() : ob.asc()).nullsLast(),
@@ -227,6 +240,34 @@ export class UsersRepository {
         const { rows, count } = await paginateQuery(qb, { offset: start, limit: size });
 
         return [rows.map((u) => new UserEntity(u)), count];
+    }
+
+    public async getUsersStream({ cursor, size }: GetUsersStreamCommand.RequestQuery): Promise<{
+        users: UserEntity[];
+        nextCursor: string | null;
+        hasMore: boolean;
+    }> {
+        let qb = this.baseUsersQb.selectAll().select((eb) => this.includeActiveInternalSquads(eb));
+
+        if (cursor) {
+            qb = qb.where('users.tId', '>', BigInt(cursor));
+        }
+
+        const rows = await qb
+            .orderBy('users.tId', 'asc')
+            .limit(size + 1)
+            .execute();
+
+        const hasMore = rows.length > size;
+        if (hasMore) {
+            rows.pop();
+        }
+
+        return {
+            users: rows.map((u) => new UserEntity(u)),
+            nextCursor: hasMore ? rows[rows.length - 1].tId.toString() : null,
+            hasMore,
+        };
     }
 
     private applyUsersFilters(
@@ -341,9 +382,14 @@ export class UsersRepository {
                     qb = qb.where(col, '<=', value);
                     break;
                 case 'between': {
-                    const [from, to] = filter.value as [string, string];
+                    const [from, to] = filter.value as [string | null, string | null];
                     const castFn = NUMERIC_FILTER_IDS.has(filter.id) ? Number : (v: string) => v;
-                    qb = qb.where(col, '>=', castFn(from)).where(col, '<=', castFn(to));
+                    if (from !== null && from !== undefined && from !== '') {
+                        qb = qb.where(col, '>=', castFn(from));
+                    }
+                    if (to !== null && to !== undefined && to !== '') {
+                        qb = qb.where(col, '<=', castFn(to));
+                    }
                     break;
                 }
                 default:

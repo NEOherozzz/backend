@@ -1,21 +1,21 @@
 import { Job } from 'bullmq';
 import dayjs from 'dayjs';
-import pMap from 'p-map';
 
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 
-import { wrapBigInt, wrapBigIntNullable } from '@common/utils';
+import { TypedConfigService } from '@common/config/app-config';
 import { ok, TResult } from '@common/types';
+import { wrapBigInt, wrapBigIntNullable } from '@common/utils';
 import { EVENTS, TUsersStatus, USERS_STATUS } from '@libs/contracts/constants';
 
-import { GetUsersByExpireAtQuery } from '@modules/users/queries/get-users-by-expire-at/get-users-by-expire-at.query';
 import { BulkAllExtendExpirationDateCommand } from '@modules/users/commands/bulk-all-extend-expiration-date';
-import { BulkAllUpdateUsersRequestDto } from '@modules/users/dtos/bulk/bulk-operations.dto';
 import { BulkDeleteByStatusCommand } from '@modules/users/commands/bulk-delete-by-status';
-import { BulkUpdateAllUsersCommand } from '@modules/users/commands/bulk-update-all-users';
 import { BulkSyncUsersCommand } from '@modules/users/commands/bulk-sync-users';
+import { BulkUpdateAllUsersCommand } from '@modules/users/commands/bulk-update-all-users';
+import { BulkAllUpdateUsersRequestDto } from '@modules/users/dtos/bulk/bulk-operations.dto';
+import { GetUsersByExpireAtQuery } from '@modules/users/queries/get-users-by-expire-at/get-users-by-expire-at.query';
 
 import { NodesQueuesService } from '@queue/_nodes/nodes-queues.service';
 import { QUEUES_NAMES } from '@queue/queue.enum';
@@ -33,6 +33,7 @@ export class SerialUsersOperationsQueueProcessor extends WorkerHost {
         private readonly queryBus: QueryBus,
         private readonly nodesQueuesService: NodesQueuesService,
         private readonly commandBus: CommandBus,
+        private readonly configService: TypedConfigService,
         private readonly usersQueuesService: UsersQueuesService,
     ) {
         super();
@@ -55,68 +56,59 @@ export class SerialUsersOperationsQueueProcessor extends WorkerHost {
     }
 
     private async handleExpireUserNotifications() {
+        const intervals = this.configService.get('EXPIRATION_NOTIFICATIONS');
+
+        if (!intervals) {
+            return;
+        }
+
+        const now = dayjs().utc();
+
         try {
-            const now = dayjs().utc();
+            for (const interval of intervals) {
+                const targetTime = now.subtract(interval, 'hours');
+                const start = targetTime.startOf('minute').toDate();
+                const end = targetTime.endOf('minute').toDate();
 
-            const DATES = {
-                EXPIRES_IN_72_HOURS: {
-                    START: now.add(72, 'hour').startOf('minute').toDate(),
-                    END: now.add(72, 'hour').endOf('minute').toDate(),
-                    NAME: EVENTS.USER.EXPIRE_NOTIFY_EXPIRES_IN_72_HOURS,
-                },
-                EXPIRES_IN_48_HOURS: {
-                    START: now.add(48, 'hour').startOf('minute').toDate(),
-                    END: now.add(48, 'hour').endOf('minute').toDate(),
-                    NAME: EVENTS.USER.EXPIRE_NOTIFY_EXPIRES_IN_48_HOURS,
-                },
-                EXPIRES_IN_24_HOURS: {
-                    START: now.add(24, 'hour').startOf('minute').toDate(),
-                    END: now.add(24, 'hour').endOf('minute').toDate(),
-                    NAME: EVENTS.USER.EXPIRE_NOTIFY_EXPIRES_IN_24_HOURS,
-                },
-                EXPIRED_24_HOURS_AGO: {
-                    START: now.subtract(24, 'hour').startOf('minute').toDate(),
-                    END: now.subtract(24, 'hour').endOf('minute').toDate(),
-                    NAME: EVENTS.USER.EXPIRE_NOTIFY_EXPIRED_24_HOURS_AGO,
-                },
-            } as const;
+                const getUsersByExpireAtResult = await this.queryBus.execute(
+                    new GetUsersByExpireAtQuery(start, end),
+                );
 
-            let foundUsersCount = 0;
-            await pMap(
-                Object.values(DATES),
-                async (date) => {
-                    try {
-                        const result = await this.queryBus.execute(
-                            new GetUsersByExpireAtQuery(date.START, date.END),
-                        );
+                if (!getUsersByExpireAtResult.isOk) {
+                    continue;
+                }
 
-                        if (!result.isOk) {
-                            return;
-                        }
+                if (getUsersByExpireAtResult.response.length === 0) {
+                    continue;
+                }
 
-                        foundUsersCount += result.response.length;
+                const { response: users } = getUsersByExpireAtResult;
 
-                        if (result.response.length === 0) {
-                            return;
-                        }
+                this.logger.log(
+                    `[${USERS_JOB_NAMES.EXPIRE_USER_NOTIFICATIONS}] interval ${interval > 0 ? '+' : ''}${interval}h → ${users.length} user(s).`,
+                );
 
-                        this.logger.log(`Found ${result.response.length} users for ${date.NAME}`);
+                let skipTelegramNotification = false;
 
-                        await this.usersQueuesService.fireUserEventBulk({
-                            users: result.response,
-                            userEvent: date.NAME,
-                        });
-                    } catch (error) {
-                        this.logger.error(error);
-                    }
-                },
+                if (users.length >= 500) {
+                    this.logger.warn(
+                        'More than 500 users found for sending expiration notification, skipping Telegram events.',
+                    );
 
-                { concurrency: 4 },
-            );
+                    skipTelegramNotification = true;
+                } else {
+                    skipTelegramNotification = false;
+                }
 
-            return ok({
-                foundUsersCount,
-            });
+                await this.usersQueuesService.fireUserEventBulk({
+                    users,
+                    userEvent: EVENTS.USER.EXPIRATION,
+                    meta: {
+                        expiration: interval,
+                    },
+                    skipTelegramNotification,
+                });
+            }
         } catch (error) {
             this.logger.error(
                 `Error handling "${USERS_JOB_NAMES.EXPIRE_USER_NOTIFICATIONS}" job: ${error}`,

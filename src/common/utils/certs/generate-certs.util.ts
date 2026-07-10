@@ -1,3 +1,4 @@
+import { Crypto } from '@peculiar/webcrypto';
 import {
     cryptoProvider,
     X509CertificateGenerator,
@@ -7,9 +8,8 @@ import {
     ExtendedKeyUsageExtension,
     X509Certificate,
 } from '@peculiar/x509';
-import { generateKeyPair } from 'node:crypto';
-import { Crypto } from '@peculiar/webcrypto';
 import { customAlphabet } from 'nanoid';
+import { generateKeyPair } from 'node:crypto';
 import { promisify } from 'node:util';
 
 const generateKeyPairAsync = promisify(generateKeyPair);

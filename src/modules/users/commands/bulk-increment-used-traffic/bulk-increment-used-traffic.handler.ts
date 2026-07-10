@@ -1,12 +1,12 @@
 import { ERRORS } from '@contract/constants';
 
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { fail, ok } from '@common/types';
 
-import { BulkIncrementUsedTrafficCommand } from './bulk-increment-used-traffic.command';
 import { UsersRepository } from '../../repositories/users.repository';
+import { BulkIncrementUsedTrafficCommand } from './bulk-increment-used-traffic.command';
 
 @CommandHandler(BulkIncrementUsedTrafficCommand)
 export class BulkIncrementUsedTrafficHandler implements ICommandHandler<BulkIncrementUsedTrafficCommand> {

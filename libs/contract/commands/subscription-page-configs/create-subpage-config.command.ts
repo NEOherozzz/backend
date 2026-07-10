@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 import { REST_API, SUBSCRIPTION_PAGE_CONFIGS_ROUTES } from '../../api';
-import { SubscriptionPageConfigSchema } from '../../models';
 import { getEndpointDetails } from '../../constants';
+import { SubscriptionPageConfigSchema } from '../../models';
 
 export namespace CreateSubscriptionPageConfigCommand {
     export const url = REST_API.SUBSCRIPTION_PAGE_CONFIGS.CREATE;
@@ -12,6 +12,7 @@ export namespace CreateSubscriptionPageConfigCommand {
         SUBSCRIPTION_PAGE_CONFIGS_ROUTES.CREATE,
         'post',
         'Create subscription page config',
+        { scope: 'create', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

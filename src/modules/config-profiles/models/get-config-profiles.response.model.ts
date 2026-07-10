@@ -1,5 +1,5 @@
-import { GetConfigProfileByUuidResponseModel } from './get-config-profile-by-uuid.response.model';
 import { ConfigProfileWithInboundsAndNodesEntity } from '../entities';
+import { GetConfigProfileByUuidResponseModel } from './get-config-profile-by-uuid.response.model';
 
 export class GetConfigProfilesResponseModel {
     public readonly total: number;

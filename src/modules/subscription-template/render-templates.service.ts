@@ -1,19 +1,17 @@
 import { Injectable } from '@nestjs/common';
 
-import { SubscriptionSettingsEntity } from '@modules/subscription-settings/entities/subscription-settings.entity';
-import { HostWithRawInbound } from '@modules/hosts/entities/host-with-inbound-tag.entity';
-import { ExternalSquadEntity } from '@modules/external-squads/entities';
-import { UserEntity } from '@modules/users/entities';
-
-import { ResolveProxyConfigService } from './resolve-proxy/resolve-proxy-config.service';
-import { XrayJsonGeneratorService } from './generators/xray-json.generator.service';
-import { SingBoxGeneratorService } from './generators/singbox.generator.service';
-import { MihomoGeneratorService } from './generators/mihomo.generator.service';
-import { ClashGeneratorService } from './generators/clash.generator.service';
-import { XrayGeneratorService } from './generators/xray.generator.service';
 import { SUBSCRIPTION_CONFIG_TYPES } from './constants/config-types';
-import { ResolvedProxyConfig } from './resolve-proxy/interfaces';
+import { ClashGeneratorService } from './generators/clash.generator.service';
+import { MihomoGeneratorService } from './generators/mihomo.generator.service';
+import { SingBoxGeneratorService } from './generators/singbox.generator.service';
+import { XrayJsonGeneratorService } from './generators/xray-json.generator.service';
+import { XrayGeneratorService } from './generators/xray.generator.service';
 import { IGenerateSubscription } from './interfaces';
+import { ResolvedProxyConfig } from './resolve-proxy/interfaces';
+import {
+    IResolveProxyConfigOptions,
+    ResolveProxyConfigService,
+} from './resolve-proxy/resolve-proxy-config.service';
 
 @Injectable()
 export class RenderTemplatesService {
@@ -38,6 +36,7 @@ export class RenderTemplatesService {
             user,
             hostsOverrides,
             fallbackOptions,
+            excludeHostsByTags: srrContext.excludeHostsByTags,
         });
 
         switch (srrContext.matchedResponseType) {
@@ -107,13 +106,10 @@ export class RenderTemplatesService {
         }
     }
 
-    public async generateRawSubscription(params: {
-        user: UserEntity;
-        hosts: HostWithRawInbound[];
-        hostsOverrides: ExternalSquadEntity['hostOverrides'] | undefined;
-        subscriptionSettings: SubscriptionSettingsEntity;
-    }): Promise<ResolvedProxyConfig[]> {
-        const { user, hosts, hostsOverrides, subscriptionSettings } = params;
+    public async generateRawSubscription(
+        options: IResolveProxyConfigOptions,
+    ): Promise<ResolvedProxyConfig[]> {
+        const { user, hosts, hostsOverrides, subscriptionSettings } = options;
 
         return await this.resolveProxyConfigService.resolveProxyConfig({
             subscriptionSettings,

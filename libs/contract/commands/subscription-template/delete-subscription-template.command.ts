@@ -11,6 +11,7 @@ export namespace DeleteSubscriptionTemplateCommand {
         SUBSCRIPTION_TEMPLATE_ROUTES.DELETE(':uuid'),
         'delete',
         'Delete subscription template',
+        { scope: 'delete', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

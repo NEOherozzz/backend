@@ -1,13 +1,13 @@
 import { Queue } from 'bullmq';
 import _ from 'lodash';
 
-import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 
+import { QUEUES_NAMES } from '../../queue.enum';
 import { AbstractQueueService } from '../../queue.service';
 import { TelegramBotLoggerJobNames } from './enums';
 import { IMessageEventPayload } from './interfaces';
-import { QUEUES_NAMES } from '../../queue.enum';
 
 @Injectable()
 export class TelegramBotLoggerQueueService

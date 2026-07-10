@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
-import { ResponseRuleSettingsSchema } from './response-rule-settings.schema';
-import { EXAMPLES_SRR_BLANK_RULE } from './response-rules-examples';
 import { RESPONSE_RULES_CONFIG_VERSION } from '../../constants';
+import { ResponseRuleSettingsSchema } from './response-rule-settings.schema';
 import { ResponseRuleSchema } from './response-rule.schema';
+import { EXAMPLES_SRR_BLANK_RULE } from './response-rules-examples';
 
 export const ResponseRulesConfigSchema = z.object({
     version: z.nativeEnum(RESPONSE_RULES_CONFIG_VERSION).describe(

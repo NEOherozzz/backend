@@ -1,8 +1,8 @@
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 
-import { PassportModule } from '@nestjs/passport';
-import { ConfigModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { PassportModule } from '@nestjs/passport';
 
 import { PrometheusReporterController } from './prometheus-reporter.controller';
 import { BasicStrategy } from './strategies';

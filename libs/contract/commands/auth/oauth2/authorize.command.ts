@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails, OAUTH2_PROVIDERS } from '../../../constants';
 import { AUTH_ROUTES, REST_API } from '../../../api';
+import { getEndpointDetails, OAUTH2_PROVIDERS } from '../../../constants';
 
 export namespace OAuth2AuthorizeCommand {
     export const url = REST_API.AUTH.OAUTH2.AUTHORIZE;
@@ -11,6 +11,7 @@ export namespace OAuth2AuthorizeCommand {
         AUTH_ROUTES.OAUTH2.AUTHORIZE,
         'post',
         'Initiate OAuth2 authorization',
+        { scope: 'authorize', kind: 'read' },
     );
 
     export const RequestSchema = z.object({

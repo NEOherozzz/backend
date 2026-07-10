@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-import { TorrentBlockerReportSchema } from '../../../models';
 import { REST_API, NODE_PLUGINS_ROUTES } from '../../../api';
 import { getEndpointDetails } from '../../../constants';
+import { TorrentBlockerReportSchema } from '../../../models';
 
 export namespace TruncateTorrentBlockerReportsCommand {
     export const url = REST_API.NODE_PLUGINS.TORRENT_BLOCKER.TRUNCATE_REPORTS;
@@ -12,6 +12,7 @@ export namespace TruncateTorrentBlockerReportsCommand {
         NODE_PLUGINS_ROUTES.TORRENT_BLOCKER.TRUNCATE_REPORTS,
         'delete',
         'Truncate Torrent Blocker Reports',
+        { scope: 'truncate', kind: 'write' },
     );
 
     export const ResponseSchema = z.object({

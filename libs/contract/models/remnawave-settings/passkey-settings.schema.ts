@@ -28,7 +28,7 @@ export const PasskeySettingsSchema = z.object({
                     return true;
                 }
 
-                if (/^https:\/\/(?=.*\.[a-z]{2,})[^\s\/?#]+$/i.test(value)) {
+                if (/^https:\/\/(?=.*\.[a-z]{2,})[^\s/?#]+$/i.test(value)) {
                     return true;
                 }
 

@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-import { InfraBillingHistoryRecordSchema } from '../../models';
 import { INFRA_BILLING_ROUTES, REST_API } from '../../api';
 import { getEndpointDetails } from '../../constants';
+import { InfraBillingHistoryRecordSchema } from '../../models';
 
 export namespace CreateInfraBillingHistoryRecordCommand {
     export const url = REST_API.INFRA_BILLING.CREATE_BILLING_HISTORY;
@@ -12,6 +12,7 @@ export namespace CreateInfraBillingHistoryRecordCommand {
         INFRA_BILLING_ROUTES.CREATE_BILLING_HISTORY,
         'post',
         'Create infra billing history',
+        { scope: 'create-bill-record', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

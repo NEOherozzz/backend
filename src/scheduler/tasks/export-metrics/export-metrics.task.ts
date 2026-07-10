@@ -1,34 +1,34 @@
+import { InjectMetric } from '@willsoto/nestjs-prometheus';
+import configureMeasurements, { Converter } from 'convert-units';
 import allMeasures, {
     AllMeasures,
     AllMeasuresSystems,
     AllMeasuresUnits,
 } from 'convert-units/definitions/all';
-import configureMeasurements, { Converter } from 'convert-units';
-import { InjectMetric } from '@willsoto/nestjs-prometheus';
 import { Gauge } from 'prom-client';
 
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
 import { QueryBus } from '@nestjs/cqrs';
+import { Cron } from '@nestjs/schedule';
 
-import { resolveCountryEmoji } from '@common/utils/resolve-country-emoji';
-import { RuntimeMetric } from '@common/runtime-metrics/interfaces';
 import { RawCacheService } from '@common/raw-cache';
+import { RuntimeMetric } from '@common/runtime-metrics/interfaces';
 import { TResult } from '@common/types';
+import { resolveCountryEmoji } from '@common/utils/resolve-country-emoji';
 import { INTERNAL_CACHE_KEYS, METRIC_NAMES } from '@libs/contracts/constants';
 
-import { GetShortUserStatsQuery } from '@modules/users/queries/get-short-user-stats/get-short-user-stats.query';
+import { NodesEntity } from '@modules/nodes/entities/nodes.entity';
 import { GetAllNodesQuery } from '@modules/nodes/queries/get-all-nodes/get-all-nodes.query';
 import { GetNodesSystemStatsQuery } from '@modules/nodes/queries/get-nodes-system-stats';
 import { ShortUserStats } from '@modules/users/interfaces/user-stats.interface';
-import { NodesEntity } from '@modules/nodes/entities/nodes.entity';
+import { GetShortUserStatsQuery } from '@modules/users/queries/get-short-user-stats/get-short-user-stats.query';
 
+import { JOBS_INTERVALS } from '@scheduler/intervals';
 import {
     INodeBaseMetricLabels,
     INodeMetricLabel,
     INodeSystemMetricLabels,
 } from '@scheduler/metrics-providers';
-import { JOBS_INTERVALS } from '@scheduler/intervals';
 
 @Injectable()
 export class ExportMetricsTask {
@@ -91,6 +91,13 @@ export class ExportMetricsTask {
         public nodeSystemInfo: Gauge<string>,
         @InjectMetric(METRIC_NAMES.NODE_BASIC_INFO)
         public nodeBasicInfo: Gauge<string>,
+
+        @InjectMetric(METRIC_NAMES.NODE_CPU_LOAD_AVG_1M)
+        public nodeCpuLoadAvg1m: Gauge<string>,
+        @InjectMetric(METRIC_NAMES.NODE_CPU_LOAD_AVG_5M)
+        public nodeCpuLoadAvg5m: Gauge<string>,
+        @InjectMetric(METRIC_NAMES.NODE_CPU_LOAD_AVG_15M)
+        public nodeCpuLoadAvg15m: Gauge<string>,
 
         private readonly queryBus: QueryBus,
     ) {
@@ -230,7 +237,20 @@ export class ExportMetricsTask {
                         );
                         this.nodeCpuCount.set(baseNodeLabels, nodeSystemStats.system.info.cpus);
 
-                        if (nodeSystemStats && nodeSystemStats.system.stats.interface) {
+                        this.nodeCpuLoadAvg1m.set(
+                            baseNodeLabels,
+                            nodeSystemStats.system.stats.loadAvg[0],
+                        );
+                        this.nodeCpuLoadAvg5m.set(
+                            baseNodeLabels,
+                            nodeSystemStats.system.stats.loadAvg[1],
+                        );
+                        this.nodeCpuLoadAvg15m.set(
+                            baseNodeLabels,
+                            nodeSystemStats.system.stats.loadAvg[2],
+                        );
+
+                        if (nodeSystemStats.system.stats.interface) {
                             this.nodeNetworkRxBytesPerSec.set(
                                 baseNodeLabels,
                                 nodeSystemStats.system.stats.interface.rxBytesPerSec,
@@ -311,5 +331,8 @@ export class ExportMetricsTask {
         this.nodeNetworkRxBytesTotal.remove({ node_uuid: baseNodeLabels.node_uuid });
         this.nodeNetworkTxBytesPerSec.remove({ node_uuid: baseNodeLabels.node_uuid });
         this.nodeNetworkTxBytesTotal.remove({ node_uuid: baseNodeLabels.node_uuid });
+        this.nodeCpuLoadAvg1m.remove({ node_uuid: baseNodeLabels.node_uuid });
+        this.nodeCpuLoadAvg5m.remove({ node_uuid: baseNodeLabels.node_uuid });
+        this.nodeCpuLoadAvg15m.remove({ node_uuid: baseNodeLabels.node_uuid });
     }
 }

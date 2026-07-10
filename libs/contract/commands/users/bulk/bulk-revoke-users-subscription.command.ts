@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../../constants';
 import { REST_API, USERS_ROUTES } from '../../../api';
+import { getEndpointDetails } from '../../../constants';
 
 export namespace BulkRevokeUsersSubscriptionCommand {
     export const url = REST_API.USERS.BULK.REVOKE_SUBSCRIPTION;
@@ -11,6 +11,7 @@ export namespace BulkRevokeUsersSubscriptionCommand {
         USERS_ROUTES.BULK.REVOKE_SUBSCRIPTION,
         'post',
         'Revoke users subscription by User UUIDs',
+        { scope: 'bulk-revoke-subscription', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

@@ -12,6 +12,7 @@ export namespace GetInfraProvidersCommand {
         INFRA_BILLING_ROUTES.GET_PROVIDERS,
         'get',
         'Get all infra providers',
+        { scope: 'list-providers', kind: 'read' },
     );
 
     export const ResponseSchema = z.object({

@@ -12,6 +12,7 @@ export namespace GetConfigProfilesCommand {
         CONFIG_PROFILES_ROUTES.GET,
         'get',
         'Get config profiles',
+        { scope: 'list', kind: 'read' },
     );
 
     export const ResponseSchema = z.object({

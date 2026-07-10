@@ -9,6 +9,7 @@ export const NodesSchema = z.object({
     name: z.string(),
     address: z.string(),
     port: z.nullable(z.number().int()),
+    proxyUrl: z.nullable(z.string()),
     isConnected: z.boolean(),
     isDisabled: z.boolean(),
     isConnecting: z.boolean(),
@@ -27,6 +28,7 @@ export const NodesSchema = z.object({
     viewPosition: z.number().int(),
     countryCode: z.string(),
     consumptionMultiplier: z.number(),
+    nodeConsumptionMultiplier: z.number(),
     tags: z.array(z.string()),
 
     createdAt: z
@@ -55,4 +57,5 @@ export const NodesSchema = z.object({
     ),
     xrayUptime: z.number(),
     usersOnline: z.number(),
+    note: z.nullable(z.string()),
 });

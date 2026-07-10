@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 import { REST_API, SUBSCRIPTIONS_ROUTES } from '../../../api';
-import { SubscriptionInfoSchema } from '../../../models';
 import { getEndpointDetails } from '../../../constants';
+import { SubscriptionInfoSchema } from '../../../models';
 
 export namespace GetSubscriptionByUsernameCommand {
     export const url = REST_API.SUBSCRIPTIONS.GET_BY.USERNAME;
@@ -12,6 +12,7 @@ export namespace GetSubscriptionByUsernameCommand {
         SUBSCRIPTIONS_ROUTES.GET_BY.USERNAME(':username'),
         'get',
         'Get subscription by username',
+        { scope: 'by-username', kind: 'read' },
     );
 
     export const RequestSchema = z.object({

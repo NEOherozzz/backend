@@ -11,6 +11,7 @@ export namespace GetLegacyStatsUserUsageCommand {
         BANDWIDTH_STATS_ROUTES.LEGACY.USERS.GET_BY_UUID(':uuid'),
         'get',
         'Get User Usage by Range (Legacy)',
+        { scope: 'user-usage-legacy', kind: 'read' },
     );
 
     export const RequestSchema = z.object({

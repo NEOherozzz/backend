@@ -1,11 +1,11 @@
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
 import { fail, ok } from '@common/types';
 import { ERRORS } from '@libs/contracts/constants';
 
-import { GetNodesByPluginUuidQuery } from './get-nodes-by-plugin-uuid.query';
 import { NodesRepository } from '../../repositories/nodes.repository';
+import { GetNodesByPluginUuidQuery } from './get-nodes-by-plugin-uuid.query';
 
 @QueryHandler(GetNodesByPluginUuidQuery)
 export class GetNodesByPluginUuidHandler implements IQueryHandler<GetNodesByPluginUuidQuery> {
@@ -14,7 +14,9 @@ export class GetNodesByPluginUuidHandler implements IQueryHandler<GetNodesByPlug
 
     async execute(query: GetNodesByPluginUuidQuery) {
         try {
-            const nodeUuids = await this.nodesRepository.getNodeUuidsByPluginUuid(query.pluginUuid);
+            const nodeUuids = await this.nodesRepository.getEnabledNodesByPluginUuid(
+                query.pluginUuid,
+            );
 
             return ok(nodeUuids);
         } catch (error) {

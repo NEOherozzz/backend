@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
+import { ResponseRulesConfigSchema } from './response-rules';
 import { CustomRemarksSchema } from './subscription-settings/custom-remarks.schema';
 import { HwidSettingsSchema } from './subscription-settings/hwid-settings.schema';
-import { ResponseRulesConfigSchema } from './response-rules';
 
 export const SubscriptionSettingsSchema = z.object({
     uuid: z.string().uuid(),

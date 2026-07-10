@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../../constants';
 import { REST_API, USERS_ROUTES } from '../../../api';
+import { getEndpointDetails } from '../../../constants';
 
 export namespace BulkUpdateUsersSquadsCommand {
     export const url = REST_API.USERS.BULK.UPDATE_SQUADS;
@@ -11,6 +11,7 @@ export namespace BulkUpdateUsersSquadsCommand {
         USERS_ROUTES.BULK.UPDATE_SQUADS,
         'post',
         'Bulk update users internal squads by UUIDs',
+        { scope: 'bulk-update-squads', kind: 'write' },
     );
 
     export const RequestSchema = z.object({

@@ -1,5 +1,5 @@
-import { GetInternalSquadByUuidResponseModel } from './get-internal-squad-by-uuid.response.model';
 import { InternalSquadWithInfoEntity } from '../entities';
+import { GetInternalSquadByUuidResponseModel } from './get-internal-squad-by-uuid.response.model';
 
 export class GetInternalSquadsResponseModel {
     public readonly total: number;

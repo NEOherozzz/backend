@@ -11,6 +11,7 @@ export namespace UpdatePasskeyCommand {
         PASSKEYS_ROUTES.UPDATE_PASSKEY,
         'patch',
         'Update passkey',
+        { scope: 'update', kind: 'write' },
     );
 
     export const RequestSchema = z.object({
