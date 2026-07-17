@@ -1,6 +1,5 @@
 process.env.DATABASE_URL = 'postgresql://postgres:postgres@remnawave-db:5432/postgres';
-process.env.JWT_AUTH_SECRET = 'mock';
-process.env.JWT_API_TOKENS_SECRET = 'mock';
+process.env.APP_SECRET = 'mock';
 process.env.FRONT_END_DOMAIN = 'mock';
 process.env.METRICS_USER = 'mock';
 process.env.METRICS_PASS = 'mock';

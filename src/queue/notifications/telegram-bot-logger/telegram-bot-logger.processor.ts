@@ -1,4 +1,5 @@
 import { Job } from 'bullmq';
+import { Worker } from 'bullmq';
 
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger, OnModuleInit, Optional } from '@nestjs/common';
@@ -67,13 +68,15 @@ export class TelegramBotLoggerQueueProcessor extends WorkerHost implements OnMod
             });
         } catch (error) {
             if (error instanceof TelegramApiError && error.retryAfter) {
-                this.logger.warn(`Rate limit exceeded. Retrying in ${error.retryAfter} seconds.`);
                 await this.telegramBotLoggerQueueService.rateLimit(error.retryAfter);
-                return;
+
+                throw Worker.RateLimitError();
             }
             this.logger.error(
                 `Error handling "${TelegramBotLoggerJobNames.sendTelegramMessage}" job: ${error}`,
             );
+
+            throw error;
         }
     }
 }

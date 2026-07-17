@@ -69,7 +69,7 @@ export class AuthService {
         private readonly eventEmitter: EventEmitter2,
         private readonly httpService: HttpService,
     ) {
-        this.jwtSecret = this.configService.getOrThrow('JWT_AUTH_SECRET');
+        this.jwtSecret = this.configService.getOrThrow('APP_SECRET');
         this.jwtLifetime = this.configService.getOrThrow('JWT_AUTH_LIFETIME');
     }
 

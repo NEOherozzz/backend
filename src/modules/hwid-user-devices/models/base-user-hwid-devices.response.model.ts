@@ -23,7 +23,7 @@ export class BaseUserHwidDevicesResponseModel {
         this.userAgent = data.userAgent;
         this.requestIp = data.requestIp;
 
-        this.createdAt = new Date(data.createdAt);
-        this.updatedAt = new Date(data.updatedAt);
+        this.createdAt = data.createdAt;
+        this.updatedAt = data.updatedAt;
     }
 }

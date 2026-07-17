@@ -20,6 +20,7 @@ import {
     TorrentBlockerEvent,
 } from '@integration-modules/notifications/interfaces';
 
+import { BaseUserHwidDevicesResponseModel } from '@modules/hwid-user-devices/models';
 import { INodeHotCache, INodeSystem, INodeVersions } from '@modules/nodes/interfaces';
 import { NodeResponseModel } from '@modules/nodes/models';
 import { GetFullUserResponseModel } from '@modules/users/models';
@@ -208,7 +209,7 @@ export class WebhookEvents {
                 event: event.eventName,
                 timestamp: dayjs().toISOString(),
                 data: instanceToPlain({
-                    ...event.data,
+                    hwidUserDevice: new BaseUserHwidDevicesResponseModel(event.data.hwidUserDevice),
                     user: new GetFullUserResponseModel(event.data.user, this.subPublicDomain),
                 }),
             };

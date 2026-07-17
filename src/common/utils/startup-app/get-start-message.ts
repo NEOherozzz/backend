@@ -27,7 +27,7 @@ export async function getStartMessage() {
             [
                 chalk.yellow('🛠️  Rescue CLI') +
                     chalk.gray(' ······ ') +
-                    chalk.dim('docker exec -it remnawave remnawave'),
+                    chalk.dim('docker exec -it remnawave cli'),
             ],
             [gradientRange('▰▱'.repeat(30))],
         ],

@@ -118,16 +118,6 @@ async function bootstrap(): Promise<void> {
 
     app.use(noRobotsMiddleware, proxyCheckMiddleware);
 
-    // if (config.getOrThrow<boolean>('COOKIE_AUTH_ENABLED')) {
-    //     app.use(cookieParser());
-    //     app.use(
-    //         checkAuthCookieMiddleware(
-    //             config.getOrThrow<string>('JWT_AUTH_SECRET'),
-    //             config.getOrThrow<string>('COOKIE_AUTH_NONCE'),
-    //         ),
-    //     );
-    // }
-
     app.setGlobalPrefix(ROOT);
 
     await getDocs(app, config);
