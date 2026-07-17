@@ -9,7 +9,6 @@ on:
 
 env:
   REGISTRY_IMAGE: neohero/backend
-  GHCR_IMAGE: ghcr.io/neoherozzz/backend
 
 jobs:
   send-tg-msg:
@@ -58,12 +57,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.TOKEN_GH_DEPLOY }}
 
       - name: Prepare build metadata
         id: meta
@@ -87,7 +80,7 @@ jobs:
             __RW_METADATA_GIT_BACKEND_COMMIT=${{ github.sha }}
             __RW_METADATA_GIT_FRONTEND_COMMIT=${{ steps.meta.outputs.frontend_commit }}
           outputs: |
-            type=image,"name=${{ env.REGISTRY_IMAGE }},${{ env.GHCR_IMAGE }}",push-by-digest=true,name-canonical=true,push=true
+            type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
 
       - name: Export digest
         run: |
@@ -124,12 +117,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.TOKEN_GH_DEPLOY }}
 
       - name: Create & push manifest lists
         working-directory: ${{ runner.temp }}/digests
@@ -140,16 +127,9 @@ jobs:
             -t ${{ env.REGISTRY_IMAGE }}:2 \
             $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)
 
-          docker buildx imagetools create \
-            -t ${{ env.GHCR_IMAGE }}:latest \
-            -t ${{ env.GHCR_IMAGE }}:${{ github.ref_name }} \
-            -t ${{ env.GHCR_IMAGE }}:2 \
-            $(printf '${{ env.GHCR_IMAGE }}@sha256:%s ' *)
-
       - name: Inspect image
         run: |
           docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ github.ref_name }}
-          docker buildx imagetools inspect ${{ env.GHCR_IMAGE }}:${{ github.ref_name }}
 
   send-finish-tg-msg:
     name: Send TG message
