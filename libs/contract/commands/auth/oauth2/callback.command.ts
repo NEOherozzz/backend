@@ -14,13 +14,11 @@ export namespace OAuth2CallbackCommand {
         { scope: 'callback', kind: 'write' },
     );
 
-    export const RequestSchema = z.object({
-        provider: z.nativeEnum(OAUTH2_PROVIDERS),
+    export const RequestBodySchema = z.object({
+        provider: z.enum(OAUTH2_PROVIDERS),
         code: z.string(),
         state: z.string(),
     });
-
-    export type Request = z.infer<typeof RequestSchema>;
 
     export const ResponseSchema = z.object({
         response: z.object({
@@ -28,5 +26,6 @@ export namespace OAuth2CallbackCommand {
         }),
     });
 
+    export type RequestBody = z.infer<typeof RequestBodySchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

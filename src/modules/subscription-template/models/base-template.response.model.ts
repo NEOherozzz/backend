@@ -15,7 +15,7 @@ export class BaseTemplateResponseModel {
         this.viewPosition = entity.viewPosition;
         this.name = entity.name;
         this.templateType = entity.templateType;
-        this.templateJson = entity.templateJson;
+        this.templateJson = entity.templateJson ?? null;
         this.encodedTemplateYaml = entity.templateYaml
             ? Buffer.from(entity.templateYaml, 'utf8').toString('base64')
             : null;

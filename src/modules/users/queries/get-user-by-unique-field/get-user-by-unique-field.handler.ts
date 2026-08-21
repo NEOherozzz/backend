@@ -21,10 +21,9 @@ export class GetUserByUniqueFieldHandler implements IQueryHandler<
         try {
             const user = await this.usersRepository.findUniqueByCriteria(
                 {
-                    username: query.field.username || undefined,
-                    shortUuid: query.field.shortUuid || undefined,
-                    uuid: query.field.uuid || undefined,
-                    tId: query.field.tId || undefined,
+                    username: query.field.username,
+                    shortUuid: query.field.shortUuid,
+                    id: query.field.id,
                 },
                 query.includeOptions,
             );

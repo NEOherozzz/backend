@@ -37,8 +37,6 @@ import { SchedulerModule } from '@scheduler/scheduler.module';
                     }),
                 }),
             ],
-            global: true,
-            middleware: { mount: true },
         }),
         EventEmitterModule.forRoot({
             wildcard: true,

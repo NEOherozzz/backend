@@ -16,13 +16,11 @@ export namespace CreateApiTokenCommand {
         'This endpoint is forbidden to use via "API-key". It can only be used with an admin JWT-token.',
     );
 
-    export const RequestSchema = z.object({
-        name: z.string().min(2).max(30),
-        expiresInDays: z.number().min(1),
-        scopes: z.array(z.string()).optional().default(['*']),
+    export const RequestBodySchema = z.object({
+        name: z.string().min(2).max(30).describe('Name of the API token'),
+        expiresInDays: z.number().min(1).describe('Expiration days of the API token'),
+        scopes: z.array(z.string()).optional().default(['*']).describe('Scopes of the API token'),
     });
-
-    export type Request = z.infer<typeof RequestSchema>;
 
     export const ResponseSchema = z.object({
         response: ApiTokensSchema.extend({
@@ -30,5 +28,6 @@ export namespace CreateApiTokenCommand {
         }),
     });
 
+    export type RequestBody = z.infer<typeof RequestBodySchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

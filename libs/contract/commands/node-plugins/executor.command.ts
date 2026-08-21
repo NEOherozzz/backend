@@ -21,7 +21,7 @@ export namespace PluginExecutorCommand {
                 ips: z
                     .array(
                         z.object({
-                            ip: z.string().ip(),
+                            ip: z.union([z.ipv4(), z.ipv6()]),
                             timeout: z.number(),
                         }),
                     )
@@ -31,7 +31,7 @@ export namespace PluginExecutorCommand {
         z
             .object({
                 command: z.literal('unblockIps'),
-                ips: z.array(z.string().ip()).min(1),
+                ips: z.array(z.union([z.ipv4(), z.ipv6()])).min(1),
             })
             .describe('Unblock IPs'),
         z
@@ -50,23 +50,15 @@ export namespace PluginExecutorCommand {
         z
             .object({
                 target: z.literal('specificNodes'),
-                nodeUuids: z.array(z.string().uuid()).min(1),
+                nodeUuids: z.array(z.uuid()).min(1),
             })
             .describe('Target specific nodes'),
     ]);
 
-    export const RequestSchema = z.object({
+    export const RequestBodySchema = z.object({
         command: CommandSchema,
         targetNodes: TargetNodesSchema,
     });
 
-    export type Request = z.infer<typeof RequestSchema>;
-
-    export const ResponseSchema = z.object({
-        response: z.object({
-            eventSent: z.boolean(),
-        }),
-    });
-
-    export type Response = z.infer<typeof ResponseSchema>;
+    export type RequestBody = z.infer<typeof RequestBodySchema>;
 }

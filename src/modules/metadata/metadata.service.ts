@@ -5,7 +5,6 @@ import { fail, ok, TResult } from '@common/types';
 import { ERRORS } from '@libs/contracts/constants/errors';
 
 import { GetNodeIdByUuidQuery } from '@modules/nodes/queries/get-node-id-by-uuid';
-import { GetUserIdByUuidQuery } from '@modules/users/queries/get-user-id-by-uuid';
 
 import { NodeMetadataEntity, UserMetadataEntity } from './entities';
 import { BaseMetadataResponseModel } from './models/base-metadata.response.model';
@@ -22,19 +21,9 @@ export class MetadataService {
         private readonly queryBus: QueryBus,
     ) {}
 
-    public async getUserMetadata(userUuid: string): Promise<TResult<BaseMetadataResponseModel>> {
+    public async getUserMetadata(userId: number): Promise<TResult<BaseMetadataResponseModel>> {
         try {
-            const userId = await this.queryBus.execute(new GetUserIdByUuidQuery(userUuid));
-
-            if (!userId.isOk) {
-                return fail(ERRORS.INTERNAL_SERVER_ERROR);
-            }
-
-            if (userId.response === null) {
-                return fail(ERRORS.USER_NOT_FOUND);
-            }
-
-            const userMetadata = await this.userMetadataRepository.getByUserId(userId.response);
+            const userMetadata = await this.userMetadataRepository.getByUserId(BigInt(userId));
 
             if (userMetadata === null) {
                 return fail(ERRORS.METADATA_NOT_FOUND);
@@ -48,22 +37,12 @@ export class MetadataService {
     }
 
     public async upsertUserMetadata(
-        userUuid: string,
+        userId: number,
         metadata: unknown,
     ): Promise<TResult<BaseMetadataResponseModel>> {
         try {
-            const userId = await this.queryBus.execute(new GetUserIdByUuidQuery(userUuid));
-
-            if (!userId.isOk) {
-                return fail(ERRORS.INTERNAL_SERVER_ERROR);
-            }
-
-            if (userId.response === null) {
-                return fail(ERRORS.USER_NOT_FOUND);
-            }
-
             const userMetadata = await this.userMetadataRepository.upsert(
-                new UserMetadataEntity({ userId: userId.response, metadata }),
+                new UserMetadataEntity({ userId: BigInt(userId), metadata }),
             );
 
             return ok(new BaseMetadataResponseModel(userMetadata));

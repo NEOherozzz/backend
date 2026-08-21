@@ -1,12 +1,12 @@
 import { GetStatsNodeUsersUsageCommand } from '@contract/commands';
 import { createZodDto } from 'nestjs-zod';
 
-export class GetStatsNodeUsersUsageRequestQueryDto extends createZodDto(
+export class GetStatsNodeUsersUsageQueryDto extends createZodDto(
     GetStatsNodeUsersUsageCommand.RequestQuerySchema,
 ) {}
 
-export class GetStatsNodeUsersUsageRequestDto extends createZodDto(
-    GetStatsNodeUsersUsageCommand.RequestSchema,
+export class GetStatsNodeUsersUsageParamDto extends createZodDto(
+    GetStatsNodeUsersUsageCommand.RequestParamSchema,
 ) {}
 
 export class GetStatsNodeUsersUsageResponseDto extends createZodDto(

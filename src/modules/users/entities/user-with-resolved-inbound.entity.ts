@@ -1,7 +1,7 @@
 import { ConfigProfileInboundEntity } from '@modules/config-profiles/entities';
 
 export class UserWithResolvedInboundEntity {
-    public tId: bigint;
+    public id: bigint;
     public trojanPassword: string;
     public vlessUuid: string;
     public ssPassword: string;
@@ -9,7 +9,7 @@ export class UserWithResolvedInboundEntity {
     public inbounds: ConfigProfileInboundEntity[];
 
     constructor(data: UserWithResolvedInboundEntity) {
-        this.tId = data.tId;
+        this.id = data.id;
         this.trojanPassword = data.trojanPassword;
         this.vlessUuid = data.vlessUuid;
         this.ssPassword = data.ssPassword;

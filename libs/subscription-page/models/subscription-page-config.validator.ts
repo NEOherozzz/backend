@@ -31,8 +31,9 @@ export const validateLocalizedTexts = (
             for (const locale of requiredLocales) {
                 const value = obj[locale];
                 if (!value || value.trim() === '') {
-                    ctx.addIssue({
-                        code: z.ZodIssueCode.custom,
+                    ctx.issues.push({
+                        input: obj,
+                        code: 'custom',
                         message: `Missing required locale '${locale}' at ${path}`,
                         path: [path, locale],
                     });
@@ -71,8 +72,9 @@ export const validateSvgReferences = (
         for (const [key, value] of Object.entries(obj)) {
             if (key === 'svgIconKey' && typeof value === 'string') {
                 if (!validKeys.has(value)) {
-                    ctx.addIssue({
-                        code: z.ZodIssueCode.custom,
+                    ctx.issues.push({
+                        input: obj,
+                        code: 'custom',
                         message: `Unknown svgIconKey '${value}' at ${path}.${key}. Available: ${[...validKeys].join(', ')}`,
                         path: [path, key],
                     });

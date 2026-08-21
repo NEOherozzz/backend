@@ -1,6 +1,6 @@
 export class AddUserToNodeEvent {
     constructor(
-        public readonly userUuid: string,
+        public readonly userId: bigint,
         public readonly prevVlessUuid?: string,
     ) {}
 }

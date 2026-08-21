@@ -1,5 +1,6 @@
 import { PrismaClient, RemnawaveSettings } from '@prisma/client';
 import consola from 'consola';
+import z from 'zod';
 
 import {
     Oauth2SettingsSchema,
@@ -31,6 +32,7 @@ export async function seedRemnawaveSettings(prisma: PrismaClient) {
             clientId: null,
             clientSecret: null,
             plainDomain: null,
+            frontendDomain: null,
             allowedEmails: [],
         },
         yandex: {
@@ -95,11 +97,46 @@ export async function seedRemnawaveSettings(prisma: PrismaClient) {
                     const oauthSchemaParseResult = Oauth2SettingsSchema.safeParse(
                         existingConfig.oauth2Settings,
                     );
+
                     if (oauthSchemaParseResult.success) {
                         await prisma.remnawaveSettings.update({
                             where: { id: existingConfig.id },
                             data: { [key]: oauthSchemaParseResult.data },
                         });
+                    } else {
+                        const storedOauth2Settings = (existingConfig.oauth2Settings ?? {}) as Record<
+                            string,
+                            unknown
+                        >;
+                        const salvagedOauth2Settings: Record<string, unknown> = {};
+
+                        for (const provider of Object.keys(Oauth2SettingsSchema.shape) as Array<
+                            keyof TOauth2Settings
+                        >) {
+                            const providerParseResult = Oauth2SettingsSchema.shape[
+                                provider
+                            ].safeParse(storedOauth2Settings[provider]);
+
+                            if (providerParseResult.success) {
+                                salvagedOauth2Settings[provider] = providerParseResult.data;
+                            } else {
+                                consola.warn(
+                                    `oauth2Settings.${provider} is not valid, disabling it and falling back to defaults:\n${z.prettifyError(
+                                        providerParseResult.error,
+                                    )}`,
+                                );
+                                salvagedOauth2Settings[provider] =
+                                    DEFAULT_OAUTH2_SETTINGS[provider];
+                            }
+                        }
+
+                        await prisma.remnawaveSettings.update({
+                            where: { id: existingConfig.id },
+                            data: { [key]: salvagedOauth2Settings as TOauth2Settings },
+                        });
+                        consola.success(
+                            'oauth2Settings migrated, invalid providers were reset to defaults',
+                        );
                     }
                 }
 

@@ -51,6 +51,14 @@ export function isSS2022MethodFromMethod(method: string | undefined): boolean {
     return method === ShadowsocksMethod.SS2022_BLAKE3_AES_256_GCM;
 }
 
+export function getDecodedKeySize(password: string): number {
+    try {
+        return Buffer.from(password, 'base64').length;
+    } catch {
+        return 0;
+    }
+}
+
 export function encodeSS2022Password(password: string): string {
     return Buffer.from(password).toString('base64');
 }

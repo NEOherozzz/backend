@@ -6,8 +6,6 @@ import { Cron } from '@nestjs/schedule';
 
 import { TResult } from '@common/types';
 
-import { CreateNodeTrafficUsageHistoryCommand } from '@modules/nodes-traffic-usage-history/commands/create-node-traffic-usage-history';
-import { NodesTrafficUsageHistoryEntity } from '@modules/nodes-traffic-usage-history/entities/nodes-traffic-usage-history.entity';
 import { UpdateNodeCommand } from '@modules/nodes/commands/update-node';
 import { NodesEntity } from '@modules/nodes/entities/nodes.entity';
 import { GetAllNodesQuery } from '@modules/nodes/queries/get-all-nodes';
@@ -50,13 +48,6 @@ export class ResetNodeTrafficTask {
                     currentDay === resetDay
                 ) {
                     this.logger.log(`Resetting node traffic for ${node.uuid}`);
-                    const entity = new NodesTrafficUsageHistoryEntity({
-                        nodeUuid: node.uuid,
-                        trafficBytes: node.trafficUsedBytes || BigInt(0),
-                        resetAt: today.toDate(),
-                    });
-
-                    await this.commandBus.execute(new CreateNodeTrafficUsageHistoryCommand(entity));
 
                     await this.commandBus.execute(
                         new UpdateNodeCommand({

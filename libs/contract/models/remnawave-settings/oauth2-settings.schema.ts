@@ -11,6 +11,22 @@ export const Oauth2SettingsSchema = z.object({
         enabled: z.boolean(),
         clientId: z.nullable(z.string()),
         clientSecret: z.nullable(z.string()),
+        frontendDomain: z.nullable(
+            z.string().refine(
+                (val) => {
+                    const fqdnRegex =
+                        /(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{0,62}[a-zA-Z0-9]\.)+[a-zA-Z]{2,63}$)/;
+                    if (fqdnRegex.test(val)) {
+                        return true;
+                    }
+
+                    return false;
+                },
+                {
+                    message: 'Must be a valid fully qualified domain name (FQDN), e.g. "docs.rw"',
+                },
+            ),
+        ),
         plainDomain: z.nullable(
             z.string().refine(
                 (val) => {

@@ -1,4 +1,4 @@
-import { colorFromUuid } from '@kastov/uuid-color';
+import { colorFromId } from '@kastov/uuid-color';
 
 import { IGetUniversalTopUser, IGetUniversalTopUserConverted } from '../interfaces';
 
@@ -16,7 +16,8 @@ export class GetStatsNodesUsersUsageResponseModel {
         this.categories = data.categories;
         this.sparklineData = data.sparklineData;
         this.topUsers = data.topUsers.map((item) => ({
-            color: colorFromUuid(item.uuid),
+            color: colorFromId(item.userId),
+            userId: Number(item.userId),
             username: item.username,
             total: Number(item.total),
         }));

@@ -13,7 +13,7 @@ export class RevokeUserSubscriptionHandler implements ICommandHandler<RevokeUser
 
     async execute(command: RevokeUserSubscriptionCommand) {
         try {
-            await this.usersService.revokeUserSubscription(command.uuid);
+            await this.usersService.revokeUserSubscription(command.userId);
 
             return;
         } catch (error: unknown) {

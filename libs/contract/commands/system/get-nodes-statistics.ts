@@ -18,8 +18,6 @@ export namespace GetNodesStatisticsCommand {
         tz: z.string().optional(),
     });
 
-    export type Request = z.infer<typeof RequestQuerySchema>;
-
     export const ResponseSchema = z.object({
         response: z.object({
             lastSevenDays: z.array(
@@ -32,5 +30,6 @@ export namespace GetNodesStatisticsCommand {
         }),
     });
 
+    export type RequestQuery = z.infer<typeof RequestQuerySchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

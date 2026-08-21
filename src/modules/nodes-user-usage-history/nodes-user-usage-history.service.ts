@@ -9,10 +9,13 @@ import { ERRORS } from '@libs/contracts/constants';
 
 import { GetAllNodesQuery } from '@modules/nodes/queries/get-all-nodes';
 import { GetNodeByUuidQuery } from '@modules/nodes/queries/get-node-by-uuid';
-import { GetUserByUniqueFieldQuery } from '@modules/users/queries/get-user-by-unique-field';
 
-import { IGetLegacyStatsNodesUsersUsage, IGetLegacyStatsUserUsage } from './interfaces';
-import { GetStatsNodesUsersUsageResponseModel, GetStatsUserUsageResponseModel } from './models';
+import { GetNodeUsageBodyDto, GetNodeUsageQueryDto } from './dtos';
+import {
+    GetNodeUsageResponseModel,
+    GetStatsNodesUsersUsageResponseModel,
+    GetStatsUserUsageResponseModel,
+} from './models';
 import { NodesUserUsageHistoryRepository } from './repositories/nodes-user-usage-history.repository';
 
 @Injectable()
@@ -23,89 +26,34 @@ export class NodesUserUsageHistoryService {
         private readonly queryBus: QueryBus,
     ) {}
 
-    /**
-     * @deprecated This method is deprecated and may be removed in future versions.
-     */
-    public async getLegacyStatsNodesUsersUsage(
-        uuid: string,
-        start: Date,
-        end: Date,
-    ): Promise<TResult<IGetLegacyStatsNodesUsersUsage[]>> {
-        try {
-            const startDate = dayjs(start).utc().toDate();
-            const endDate = dayjs(end).utc().toDate();
-
-            const result = await this.nodeUserUsageHistoryRepository.getNodeUsersUsageByRange(
-                uuid,
-                startDate,
-                endDate,
-            );
-
-            return ok(result);
-        } catch (error) {
-            this.logger.error(error);
-            return fail(ERRORS.GET_NODES_USER_USAGE_BY_RANGE_ERROR);
-        }
-    }
-
-    /**
-     * @deprecated This method is deprecated and may be removed in future versions.
-     */
-    public async getLegacyStatsUserUsage(
-        uuid: string,
-        start: Date,
-        end: Date,
-    ): Promise<TResult<IGetLegacyStatsUserUsage[]>> {
-        try {
-            const user = await this.queryBus.execute(new GetUserByUniqueFieldQuery({ uuid }));
-            if (!user.isOk) {
-                return fail(ERRORS.USER_NOT_FOUND);
-            }
-            const result = await this.nodeUserUsageHistoryRepository.getLegacyStatsUserUsage(
-                user.response.tId,
-                start,
-                end,
-            );
-            return ok(result);
-        } catch (error) {
-            this.logger.error(error);
-            return fail(ERRORS.GET_USER_USAGE_BY_RANGE_ERROR);
-        }
-    }
-
     public async getStatsUserUsage(
-        uuid: string,
+        userId: number,
         start: string,
         end: string,
         topNodesLimit: number,
     ): Promise<TResult<GetStatsUserUsageResponseModel>> {
         try {
-            const user = await this.queryBus.execute(new GetUserByUniqueFieldQuery({ uuid }));
-            if (!user.isOk) {
-                return fail(ERRORS.USER_NOT_FOUND);
-            }
-
             const { startDate, endDate, dates } = getDateRangeArrayUtil(
                 dayjs.utc(start).startOf('day').toDate(),
                 dayjs.utc(end).endOf('day').toDate(),
             );
 
             const dailyTraffic = await this.nodeUserUsageHistoryRepository.getUserDailyTrafficSum(
-                user.response.tId,
+                BigInt(userId),
                 startDate,
                 endDate,
                 dates,
             );
 
             const topNodes = await this.nodeUserUsageHistoryRepository.getTopUserNodesByTraffic(
-                user.response.tId,
+                BigInt(userId),
                 startDate,
                 endDate,
                 topNodesLimit,
             );
 
             const nodesUsage = await this.nodeUserUsageHistoryRepository.getUserNodesUsageByRange(
-                user.response.tId,
+                BigInt(userId),
                 startDate,
                 endDate,
                 dates,
@@ -215,6 +163,31 @@ export class NodesUserUsageHistoryService {
                     topUsers: topUsers,
                 }),
             );
+        } catch (error) {
+            this.logger.error(error);
+            return fail(ERRORS.GET_USER_USAGE_BY_RANGE_ERROR);
+        }
+    }
+
+    public async getNodeUsage(
+        body: GetNodeUsageBodyDto,
+        query: GetNodeUsageQueryDto,
+    ): Promise<TResult<GetNodeUsageResponseModel>> {
+        try {
+            const { start, end, minTotalBytes } = query;
+            const { nodesUuids } = body;
+
+            const startDate = dayjs.utc(start).startOf('day').toDate();
+            const endDate = dayjs.utc(end).endOf('day').toDate();
+
+            const result = await this.nodeUserUsageHistoryRepository.getNodeUsage({
+                nodesUuids,
+                start: startDate,
+                end: endDate,
+                minTotalBytes,
+            });
+
+            return ok(new GetNodeUsageResponseModel(result));
         } catch (error) {
             this.logger.error(error);
             return fail(ERRORS.GET_USER_USAGE_BY_RANGE_ERROR);

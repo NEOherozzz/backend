@@ -14,7 +14,7 @@ import { AdminEntity } from '@modules/admin/entities/admin.entity';
 import { GetAdminByUsernameQuery } from '@modules/admin/queries/get-admin-by-username';
 import { ApiTokenEntity } from '@modules/api-tokens/entities/api-token.entity';
 import { GetTokenByUuidQuery } from '@modules/api-tokens/queries/get-token-by-uuid';
-import { IJWTAuthPayload } from '@modules/auth/interfaces';
+import type { IJWTAuthPayload } from '@modules/auth/interfaces';
 
 @Injectable()
 export class JwtDefaultGuard extends AuthGuard('registeredUserJWT') {
@@ -89,7 +89,7 @@ export class JwtDefaultGuard extends AuthGuard('registeredUserJWT') {
     }
 
     private async verifyApiToken(user: IJWTAuthPayload, apiTokenUuid: string): Promise<boolean> {
-        const cached = await this.rawCacheService.get<string[]>(`api:${apiTokenUuid}`);
+        const cached = await this.rawCacheService.get<string[]>(`api:${apiTokenUuid}`, true);
         if (cached) {
             user.scopes = cached;
             return true;

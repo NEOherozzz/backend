@@ -1,3 +1,5 @@
+import type { ISRRContext } from '../interfaces';
+
 import { Request, Response, NextFunction } from 'express';
 
 import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
@@ -5,6 +7,7 @@ import { QueryBus } from '@nestjs/cqrs';
 
 import { HttpExceptionWithErrorCodeType } from '@common/exception/http-exeception-with-error-code.type';
 import { extractHwidHeaders } from '@common/utils/extract-hwid-headers/extract-hwid-headers.util';
+import { truncateHeader } from '@common/utils/truncate-header.util';
 import {
     ERRORS,
     RESPONSE_RULES_RESPONSE_TYPES,
@@ -14,7 +17,6 @@ import {
 import { GetCachedSubscriptionSettingsQuery } from '@modules/subscription-settings/queries/get-cached-subscrtipion-settings';
 import { isExtendedClient } from '@modules/subscription-template/constants';
 
-import { ISRRContext } from '../interfaces';
 import { ResponseRulesMatcherService } from '../services/response-rules-matcher.service';
 
 @Injectable()
@@ -35,13 +37,13 @@ export class ResponseRulesMiddleware implements NestMiddleware {
         try {
             let overrideClientType: TRequestTemplateTypeKeys | undefined;
 
-            const userAgent = req.headers['user-agent'] as string;
+            const userAgent = truncateHeader(req.headers['user-agent']);
 
             const settingsEntity = await this.queryBus.execute(
                 new GetCachedSubscriptionSettingsQuery(),
             );
 
-            if (!settingsEntity || !settingsEntity.responseRules) {
+            if (!settingsEntity || !settingsEntity.responseRules || !userAgent) {
                 throw new HttpExceptionWithErrorCodeType(
                     ERRORS.FORBIDDEN.message,
                     ERRORS.FORBIDDEN.code,
@@ -82,6 +84,7 @@ export class ResponseRulesMiddleware implements NestMiddleware {
                     result.matchedRule?.responseModifications?.additionalExtendedClientsRegex,
                 ),
                 matchedResponseType: result.responseType,
+                matchedRuleName: result.matchedRule?.name,
                 ip: req.clientIp,
                 subscriptionSettings: settingsEntity,
             };
@@ -121,6 +124,10 @@ export class ResponseRulesMiddleware implements NestMiddleware {
 
                 if (mods.excludeHostsByTags) {
                     ssrContext.excludeHostsByTags = new Set(mods.excludeHostsByTags);
+                }
+
+                if (mods.respondWithRemarks && mods.respondWithRemarks.length > 0) {
+                    ssrContext.respondWithRemarks = mods.respondWithRemarks;
                 }
             }
 

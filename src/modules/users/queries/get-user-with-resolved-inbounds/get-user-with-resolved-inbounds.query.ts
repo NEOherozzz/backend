@@ -7,7 +7,7 @@ import { UserWithResolvedInboundEntity } from '@modules/users/entities';
 export class GetUserWithResolvedInboundsQuery extends Query<
     TResult<UserWithResolvedInboundEntity>
 > {
-    constructor(public readonly userUuid: string) {
+    constructor(public readonly userId: bigint) {
         super();
     }
 }

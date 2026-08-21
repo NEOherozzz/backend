@@ -13,22 +13,11 @@ const modelToEntity = (model: SubscriptionSettings): SubscriptionSettingsEntity 
 const entityToModel = (entity: SubscriptionSettingsEntity): SubscriptionSettings => {
     return {
         uuid: entity.uuid,
-        profileTitle: entity.profileTitle,
-        supportLink: entity.supportLink,
-        profileUpdateInterval: entity.profileUpdateInterval,
-        isProfileWebpageUrlEnabled: entity.isProfileWebpageUrlEnabled,
         serveJsonAtBaseSubscription: entity.serveJsonAtBaseSubscription,
         isShowCustomRemarks: entity.isShowCustomRemarks,
-
-        happAnnounce: entity.happAnnounce,
-        happRouting: entity.happRouting,
-
         customRemarks: entity.customRemarks,
-
         customResponseHeaders: entity.customResponseHeaders,
-
         randomizeHosts: entity.randomizeHosts,
-
         responseRules: entity.responseRules,
         hwidSettings: entity.hwidSettings,
         createdAt: entity.createdAt,

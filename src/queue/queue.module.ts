@@ -6,7 +6,6 @@ import { Module, Global } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 import { TypedConfigService } from '@common/config/app-config';
-import { BasicAuthMiddleware } from '@common/middlewares';
 import { getRedisConnectionOptions } from '@common/utils';
 import { useBullBoard } from '@common/utils/startup-app';
 import { BULLBOARD_ROOT } from '@libs/contracts/api';
@@ -64,7 +63,6 @@ const bullBoard = [
                 ],
             },
         },
-        middleware: [BasicAuthMiddleware],
     }),
 ];
 
@@ -84,6 +82,7 @@ const bullBoard = [
                         ),
                         db: configService.getOrThrow('REDIS_DB'),
                         password: configService.get('REDIS_PASSWORD'),
+                        username: configService.get('REDIS_USERNAME'),
                     },
                     defaultJobOptions: {
                         removeOnComplete: 500,

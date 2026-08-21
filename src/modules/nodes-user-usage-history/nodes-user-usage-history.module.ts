@@ -6,6 +6,7 @@ import { BandwidthStatsUsersController } from './bandwidth-stats-users.controlle
 import { COMMANDS } from './commands';
 import { NodesUserUsageHistoryConverter } from './nodes-user-usage-history.converter';
 import { NodesUserUsageHistoryService } from './nodes-user-usage-history.service';
+import { QUERIES } from './queries';
 import { NodesUserUsageHistoryRepository } from './repositories/nodes-user-usage-history.repository';
 
 @Module({
@@ -16,6 +17,7 @@ import { NodesUserUsageHistoryRepository } from './repositories/nodes-user-usage
         NodesUserUsageHistoryConverter,
         NodesUserUsageHistoryService,
         ...COMMANDS,
+        ...QUERIES,
     ],
 })
 export class NodesUserUsageHistoryModule {}

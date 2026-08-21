@@ -11,7 +11,7 @@ import {
     SCOPE_WILDCARD,
 } from '@libs/contracts/constants';
 
-import { IJWTAuthPayload } from '@modules/auth/interfaces';
+import type { IJWTAuthPayload } from '@modules/auth/interfaces';
 
 @Injectable()
 export class ScopesGuard implements CanActivate {

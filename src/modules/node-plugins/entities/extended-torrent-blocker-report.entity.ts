@@ -9,7 +9,6 @@ interface INode {
 }
 
 interface IUser {
-    uuid: string;
     username: string;
 }
 

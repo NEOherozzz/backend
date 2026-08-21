@@ -2,8 +2,8 @@ import { createZodDto } from 'nestjs-zod';
 
 import { CreateInfraProviderCommand } from '@libs/contracts/commands';
 
-export class CreateInfraProviderRequestDto extends createZodDto(
-    CreateInfraProviderCommand.RequestSchema,
+export class CreateInfraProviderBodyDto extends createZodDto(
+    CreateInfraProviderCommand.RequestBodySchema,
 ) {}
 
 export class CreateInfraProviderResponseDto extends createZodDto(

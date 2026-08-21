@@ -15,23 +15,22 @@ export namespace CreateSubscriptionTemplateCommand {
         { scope: 'create', kind: 'write' },
     );
 
-    export const RequestSchema = z.object({
+    export const RequestBodySchema = z.object({
         name: z
             .string()
-            .min(2, 'Name must be at least 2 characters')
-            .max(255, 'Name must be less than 255 characters')
+            .min(2)
+            .max(255)
             .regex(
                 /^[A-Za-z0-9_\s-]+$/,
                 'Name can only contain letters, numbers, underscores, dashes and spaces',
             ),
-        templateType: z.nativeEnum(SUBSCRIPTION_TEMPLATE_TYPE),
+        templateType: z.enum(SUBSCRIPTION_TEMPLATE_TYPE),
     });
-
-    export type Request = z.infer<typeof RequestSchema>;
 
     export const ResponseSchema = z.object({
         response: SubscriptionTemplateSchema,
     });
 
+    export type RequestBody = z.infer<typeof RequestBodySchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

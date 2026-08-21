@@ -25,7 +25,7 @@ export const TORRENT_BLOCKER_EVENTS_TEMPLATES: Record<
         const lines = [
             `<tg-emoji emoji-id='5469913852462242978'>🧨️</tg-emoji> #torrentBlocked #${e.data.user.username}`,
             `<tg-emoji emoji-id='5215186239853964761'>🖥</tg-emoji> <code>${e.data.node.name}</code> (<code>${e.data.node.address}</code>)`,
-            `<tg-emoji emoji-id='5372981976804366741'>🤖</tg-emoji> <code>${e.data.user.username}</code> (<code>${e.data.user.tId}</code>)`,
+            `<tg-emoji emoji-id='5372981976804366741'>🤖</tg-emoji> <code>${e.data.user.username}</code> (<code>${e.data.user.id}</code>)`,
             '',
             '<blockquote expandable>',
             '<tg-emoji emoji-id="5271604874419647061">🔗</tg-emoji> <b>Connection</b>',
@@ -42,19 +42,19 @@ export const TORRENT_BLOCKER_EVENTS_TEMPLATES: Record<
 
         return {
             message: lines.join('\n'),
-            keyboard: buildUserKeyboard(e.data.user.uuid, panelDomain),
+            keyboard: buildUserKeyboard(e.data.user.id.toString(), panelDomain),
         };
     },
 };
 
 function buildUserKeyboard(
-    userUuid: string,
+    userId: string,
     panelDomain: string | undefined,
 ): IInlineKeyboard[] | undefined {
     if (!panelDomain) return undefined;
     return [
         {
-            url: PANEL_URLS.USER(panelDomain, userUuid),
+            url: PANEL_URLS.USER(panelDomain, userId.toString()),
             text: 'View user',
             customEmoji: '5282843764451195532',
             style: 'primary' as const,

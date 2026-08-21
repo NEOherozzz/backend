@@ -22,4 +22,8 @@ export class NotificationsConfigService {
 
         return true;
     }
+
+    getWebhookUrls(eventName: TAllEvents): string[] {
+        return this.config.events[eventName]?.additionalWebhookUrls ?? [];
+    }
 }

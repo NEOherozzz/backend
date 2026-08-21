@@ -1,15 +1,33 @@
 import { InjectRedis } from '@songkeys/nestjs-redis';
 import Redis, { ChainableCommander, ScanStream } from 'ioredis';
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+
+import { MemoryCacheService } from './memory-cache.service';
 
 @Injectable()
 export class RawCacheService {
-    constructor(@InjectRedis() private readonly redis: Redis) {}
+    private readonly logger = new Logger(RawCacheService.name);
 
-    async get<T>(key: string): Promise<T | null> {
+    constructor(
+        @InjectRedis() private readonly redis: Redis,
+        private readonly memoryCacheService: MemoryCacheService,
+    ) {}
+
+    async get<T>(key: string, memCache: boolean = false): Promise<T | null> {
+        if (memCache) {
+            const hit = this.memoryCacheService.get<T>(key);
+            if (hit !== undefined) return hit;
+        }
+
         const raw = await this.redis.get(key);
-        return raw ? JSON.parse(raw) : null;
+        const parsed = raw ? (JSON.parse(raw) as T) : null;
+
+        if (memCache && parsed !== null) {
+            this.memoryCacheService.set(key, parsed as object);
+        }
+
+        return parsed;
     }
 
     async mget<T>(keys: string[]): Promise<(T | null)[]> {
@@ -27,6 +45,28 @@ export class RawCacheService {
         }
     }
 
+    async setString(key: string, value: string, ttlSeconds?: number): Promise<void> {
+        if (ttlSeconds) {
+            await this.redis.set(key, value, 'EX', ttlSeconds);
+        } else {
+            await this.redis.set(key, value);
+        }
+    }
+
+    async getString(key: string, memCache: boolean = false): Promise<string | null> {
+        if (memCache) {
+            const hit = this.memoryCacheService.get<string>(key);
+            if (hit !== undefined) return hit;
+        }
+
+        const raw = await this.redis.get(key);
+        if (memCache && raw !== null) {
+            this.memoryCacheService.set(key, raw);
+        }
+
+        return raw;
+    }
+
     async getNumber(key: string): Promise<number> {
         const raw = await this.redis.get(key);
         return raw ? Number(raw) : 0;
@@ -42,6 +82,7 @@ export class RawCacheService {
 
     async del(key: string): Promise<void> {
         await this.redis.del(key);
+        await this.memoryCacheService.invalidate(key);
     }
 
     async delMany(keys: string[]): Promise<void> {
@@ -95,6 +136,36 @@ export class RawCacheService {
         return this.redis.hscanStream(key, options);
     }
 
+    async xaddTrimmed(
+        key: string,
+        maxLenApprox: number,
+        fields: Record<string, string>,
+    ): Promise<void> {
+        await this.redis.xadd(
+            key,
+            'MAXLEN',
+            '~',
+            maxLenApprox,
+            '*',
+            ...Object.entries(fields).flat(),
+        );
+    }
+
+    async xaddTrimmedByAge(
+        key: string,
+        maxAgeMs: number,
+        fields: Record<string, string>,
+    ): Promise<void> {
+        await this.redis.xadd(
+            key,
+            'MINID',
+            '~',
+            Date.now() - maxAgeMs,
+            '*',
+            ...Object.entries(fields).flat(),
+        );
+    }
+
     async exists(key: string): Promise<boolean> {
         return (await this.redis.exists(key)) === 1;
     }
@@ -133,5 +204,11 @@ export class RawCacheService {
             rows.forEach((r) => result.set(opts.rowId(r), opts.toValue(r)));
         }
         return result;
+    }
+
+    publishSafe(channel: string, message: unknown): void {
+        void this.redis
+            .publish(channel, JSON.stringify(message))
+            .catch((e) => this.logger.error(`publish ${channel} failed: ${e}`));
     }
 }

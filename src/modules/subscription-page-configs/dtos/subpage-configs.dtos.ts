@@ -1,61 +1,57 @@
 import { createZodDto } from 'nestjs-zod';
 
 import {
-    GetSubscriptionPageConfigsCommand,
-    UpdateSubscriptionPageConfigCommand,
-    GetSubscriptionPageConfigCommand,
-    DeleteSubscriptionPageConfigCommand,
-    CreateSubscriptionPageConfigCommand,
-    ReorderSubscriptionPageConfigsCommand,
-    CloneSubscriptionPageConfigCommand,
+    CloneSubpageConfigCommand,
+    CreateSubpageConfigCommand,
+    DeleteSubpageConfigCommand,
+    GetSubpageConfigCommand,
+    GetSubpageConfigsCommand,
+    ReorderSubpageConfigsCommand,
+    UpdateSubpageConfigCommand,
 } from '@libs/contracts/commands';
 
-export class GetSubscriptionPageConfigsResponseDto extends createZodDto(
-    GetSubscriptionPageConfigsCommand.ResponseSchema,
+export class GetSubpageConfigsResponseDto extends createZodDto(
+    GetSubpageConfigsCommand.ResponseSchema,
 ) {} // GET_ALL
 
-export class UpdateSubscriptionPageConfigRequestDto extends createZodDto(
-    UpdateSubscriptionPageConfigCommand.RequestSchema,
+export class UpdateSubpageConfigBodyDto extends createZodDto(
+    UpdateSubpageConfigCommand.RequestBodySchema,
 ) {} // UPDATE
 
-export class UpdateSubscriptionPageConfigResponseDto extends createZodDto(
-    UpdateSubscriptionPageConfigCommand.ResponseSchema,
+export class UpdateSubpageConfigResponseDto extends createZodDto(
+    UpdateSubpageConfigCommand.ResponseSchema,
 ) {} // UPDATE
 
-export class GetSubscriptionPageConfigResponseDto extends createZodDto(
-    GetSubscriptionPageConfigCommand.ResponseSchema,
+export class GetSubpageConfigResponseDto extends createZodDto(
+    GetSubpageConfigCommand.ResponseSchema,
 ) {} // GET BY UUID
 
-export class GetSubscriptionPageConfigRequestDto extends createZodDto(
-    GetSubscriptionPageConfigCommand.RequestSchema,
+export class GetSubpageConfigParamDto extends createZodDto(
+    GetSubpageConfigCommand.RequestParamSchema,
 ) {} // GET BY UUID
 
-export class DeleteSubscriptionPageConfigRequestDto extends createZodDto(
-    DeleteSubscriptionPageConfigCommand.RequestSchema,
+export class DeleteSubpageConfigParamDto extends createZodDto(
+    DeleteSubpageConfigCommand.RequestParamSchema,
 ) {} // DELETE
 
-export class DeleteSubscriptionPageConfigResponseDto extends createZodDto(
-    DeleteSubscriptionPageConfigCommand.ResponseSchema,
-) {} // DELETE
-
-export class CreateSubscriptionPageConfigRequestDto extends createZodDto(
-    CreateSubscriptionPageConfigCommand.RequestSchema,
+export class CreateSubpageConfigBodyDto extends createZodDto(
+    CreateSubpageConfigCommand.RequestBodySchema,
 ) {} // CREATE
 
-export class CreateSubscriptionPageConfigResponseDto extends createZodDto(
-    CreateSubscriptionPageConfigCommand.ResponseSchema,
+export class CreateSubpageConfigResponseDto extends createZodDto(
+    CreateSubpageConfigCommand.ResponseSchema,
 ) {} // CREATE
 
-export class ReorderSubscriptionPageConfigsRequestDto extends createZodDto(
-    ReorderSubscriptionPageConfigsCommand.RequestSchema,
+export class ReorderSubpageConfigsBodyDto extends createZodDto(
+    ReorderSubpageConfigsCommand.RequestBodySchema,
 ) {} // REORDER
-export class ReorderSubscriptionPageConfigsResponseDto extends createZodDto(
-    ReorderSubscriptionPageConfigsCommand.ResponseSchema,
+export class ReorderSubpageConfigsResponseDto extends createZodDto(
+    ReorderSubpageConfigsCommand.ResponseSchema,
 ) {} // REORDER
 
-export class CloneSubscriptionPageConfigRequestDto extends createZodDto(
-    CloneSubscriptionPageConfigCommand.RequestSchema,
+export class CloneSubpageConfigBodyDto extends createZodDto(
+    CloneSubpageConfigCommand.RequestBodySchema,
 ) {} // CLONE
-export class CloneSubscriptionPageConfigResponseDto extends createZodDto(
-    CloneSubscriptionPageConfigCommand.ResponseSchema,
+export class CloneSubpageConfigResponseDto extends createZodDto(
+    CloneSubpageConfigCommand.ResponseSchema,
 ) {} // CLONE

@@ -1,4 +1,4 @@
-import { Request } from 'express';
+import type { Request } from 'express';
 
 import {
     Body,
@@ -10,14 +10,7 @@ import {
     UseFilters,
     UseGuards,
 } from '@nestjs/common';
-import {
-    ApiBearerAuth,
-    ApiNotFoundResponse,
-    ApiOkResponse,
-    ApiParam,
-    ApiQuery,
-    ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { Endpoint } from '@common/decorators/base-endpoint';
 import { IpAddress } from '@common/decorators/get-ip';
@@ -31,34 +24,34 @@ import { errorHandler } from '@common/helpers/error-handler.helper';
 import { extractHwidHeaders } from '@common/utils/extract-hwid-headers';
 import { CONTROLLERS_INFO, SUBSCRIPTIONS_CONTROLLER } from '@libs/contracts/api';
 import {
-    GetAllSubscriptionsCommand,
-    GetConnectionKeysByUuidCommand,
+    GetConnectionKeysByUserIdCommand,
     GetRawSubscriptionByShortUuidCommand,
+    GetSubscriptionByIdCommand,
     GetSubscriptionByShortUuidProtectedCommand,
     GetSubscriptionByUsernameCommand,
-    GetSubscriptionByUuidCommand,
+    GetSubscriptionsCommand,
 } from '@libs/contracts/commands';
 import { GetSubpageConfigByShortUuidCommand } from '@libs/contracts/commands/subscriptions/subpage/get-subpage-config-by-shortuuid.command';
 import { ROLE } from '@libs/contracts/constants';
 
 import {
-    GetAllSubscriptionsQueryDto,
-    GetAllSubscriptionsResponseDto,
-    GetConnectionKeysByUuidRequestDto,
-    GetConnectionKeysByUuidResponseDto,
-    GetRawSubscriptionByShortUuidRequestDto,
-    GetRawSubscriptionByShortUuidRequestQueryDto,
+    GetConnectionKeysByUserIdResponseDto,
+    GetRawSubscriptionByShortUuidParamDto,
+    GetRawSubscriptionByShortUuidQueryDto,
     GetRawSubscriptionByShortUuidResponseDto,
-    GetSubscriptionByShortUuidProtectedRequestDto,
+    GetSubscriptionByShortUuidProtectedParamDto,
     GetSubscriptionByShortUuidProtectedResponseDto,
-    GetSubscriptionByUsernameRequestDto,
+    GetSubscriptionByUsernameParamDto,
     GetSubscriptionByUsernameResponseDto,
-    GetSubscriptionByUuidRequestDto,
-    GetSubscriptionByUuidResponseDto,
+    GetSubscriptionByIdParamDto,
+    GetSubscriptionByIdResponseDto,
+    GetConnectionKeysByUserIdParamDto,
+    GetSubscriptionsResponseDto,
+    GetSubscriptionsQueryDto,
 } from '../dto';
 import {
-    GetSubpageConfigByShortUuidRequestBodyDto,
-    GetSubpageConfigByShortUuidRequestDto,
+    GetSubpageConfigByShortUuidBodyDto,
+    GetSubpageConfigByShortUuidParamDto,
     GetSubpageConfigByShortUuidResponseDto,
 } from '../dto/get-subpage-config.dto';
 import { AllSubscriptionsResponseModel, SubscriptionRawResponse } from '../models';
@@ -74,31 +67,14 @@ import { SubscriptionService } from '../subscription.service';
 export class SubscriptionsController {
     constructor(private readonly subscriptionService: SubscriptionService) {}
 
-    @ApiOkResponse({
-        type: GetAllSubscriptionsResponseDto,
-        description: 'Users fetched successfully',
-    })
-    @ApiQuery({
-        name: 'start',
-        type: 'number',
-        required: false,
-        example: 0,
-        description: GetAllSubscriptionsCommand.RequestQuerySchema.shape.start.description,
-    })
-    @ApiQuery({
-        name: 'size',
-        type: 'number',
-        required: false,
-        example: 25,
-        description: GetAllSubscriptionsCommand.RequestQuerySchema.shape.size.description,
-    })
     @Endpoint({
-        command: GetAllSubscriptionsCommand,
+        command: GetSubscriptionsCommand,
         httpCode: HttpStatus.OK,
+        type: GetSubscriptionsResponseDto,
     })
     async getAllSubscriptions(
-        @Query() query: GetAllSubscriptionsQueryDto,
-    ): Promise<GetAllSubscriptionsResponseDto> {
+        @Query() query: GetSubscriptionsQueryDto,
+    ): Promise<GetSubscriptionsResponseDto> {
         const { start, size } = query;
         const result = await this.subscriptionService.getAllSubscriptions({
             start,
@@ -114,36 +90,15 @@ export class SubscriptionsController {
         };
     }
 
-    @ApiNotFoundResponse({
-        description: 'User not found',
-        schema: {
-            type: 'object',
-            properties: {
-                timestamp: { type: 'string', format: 'date-time' },
-                path: { type: 'string' },
-                message: { type: 'string' },
-                errorCode: { type: 'string' },
-            },
-        },
-    })
-    @ApiOkResponse({
-        type: GetSubscriptionByUsernameResponseDto,
-        description: 'Subscription fetched successfully',
-    })
-    @ApiParam({
-        name: 'username',
-        type: String,
-        description: 'Username of the user',
-        required: true,
-    })
     @Endpoint({
         command: GetSubscriptionByUsernameCommand,
         httpCode: HttpStatus.OK,
+        type: GetSubscriptionByUsernameResponseDto,
     })
     async getSubscriptionByUsername(
-        @Param() paramData: GetSubscriptionByUsernameRequestDto,
+        @Param() param: GetSubscriptionByUsernameParamDto,
     ): Promise<GetSubscriptionByUsernameResponseDto> {
-        const { username } = paramData;
+        const { username } = param;
         const result = await this.subscriptionService.getSubscriptionInfo({
             searchBy: {
                 uniqueField: username,
@@ -159,36 +114,15 @@ export class SubscriptionsController {
         };
     }
 
-    @ApiNotFoundResponse({
-        description: 'User not found',
-        schema: {
-            type: 'object',
-            properties: {
-                timestamp: { type: 'string', format: 'date-time' },
-                path: { type: 'string' },
-                message: { type: 'string' },
-                errorCode: { type: 'string' },
-            },
-        },
-    })
-    @ApiOkResponse({
-        type: GetSubscriptionByShortUuidProtectedResponseDto,
-        description: 'Subscription fetched successfully',
-    })
-    @ApiParam({
-        name: 'shortUuid',
-        type: String,
-        description: 'Short uuid of the user',
-        required: true,
-    })
     @Endpoint({
         command: GetSubscriptionByShortUuidProtectedCommand,
         httpCode: HttpStatus.OK,
+        type: GetSubscriptionByShortUuidProtectedResponseDto,
     })
     async getSubscriptionByShortUuidProtected(
-        @Param() paramData: GetSubscriptionByShortUuidProtectedRequestDto,
+        @Param() param: GetSubscriptionByShortUuidProtectedParamDto,
     ): Promise<GetSubscriptionByShortUuidProtectedResponseDto> {
-        const { shortUuid } = paramData;
+        const { shortUuid } = param;
         const result = await this.subscriptionService.getSubscriptionInfo({
             searchBy: {
                 uniqueField: shortUuid,
@@ -204,40 +138,19 @@ export class SubscriptionsController {
         };
     }
 
-    @ApiNotFoundResponse({
-        description: 'User not found',
-        schema: {
-            type: 'object',
-            properties: {
-                timestamp: { type: 'string', format: 'date-time' },
-                path: { type: 'string' },
-                message: { type: 'string' },
-                errorCode: { type: 'string' },
-            },
-        },
-    })
-    @ApiOkResponse({
-        type: GetSubscriptionByUuidResponseDto,
-        description: 'Subscription fetched successfully',
-    })
-    @ApiParam({
-        name: 'uuid',
-        type: String,
-        description: 'Uuid of the user',
-        required: true,
-    })
     @Endpoint({
-        command: GetSubscriptionByUuidCommand,
+        command: GetSubscriptionByIdCommand,
         httpCode: HttpStatus.OK,
+        type: GetSubscriptionByIdResponseDto,
     })
     async getSubscriptionByUuid(
-        @Param() paramData: GetSubscriptionByUuidRequestDto,
-    ): Promise<GetSubscriptionByUuidResponseDto> {
-        const { uuid } = paramData;
+        @Param() param: GetSubscriptionByIdParamDto,
+    ): Promise<GetSubscriptionByIdResponseDto> {
+        const { userId } = param;
         const result = await this.subscriptionService.getSubscriptionInfo({
             searchBy: {
-                uniqueField: uuid,
-                uniqueFieldKey: 'uuid',
+                uniqueField: BigInt(userId),
+                uniqueFieldKey: 'id',
             },
             authenticated: true,
         });
@@ -249,35 +162,19 @@ export class SubscriptionsController {
         };
     }
 
-    @ApiOkResponse({
-        description: 'Raw subscription fetched successfully',
-        type: GetRawSubscriptionByShortUuidResponseDto,
-    })
-    @ApiParam({
-        name: 'shortUuid',
-        type: String,
-        description: 'Short UUID of the user',
-        required: true,
-    })
-    @ApiQuery({
-        name: 'withDisabledHosts',
-        type: Boolean,
-        description: 'Include disabled hosts in the subscription. Default is false.',
-        required: false,
-    })
     @Endpoint({
         command: GetRawSubscriptionByShortUuidCommand,
         httpCode: HttpStatus.OK,
+        type: GetRawSubscriptionByShortUuidResponseDto,
     })
     async getRawSubscriptionByShortUuid(
         @IpAddress() ip: string,
-        @Param() { shortUuid }: GetRawSubscriptionByShortUuidRequestDto,
-        @Query() { withDisabledHosts }: GetRawSubscriptionByShortUuidRequestQueryDto,
+        @Param() { shortUuid }: GetRawSubscriptionByShortUuidParamDto,
+        @Query() { withDisabledHosts }: GetRawSubscriptionByShortUuidQueryDto,
         @Req() request: Request,
     ): Promise<GetRawSubscriptionByShortUuidResponseDto> {
         const result = await this.subscriptionService.getRawSubscriptionByShortUuid(
             shortUuid,
-            request.headers['user-agent'] as string,
             withDisabledHosts,
             extractHwidHeaders(request),
             ip,
@@ -290,26 +187,16 @@ export class SubscriptionsController {
         };
     }
 
-    @ApiOkResponse({
-        type: GetSubpageConfigByShortUuidResponseDto,
-        description: 'Subpage config fetched successfully',
-    })
-    @ApiParam({
-        name: 'shortUuid',
-        type: String,
-        description: 'Short UUID of the user',
-        required: true,
-    })
     @Endpoint({
         command: GetSubpageConfigByShortUuidCommand,
         httpCode: HttpStatus.OK,
-        apiBody: GetSubpageConfigByShortUuidRequestBodyDto,
+        type: GetSubpageConfigByShortUuidResponseDto,
     })
     async getSubpageConfigByShortUuid(
-        @Param() paramData: GetSubpageConfigByShortUuidRequestDto,
-        @Body() body: GetSubpageConfigByShortUuidRequestBodyDto,
+        @Param() param: GetSubpageConfigByShortUuidParamDto,
+        @Body() body: GetSubpageConfigByShortUuidBodyDto,
     ): Promise<GetSubpageConfigByShortUuidResponseDto> {
-        const { shortUuid } = paramData;
+        const { shortUuid } = param;
         const result = await this.subscriptionService.getSubpageConfigByShortUuid(
             shortUuid,
             body.requestHeaders,
@@ -320,25 +207,16 @@ export class SubscriptionsController {
         };
     }
 
-    @ApiOkResponse({
-        type: GetConnectionKeysByUuidResponseDto,
-        description: 'Connection keys fetched successfully',
-    })
-    @ApiParam({
-        name: 'uuid',
-        type: String,
-        description: 'UUID of the user',
-        required: true,
-    })
     @Endpoint({
-        command: GetConnectionKeysByUuidCommand,
+        command: GetConnectionKeysByUserIdCommand,
         httpCode: HttpStatus.OK,
+        type: GetConnectionKeysByUserIdResponseDto,
     })
-    async getConnectionKeysByUuid(
-        @Param() paramData: GetConnectionKeysByUuidRequestDto,
-    ): Promise<GetConnectionKeysByUuidResponseDto> {
-        const { uuid } = paramData;
-        const result = await this.subscriptionService.getConnectionKeysByUuid(uuid);
+    async getConnectionKeysByUserId(
+        @Param() param: GetConnectionKeysByUserIdParamDto,
+    ): Promise<GetConnectionKeysByUserIdResponseDto> {
+        const { userId } = param;
+        const result = await this.subscriptionService.getConnectionKeysByUserId(userId);
         const data = errorHandler(result);
         return {
             response: data,

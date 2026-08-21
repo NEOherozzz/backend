@@ -22,6 +22,7 @@ export class GetCachedSubscriptionSettingsHandler implements IQueryHandler<GetCa
         try {
             const cached = await this.rawCacheService.get<SubscriptionSettingsEntity>(
                 CACHE_KEYS.SUBSCRIPTION_SETTINGS,
+                true,
             );
 
             if (cached) {

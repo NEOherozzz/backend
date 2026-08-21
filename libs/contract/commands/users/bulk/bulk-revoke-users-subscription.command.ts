@@ -10,24 +10,13 @@ export namespace BulkRevokeUsersSubscriptionCommand {
     export const endpointDetails = getEndpointDetails(
         USERS_ROUTES.BULK.REVOKE_SUBSCRIPTION,
         'post',
-        'Revoke users subscription by User UUIDs',
+        'Revoke users subscription by User IDs',
         { scope: 'bulk-revoke-subscription', kind: 'write' },
     );
 
-    export const RequestSchema = z.object({
-        uuids: z
-            .array(z.string().uuid())
-            .min(1, 'Must be at least 1 user UUID')
-            .max(500, 'Maximum 500 user UUIDs'),
+    export const RequestBodySchema = z.object({
+        userIds: z.array(z.number()).min(1).max(500),
     });
 
-    export type Request = z.infer<typeof RequestSchema>;
-
-    export const ResponseSchema = z.object({
-        response: z.object({
-            affectedRows: z.number(),
-        }),
-    });
-
-    export type Response = z.infer<typeof ResponseSchema>;
+    export type RequestBody = z.infer<typeof RequestBodySchema>;
 }

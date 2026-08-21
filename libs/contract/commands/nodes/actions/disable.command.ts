@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { NODES_ROUTES, REST_API } from '../../../api';
 import { getEndpointDetails } from '../../../constants';
-import { NodesSchema } from '../../../models';
+import { NodeResponseSchema } from '../node.response';
 
 export namespace DisableNodeCommand {
     export const url = REST_API.NODES.ACTIONS.DISABLE;
@@ -15,15 +15,12 @@ export namespace DisableNodeCommand {
         { scope: 'disable', kind: 'write' },
     );
 
-    export const RequestSchema = z.object({
-        uuid: z.string().uuid(),
+    export const RequestParamSchema = z.object({
+        uuid: z.uuid(),
     });
 
-    export type Request = z.infer<typeof RequestSchema>;
+    export const ResponseSchema = NodeResponseSchema;
 
-    export const ResponseSchema = z.object({
-        response: NodesSchema,
-    });
-
+    export type RequestParam = z.infer<typeof RequestParamSchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

@@ -1,12 +1,5 @@
 import { Body, Controller, HttpStatus, Param, Query, UseFilters, UseGuards } from '@nestjs/common';
-import {
-    ApiBearerAuth,
-    ApiNotFoundResponse,
-    ApiOkResponse,
-    ApiParam,
-    ApiQuery,
-    ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { Endpoint } from '@common/decorators/base-endpoint';
 import { Roles } from '@common/decorators/roles/roles';
@@ -21,7 +14,7 @@ import {
     CreateUserHwidDeviceCommand,
     DeleteAllUserHwidDevicesCommand,
     DeleteUserHwidDeviceCommand,
-    GetAllHwidDevicesCommand,
+    GetHwidDevicesCommand,
     GetHwidDevicesStatsCommand,
     GetTopUsersByHwidDevicesCommand,
     GetUserHwidDevicesCommand,
@@ -29,18 +22,18 @@ import {
 import { ROLE } from '@libs/contracts/constants';
 
 import {
-    CreateUserHwidDeviceRequestDto,
+    CreateUserHwidDeviceBodyDto,
     CreateUserHwidDeviceResponseDto,
-    DeleteAllUserHwidDevicesRequestDto,
+    DeleteAllUserHwidDevicesBodyDto,
     DeleteAllUserHwidDevicesResponseDto,
-    DeleteUserHwidDeviceRequestDto,
+    DeleteUserHwidDeviceBodyDto,
     DeleteUserHwidDeviceResponseDto,
-    GetAllHwidDevicesRequestQueryDto,
-    GetAllHwidDevicesResponseDto,
+    GetHwidDevicesQueryDto,
+    GetHwidDevicesQueryResponseDto,
     GetHwidDevicesStatsResponseDto,
-    GetTopUsersByHwidDevicesRequestQueryDto,
+    GetTopUsersByHwidDevicesQueryDto,
     GetTopUsersByHwidDevicesResponseDto,
-    GetUserHwidDevicesRequestDto,
+    GetUserHwidDevicesParamDto,
     GetUserHwidDevicesResponseDto,
 } from './dtos';
 import { HwidUserDevicesService } from './hwid-user-devices.service';
@@ -56,29 +49,14 @@ import { BaseUserHwidDevicesResponseModel, GetAllHwidDevicesResponseModel } from
 export class HwidUserDevicesController {
     constructor(private readonly hwidUserDevicesService: HwidUserDevicesService) {}
 
-    @ApiOkResponse({
-        type: GetAllHwidDevicesResponseDto,
-        description: 'Hwid devices fetched successfully',
-    })
-    @ApiQuery({
-        name: 'start',
-        type: 'number',
-        required: false,
-        description: 'Offset for pagination',
-    })
-    @ApiQuery({
-        name: 'size',
-        type: 'number',
-        required: false,
-        description: 'Page size for pagination',
-    })
     @Endpoint({
-        command: GetAllHwidDevicesCommand,
+        command: GetHwidDevicesCommand,
         httpCode: HttpStatus.OK,
+        type: GetHwidDevicesQueryResponseDto,
     })
     async getAllUsers(
-        @Query() query: GetAllHwidDevicesRequestQueryDto,
-    ): Promise<GetAllHwidDevicesResponseDto> {
+        @Query() query: GetHwidDevicesQueryDto,
+    ): Promise<GetHwidDevicesQueryResponseDto> {
         const { start, size, filters, filterModes, globalFilterMode, sorting } = query;
         const result = await this.hwidUserDevicesService.getAllHwidDevices({
             start,
@@ -98,20 +76,13 @@ export class HwidUserDevicesController {
         };
     }
 
-    @ApiNotFoundResponse({
-        description: 'One of requested resources not found',
-    })
-    @ApiOkResponse({
-        type: CreateUserHwidDeviceResponseDto,
-        description: 'User HWID device created successfully',
-    })
     @Endpoint({
         command: CreateUserHwidDeviceCommand,
         httpCode: HttpStatus.OK,
-        apiBody: CreateUserHwidDeviceRequestDto,
+        type: CreateUserHwidDeviceResponseDto,
     })
     async createUserHwidDevice(
-        @Body() body: CreateUserHwidDeviceRequestDto,
+        @Body() body: CreateUserHwidDeviceBodyDto,
     ): Promise<CreateUserHwidDeviceResponseDto> {
         const result = await this.hwidUserDevicesService.createUserHwidDevice(body);
 
@@ -124,24 +95,17 @@ export class HwidUserDevicesController {
         };
     }
 
-    @ApiNotFoundResponse({
-        description: 'One of requested resources not found',
-    })
-    @ApiOkResponse({
-        type: DeleteUserHwidDeviceResponseDto,
-        description: 'User HWID device deleted successfully',
-    })
     @Endpoint({
         command: DeleteUserHwidDeviceCommand,
         httpCode: HttpStatus.OK,
-        apiBody: DeleteUserHwidDeviceRequestDto,
+        type: DeleteUserHwidDeviceResponseDto,
     })
     async deleteUserHwidDevice(
-        @Body() body: DeleteUserHwidDeviceRequestDto,
+        @Body() body: DeleteUserHwidDeviceBodyDto,
     ): Promise<DeleteUserHwidDeviceResponseDto> {
         const result = await this.hwidUserDevicesService.deleteUserHwidDevice(
             body.hwid,
-            body.userUuid,
+            body.userId,
         );
 
         const data = errorHandler(result);
@@ -153,22 +117,15 @@ export class HwidUserDevicesController {
         };
     }
 
-    @ApiNotFoundResponse({
-        description: 'One of requested resources not found',
-    })
-    @ApiOkResponse({
-        type: DeleteAllUserHwidDevicesResponseDto,
-        description: 'User HWID devices deleted successfully',
-    })
     @Endpoint({
         command: DeleteAllUserHwidDevicesCommand,
         httpCode: HttpStatus.OK,
-        apiBody: DeleteAllUserHwidDevicesRequestDto,
+        type: DeleteAllUserHwidDevicesResponseDto,
     })
     async deleteAllUserHwidDevices(
-        @Body() body: DeleteAllUserHwidDevicesRequestDto,
+        @Body() body: DeleteAllUserHwidDevicesBodyDto,
     ): Promise<DeleteAllUserHwidDevicesResponseDto> {
-        const result = await this.hwidUserDevicesService.deleteAllUserHwidDevices(body.userUuid);
+        const result = await this.hwidUserDevicesService.deleteAllUserHwidDevices(body.userId);
 
         const data = errorHandler(result);
         return {
@@ -179,13 +136,10 @@ export class HwidUserDevicesController {
         };
     }
 
-    @ApiOkResponse({
-        type: GetHwidDevicesStatsResponseDto,
-        description: 'Hwid devices stats fetched successfully',
-    })
     @Endpoint({
         command: GetHwidDevicesStatsCommand,
         httpCode: HttpStatus.OK,
+        type: GetHwidDevicesStatsResponseDto,
     })
     async getHwidDevicesStats(): Promise<GetHwidDevicesStatsResponseDto> {
         const result = await this.hwidUserDevicesService.getHwidDevicesStats();
@@ -196,28 +150,13 @@ export class HwidUserDevicesController {
         };
     }
 
-    @ApiOkResponse({
-        type: GetTopUsersByHwidDevicesResponseDto,
-        description: 'Top users by HWID devices fetched successfully',
-    })
-    @ApiQuery({
-        name: 'start',
-        type: 'number',
-        required: false,
-        description: 'Offset for pagination',
-    })
-    @ApiQuery({
-        name: 'size',
-        type: 'number',
-        required: false,
-        description: 'Page size for pagination',
-    })
     @Endpoint({
         command: GetTopUsersByHwidDevicesCommand,
         httpCode: HttpStatus.OK,
+        type: GetTopUsersByHwidDevicesResponseDto,
     })
     async getTopUsersByHwidDevices(
-        @Query() query: GetTopUsersByHwidDevicesRequestQueryDto,
+        @Query() query: GetTopUsersByHwidDevicesQueryDto,
     ): Promise<GetTopUsersByHwidDevicesResponseDto> {
         const { start, size } = query;
         const result = await this.hwidUserDevicesService.getTopUsersByHwidDevices({
@@ -231,22 +170,15 @@ export class HwidUserDevicesController {
         };
     }
 
-    @ApiNotFoundResponse({
-        description: 'One of requested resources not found',
-    })
-    @ApiOkResponse({
-        type: GetUserHwidDevicesResponseDto,
-        description: 'User HWID devices fetched successfully',
-    })
-    @ApiParam({ name: 'userUuid', type: String, description: 'UUID of the user', required: true })
     @Endpoint({
         command: GetUserHwidDevicesCommand,
         httpCode: HttpStatus.OK,
+        type: GetUserHwidDevicesResponseDto,
     })
     async getUserHwidDevices(
-        @Param() paramData: GetUserHwidDevicesRequestDto,
+        @Param() params: GetUserHwidDevicesParamDto,
     ): Promise<GetUserHwidDevicesResponseDto> {
-        const result = await this.hwidUserDevicesService.getUserHwidDevices(paramData.userUuid);
+        const result = await this.hwidUserDevicesService.getUserHwidDevices(params.userId);
 
         const data = errorHandler(result);
         return {

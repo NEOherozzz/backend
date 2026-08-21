@@ -21,7 +21,7 @@ export class GetUserWithResolvedInboundsHandler implements IQueryHandler<
         query: GetUserWithResolvedInboundsQuery,
     ): Promise<TResult<UserWithResolvedInboundEntity>> {
         try {
-            const user = await this.usersRepository.getUserWithResolvedInbounds(query.userUuid);
+            const user = await this.usersRepository.getUserWithResolvedInbounds(query.userId);
 
             if (!user) {
                 return fail(ERRORS.USER_NOT_FOUND);

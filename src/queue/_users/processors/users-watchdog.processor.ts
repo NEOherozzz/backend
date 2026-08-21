@@ -253,25 +253,25 @@ export class UsersWatchdogQueueProcessor extends WorkerHost {
         }
     }
 
-    private async updateExpiredUsers(): Promise<TResult<{ tId: bigint }[]>> {
-        return this.commandBus.execute<UpdateExpiredUsersCommand, TResult<{ tId: bigint }[]>>(
+    private async updateExpiredUsers(): Promise<TResult<{ id: bigint }[]>> {
+        return this.commandBus.execute<UpdateExpiredUsersCommand, TResult<{ id: bigint }[]>>(
             new UpdateExpiredUsersCommand(),
         );
     }
 
-    private async updateExceededTrafficUsers(): Promise<TResult<{ tId: bigint }[]>> {
+    private async updateExceededTrafficUsers(): Promise<TResult<{ id: bigint }[]>> {
         return this.commandBus.execute<
             UpdateExceededTrafficUsersCommand,
-            TResult<{ tId: bigint }[]>
+            TResult<{ id: bigint }[]>
         >(new UpdateExceededTrafficUsersCommand());
     }
 
     private async triggerThresholdNotifications(
         percentages: number[],
-    ): Promise<TResult<{ tId: bigint }[]>> {
+    ): Promise<TResult<{ id: bigint }[]>> {
         return this.commandBus.execute<
             TriggerThresholdNotificationCommand,
-            TResult<{ tId: bigint }[]>
+            TResult<{ id: bigint }[]>
         >(new TriggerThresholdNotificationCommand(percentages));
     }
 }

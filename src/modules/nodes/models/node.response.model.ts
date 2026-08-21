@@ -1,4 +1,5 @@
 import { fromNanoToNumber } from '@common/utils/nano';
+import { TNodeIps } from '@libs/contracts/models';
 
 import { ConfigProfileInboundEntity } from '@modules/config-profiles/entities';
 import { InfraProviderEntity } from '@modules/infra-billing/entities';
@@ -8,6 +9,7 @@ import { INodeHotCache, INodeSystem, INodeVersions } from '../interfaces';
 
 export class NodeResponseModel {
     public uuid: string;
+    public id: number;
     public name: string;
     public address: string;
     public port: null | number;
@@ -28,6 +30,8 @@ export class NodeResponseModel {
     public viewPosition: number;
     public countryCode: string;
     public tags: string[];
+    public integrationUuids: string[];
+    public ips: TNodeIps;
     public createdAt: Date;
     public updatedAt: Date;
 
@@ -46,6 +50,7 @@ export class NodeResponseModel {
 
     constructor(data: NodesEntity, hotCache: INodeHotCache) {
         this.uuid = data.uuid;
+        this.id = Number(data.id);
         this.name = data.name;
         this.address = data.address;
         this.port = data.port;
@@ -64,6 +69,8 @@ export class NodeResponseModel {
         this.consumptionMultiplier = fromNanoToNumber(data.consumptionMultiplier);
         this.nodeConsumptionMultiplier = fromNanoToNumber(data.nodeConsumptionMultiplier);
         this.tags = data.tags;
+        this.integrationUuids = data.integrationUuids;
+        this.ips = data.ips;
         this.createdAt = data.createdAt;
         this.updatedAt = data.updatedAt;
 

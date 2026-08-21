@@ -11,13 +11,13 @@ import { UpdateExpiredUsersCommand } from './update-expired-users.command';
 @CommandHandler(UpdateExpiredUsersCommand)
 export class UpdateExpiredUsersHandler implements ICommandHandler<
     UpdateExpiredUsersCommand,
-    TResult<{ tId: bigint }[]>
+    TResult<{ id: bigint }[]>
 > {
     public readonly logger = new Logger(UpdateExpiredUsersHandler.name);
 
     constructor(private readonly usersRepository: UsersRepository) {}
 
-    async execute(): Promise<TResult<{ tId: bigint }[]>> {
+    async execute(): Promise<TResult<{ id: bigint }[]>> {
         try {
             const result = await this.usersRepository.updateExpiredUsers();
 

@@ -22,7 +22,6 @@ const FILTER_COLUMN_MAP = {
     nodeId: sql.ref('torrent_blocker_reports.node_id'),
     createdAt: sql.ref('torrent_blocker_reports.created_at'),
     'user.username': sql.ref('users.username'),
-    'user.uuid': sql.ref('users.uuid'),
     'node.uuid': sql.ref('nodes.uuid'),
     'node.name': sql.ref('nodes.name'),
     'report.actionReport.ip': sql`report->'actionReport'->>'ip'`,
@@ -32,8 +31,8 @@ const FILTER_COLUMN_MAP = {
 } as const;
 
 const SORT_COLUMN_MAP: Record<string, string> = {
+    userId: 'users.id',
     'user.username': 'users.username',
-    'user.uuid': 'users.uuid',
     'node.uuid': 'nodes.uuid',
     'node.name': 'nodes.name',
     id: 'torrent_blocker_reports.id',
@@ -53,7 +52,7 @@ export class TorrentBlockerReportsRepository {
     private get baseQb() {
         return this.qb.kysely
             .selectFrom('torrentBlockerReports')
-            .innerJoin('users', 'users.tId', 'torrentBlockerReports.userId')
+            .innerJoin('users', 'users.id', 'torrentBlockerReports.userId')
             .innerJoin('nodes', 'nodes.id', 'torrentBlockerReports.nodeId')
             .select([
                 'torrentBlockerReports.id',
@@ -61,7 +60,6 @@ export class TorrentBlockerReportsRepository {
                 'torrentBlockerReports.nodeId',
                 'torrentBlockerReports.report',
                 'torrentBlockerReports.createdAt',
-                'users.uuid as userUuid',
                 'users.username',
                 'nodes.uuid as nodeUuid',
                 'nodes.name as nodeName',
@@ -121,7 +119,6 @@ export class TorrentBlockerReportsRepository {
                         },
                         {
                             username: r.username,
-                            uuid: r.userUuid,
                         },
                         {
                             name: r.nodeName,
@@ -168,7 +165,7 @@ export class TorrentBlockerReportsRepository {
                 continue;
             }
 
-            if (filter.id === 'user.uuid' || filter.id === 'node.uuid') {
+            if (filter.id === 'node.uuid') {
                 const ref = FILTER_COLUMN_MAP[filter.id as AllowedFilterId];
                 qb = qb.where(sql`${ref}::text`, 'ilike', `%${filter.value}%`);
                 continue;
@@ -223,9 +220,9 @@ export class TorrentBlockerReportsRepository {
     public async getTopTorrentBlockerUsers(): Promise<IGetTopTorrentBlockerUser[]> {
         return await this.qb.kysely
             .selectFrom('torrentBlockerReports')
-            .innerJoin('users', 'users.tId', 'torrentBlockerReports.userId')
-            .select(['users.uuid', 'users.username', sql<bigint>`COUNT(*)`.as('total')])
-            .groupBy(['users.uuid', 'users.username'])
+            .innerJoin('users', 'users.id', 'torrentBlockerReports.userId')
+            .select(['users.id as userId', 'users.username', sql<bigint>`COUNT(*)`.as('total')])
+            .groupBy(['users.id', 'users.username'])
             .orderBy('total', 'desc')
             .limit(150)
             .execute();

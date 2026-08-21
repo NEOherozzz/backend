@@ -24,9 +24,7 @@ export namespace GetSubscriptionRequestHistoryStatsCommand {
             ),
             hourlyRequestStats: z.array(
                 z.object({
-                    dateTime: z
-                        .string()
-                        .datetime()
+                    dateTime: z.iso.datetime()
                         .transform((str) => new Date(str)),
                     requestCount: z.number(),
                 }),

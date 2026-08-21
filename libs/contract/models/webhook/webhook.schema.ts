@@ -65,14 +65,14 @@ export const RemnawaveWebhookServiceEvents = z.object({
         subpageConfig: z
             .object({
                 action: z.enum(toZodEnum(CRUD_ACTIONS)),
-                uuid: z.string().uuid(),
+                uuid: z.uuid(),
             })
 
             .optional(),
         apiToken: z
             .object({
                 name: z.string(),
-                uuid: z.string().uuid(),
+                uuid: z.uuid(),
                 expireAt: z
                     .string()
                     .datetime()

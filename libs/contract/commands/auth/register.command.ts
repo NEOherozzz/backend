@@ -14,8 +14,8 @@ export namespace RegisterCommand {
         { scope: 'register', kind: 'write' },
     );
 
-    export const RequestSchema = z.object({
-        username: z.string(),
+    export const RequestBodySchema = z.object({
+        username: z.string().describe('Username of the user'),
         password: z
             .string()
             .min(24, 'Password must contain at least 24 characters')
@@ -25,13 +25,12 @@ export namespace RegisterCommand {
             ),
     });
 
-    export type Request = z.infer<typeof RequestSchema>;
-
     export const ResponseSchema = z.object({
         response: z.object({
             accessToken: z.string(),
         }),
     });
 
+    export type RequestBody = z.infer<typeof RequestBodySchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

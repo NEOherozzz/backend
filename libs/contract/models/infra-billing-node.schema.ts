@@ -4,10 +4,10 @@ import { PartialInfraProviderSchema } from './infra-provider.schema';
 import { NodesSchema } from './nodes.schema';
 
 export const InfraBillingNodeSchema = z.object({
-    uuid: z.string().uuid(),
-    nodeUuid: z.string().uuid().nullable(),
+    uuid: z.uuid(),
+    nodeUuid: z.uuid().nullable(),
     name: z.string().nullable(),
-    providerUuid: z.string().uuid(),
+    providerUuid: z.uuid(),
     provider: PartialInfraProviderSchema.pick({
         uuid: true,
         name: true,
@@ -21,17 +21,11 @@ export const InfraBillingNodeSchema = z.object({
         countryCode: true,
     }).nullable(),
 
-    nextBillingAt: z
-        .string()
-        .datetime()
+    nextBillingAt: z.iso.datetime()
         .transform((str) => new Date(str)),
 
-    createdAt: z
-        .string()
-        .datetime()
+    createdAt: z.iso.datetime()
         .transform((str) => new Date(str)),
-    updatedAt: z
-        .string()
-        .datetime()
+    updatedAt: z.iso.datetime()
         .transform((str) => new Date(str)),
 });

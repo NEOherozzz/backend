@@ -24,7 +24,7 @@ export namespace GetTorrentBlockerReportsStatsCommand {
             }),
             topUsers: z.array(
                 z.object({
-                    uuid: z.string().uuid(),
+                    userId: z.number(),
                     color: z.string(),
                     username: z.string(),
                     total: z.number(),
@@ -32,7 +32,7 @@ export namespace GetTorrentBlockerReportsStatsCommand {
             ),
             topNodes: z.array(
                 z.object({
-                    uuid: z.string().uuid(),
+                    uuid: z.uuid(),
                     countryCode: z.string(),
                     color: z.string(),
                     name: z.string(),

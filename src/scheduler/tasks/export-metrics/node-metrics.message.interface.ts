@@ -11,3 +11,5 @@ export interface INodeMetrics {
         uplink: string;
     }[];
 }
+
+export const NODE_METRICS_MESSAGE_CHANNEL = 'ch:node-metrics';

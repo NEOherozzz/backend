@@ -1,4 +1,4 @@
-import { colorFromUuid } from '@kastov/uuid-color';
+import { colorFromId, colorFromUuid } from '@kastov/uuid-color';
 
 import {
     IGetTopTorrentBlockerNode,
@@ -26,8 +26,8 @@ export class TorrentBlockerReportsStatsResponseModel {
     }) {
         this.stats = data.stats;
         this.topUsers = data.topUsers.map((item) => ({
-            uuid: item.uuid,
-            color: colorFromUuid(item.uuid),
+            userId: Number(item.userId),
+            color: colorFromId(item.userId),
             username: item.username,
             total: Number(item.total),
         }));

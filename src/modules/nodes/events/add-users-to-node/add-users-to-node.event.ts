@@ -1,3 +1,3 @@
 export class AddUsersToNodeEvent {
-    constructor(public readonly tIds: bigint[]) {}
+    constructor(public readonly ids: bigint[]) {}
 }

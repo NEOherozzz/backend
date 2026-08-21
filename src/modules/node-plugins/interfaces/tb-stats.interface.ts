@@ -1,5 +1,5 @@
 export interface IGetTopTorrentBlockerUser {
-    uuid: string;
+    userId: bigint;
     username: string;
     total: bigint;
 }
@@ -20,7 +20,7 @@ export interface IGetTopTorrentBlockerNodeConverted {
 }
 
 export interface IGetTopTorrentBlockerUserConverted {
-    uuid: string;
+    userId: number;
     color: string;
     username: string;
     total: number;

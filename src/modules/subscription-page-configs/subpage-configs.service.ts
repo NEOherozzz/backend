@@ -14,7 +14,6 @@ import { ServiceEvent } from '@integration-modules/notifications/interfaces';
 
 import { DEFAULT_SUBPAGE_CONFIG } from './constants';
 import { SubscriptionPageConfigEntity } from './entities/sub-page-config.entity';
-import { DeleteSubscriptionPageConfigResponseModel } from './models';
 import { BaseSubscriptionPageConfigResponseModel } from './models/base-subpage-config.response.model';
 import { GetSubscriptionPageConfigsResponseModel } from './models/get-subscripion-page-configs.response.model';
 import { SubscriptionPageConfigRepository } from './repositories/subpage-configs.repository';
@@ -74,7 +73,7 @@ export class SubscriptionPageConfigService {
 
                 if (!validatedConfig.success) {
                     this.logger.error(
-                        validatedConfig.error.errors
+                        validatedConfig.error.issues
                             .map(
                                 (err) =>
                                     `${err.path.length ? `${err.path.join('.')}: ` : ''}${err.message}`,
@@ -125,9 +124,7 @@ export class SubscriptionPageConfigService {
         }
     }
 
-    public async deleteConfig(
-        uuid: string,
-    ): Promise<TResult<DeleteSubscriptionPageConfigResponseModel>> {
+    public async deleteConfig(uuid: string): Promise<TResult<boolean>> {
         try {
             const config = await this.subscriptionPageConfigRepository.findByUUID(uuid);
 
@@ -139,11 +136,11 @@ export class SubscriptionPageConfigService {
                 return fail(ERRORS.RESERVED_SUBPAGE_CONFIG_CANT_BE_DELETED);
             }
 
-            const deletedConfig = await this.subscriptionPageConfigRepository.deleteByUUID(uuid);
+            await this.subscriptionPageConfigRepository.deleteByUUID(uuid);
 
             await this.emitSubpageConfigChangedEvent(CRUD_ACTIONS.DELETED, config.uuid);
 
-            return ok(new DeleteSubscriptionPageConfigResponseModel(deletedConfig));
+            return ok(true);
         } catch (error) {
             this.logger.error(error);
             return fail(ERRORS.DELETE_SUBSCRIPTION_PAGE_CONFIG_ERROR);

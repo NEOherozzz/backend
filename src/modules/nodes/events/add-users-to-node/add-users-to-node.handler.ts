@@ -34,7 +34,7 @@ export class AddUsersToNodeHandler implements IEventHandler<AddUsersToNodeEvent>
             }
 
             const usersResult = await this.queryBus.execute(
-                new GetUsersWithResolvedInboundsQuery(event.tIds),
+                new GetUsersWithResolvedInboundsQuery(event.ids),
             );
 
             if (!usersResult.isOk || usersResult.response.length === 0) {
@@ -54,20 +54,20 @@ export class AddUsersToNodeHandler implements IEventHandler<AddUsersToNodeEvent>
                 const usersToRemove: Array<{ userId: string; hashUuid: string }> = [];
 
                 for (const user of usersResult.response) {
-                    const { tId, trojanPassword, vlessUuid, ssPassword, inbounds } = user;
+                    const { id, trojanPassword, vlessUuid, ssPassword, inbounds } = user;
 
                     if (inbounds.length === 0) continue;
 
                     const filteredInbounds = inbounds.filter((ib) => activeTags.has(ib.tag));
 
                     if (filteredInbounds.length === 0) {
-                        usersToRemove.push({ userId: tId.toString(), hashUuid: vlessUuid });
+                        usersToRemove.push({ userId: id.toString(), hashUuid: vlessUuid });
                         continue;
                     }
 
                     usersForNode.push({
                         userData: {
-                            userId: tId.toString(),
+                            userId: id.toString(),
                             hashUuid: vlessUuid,
                             vlessUuid,
                             trojanPassword,

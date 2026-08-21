@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 export const ConfigProfileInboundsSchema = z.object({
-    uuid: z.string().uuid(),
-    profileUuid: z.string().uuid(),
+    uuid: z.uuid(),
+    profileUuid: z.uuid(),
     tag: z.string(),
     type: z.string(),
     network: z.nullable(z.string()),

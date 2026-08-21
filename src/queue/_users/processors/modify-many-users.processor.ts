@@ -38,9 +38,9 @@ export class UsersModifyManyQueueProcessor extends WorkerHost {
 
     private async handleResetUsersTrafficJob(job: Job) {
         try {
-            const { uuid } = job.data;
+            const { userId } = job.data;
 
-            await this.commandBus.execute(new ResetUserTrafficCommand(uuid));
+            await this.commandBus.execute(new ResetUserTrafficCommand(userId));
 
             return;
         } catch (error) {
@@ -54,9 +54,9 @@ export class UsersModifyManyQueueProcessor extends WorkerHost {
 
     private async handleRevokeUsersSubscriptionJob(job: Job) {
         try {
-            const { uuid } = job.data;
+            const { userId } = job.data;
 
-            await this.commandBus.execute(new RevokeUserSubscriptionCommand(uuid));
+            await this.commandBus.execute(new RevokeUserSubscriptionCommand(userId));
 
             return;
         } catch (error) {
@@ -68,11 +68,11 @@ export class UsersModifyManyQueueProcessor extends WorkerHost {
 
     private async handleUpdateUsersJob(job: Job) {
         try {
-            const { uuid, fields } = job.data;
+            const { userId, fields } = job.data;
 
             await this.commandBus.execute(
                 new UpdateUserWithServiceCommand({
-                    uuid: uuid,
+                    id: userId,
                     ...fields,
                     trafficLimitBytes:
                         fields.trafficLimitBytes !== undefined

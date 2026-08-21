@@ -14,19 +14,17 @@ export namespace UpdatePasskeyCommand {
         { scope: 'update', kind: 'write' },
     );
 
-    export const RequestSchema = z.object({
+    export const RequestBodySchema = z.object({
         id: z.string(),
         name: z
             .string()
-            .min(2, 'Name must be at least 2 characters')
-            .max(30, 'Name must be less than 30 characters')
+            .min(2)
+            .max(30)
             .regex(
                 /^[A-Za-z0-9_\s-]+$/,
                 'Name can only contain letters, numbers, underscores, dashes and spaces',
             ),
     });
-
-    export type Request = z.infer<typeof RequestSchema>;
 
     export const ResponseSchema = z.object({
         response: z.object({
@@ -34,14 +32,12 @@ export namespace UpdatePasskeyCommand {
                 z.object({
                     id: z.string(),
                     name: z.string(),
-                    createdAt: z
-                        .string()
-                        .datetime({ message: 'Invalid date format', offset: true, local: true })
+                    createdAt: z.iso
+                        .datetime({ offset: true, local: true })
                         .transform((str) => new Date(str))
                         .describe('Created date. Format: 2025-01-17T15:38:45.065Z'),
-                    lastUsedAt: z
-                        .string()
-                        .datetime({ message: 'Invalid date format', offset: true, local: true })
+                    lastUsedAt: z.iso
+                        .datetime({ offset: true, local: true })
                         .transform((str) => new Date(str))
                         .describe('Last used date. Format: 2025-01-17T15:38:45.065Z'),
                 }),
@@ -49,5 +45,6 @@ export namespace UpdatePasskeyCommand {
         }),
     });
 
+    export type RequestBody = z.infer<typeof RequestBodySchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

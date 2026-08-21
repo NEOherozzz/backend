@@ -6,9 +6,7 @@ import { BaseUserEntity, UserEntity } from '@modules/users/entities';
 
 export class GetUserByUniqueFieldQuery extends Query<TResult<UserEntity>> {
     constructor(
-        public readonly field: Partial<
-            Pick<BaseUserEntity, 'tId' | 'uuid' | 'shortUuid' | 'username'>
-        >,
+        public readonly field: Partial<Pick<BaseUserEntity, 'id' | 'shortUuid' | 'username'>>,
         public readonly includeOptions: {
             activeInternalSquads: boolean;
         } = {

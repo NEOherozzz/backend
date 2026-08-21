@@ -1,5 +1,6 @@
+import type { IJWTAuthPayload } from 'src/modules/auth/interfaces';
+
 import * as jwt from 'jsonwebtoken';
-import { IJWTAuthPayload } from 'src/modules/auth/interfaces';
 
 import { Logger } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
@@ -23,7 +24,7 @@ export class GetNodeJwtHandler implements ICommandHandler<GetNodeJwtCommand> {
             return fail(ERRORS.INTERNAL_SERVER_ERROR);
         }
 
-        const { privKey, clientCert, clientKey, caCert } = response.response;
+        const { privKey, clientCert, clientKey, caCert, pubKey } = response.response;
 
         const payload: IJWTAuthPayload = {
             uuid: null,
@@ -42,6 +43,7 @@ export class GetNodeJwtHandler implements ICommandHandler<GetNodeJwtCommand> {
                 clientCert: clientCert!,
                 clientKey: clientKey!,
                 caCert: caCert!,
+                jwtPublicKey: pubKey!,
             });
         } catch (error) {
             this.logger.error(`Error getting node jwt: ${error}`);

@@ -8,7 +8,6 @@ export const TorrentBlockerReportSchema = z.object({
     userId: z.number(),
     nodeId: z.number(),
     user: ExtendedUsersSchema.pick({
-        uuid: true,
         username: true,
     }),
     node: NodesSchema.pick({
@@ -21,13 +20,11 @@ export const TorrentBlockerReportSchema = z.object({
             blocked: z.boolean(),
             ip: z.string(),
             blockDuration: z.number(),
-            willUnblockAt: z
-                .string()
+            willUnblockAt: z.iso
                 .datetime({ offset: true, local: true })
                 .transform((str) => new Date(str)),
             userId: z.string(),
-            processedAt: z
-                .string()
+            processedAt: z.iso
                 .datetime({ offset: true, local: true })
                 .transform((str) => new Date(str)),
         }),
@@ -47,8 +44,5 @@ export const TorrentBlockerReportSchema = z.object({
             ts: z.number(),
         }),
     }),
-    createdAt: z
-        .string()
-        .datetime()
-        .transform((str) => new Date(str)),
+    createdAt: z.iso.datetime().transform((str) => new Date(str)),
 });

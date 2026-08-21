@@ -17,14 +17,13 @@ export interface IGetIpsListResult {
     progress: IGetIpsListProgress;
     result: {
         success: boolean;
-        userUuid: string;
-        userId: string;
+        userId: number;
         nodes: IGetIpsListNodeResult[];
     } | null;
 }
 
 export interface IGetUserIpListItem {
-    userId: string;
+    userId: number;
     ips: { ip: string; lastSeen: Date }[];
 }
 

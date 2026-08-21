@@ -27,31 +27,35 @@ import {
 } from '@common/utils/get-date-ranges.uti';
 import { resolveCountryEmoji } from '@common/utils/resolve-country-emoji';
 
+import { CountDevicesByRangeQuery } from '@modules/hwid-user-devices/queries/count-devices-by-range';
 import { IGet7DaysStats } from '@modules/nodes-usage-history/interfaces';
 import { Get7DaysStatsQuery } from '@modules/nodes-usage-history/queries/get-7days-stats';
 import { GetSumLifetimeQuery } from '@modules/nodes-usage-history/queries/get-sum-lifetime';
+import { GetNewUsersTrafficQuery } from '@modules/nodes-user-usage-history/queries/get-new-users-traffic';
 import { CountOnlineUsersQuery } from '@modules/nodes/queries/count-online-users';
 import { GetAllNodesQuery } from '@modules/nodes/queries/get-all-nodes';
 import { GetNodesRecapQuery } from '@modules/nodes/queries/get-nodes-recap';
 import { GetInitDateQuery } from '@modules/remnawave-settings/queries/get-init-date';
 import { ResponseRulesMatcherService } from '@modules/subscription-response-rules/services/response-rules-matcher.service';
 import { ResponseRulesParserService } from '@modules/subscription-response-rules/services/response-rules-parser.service';
+import { GetUsersDigestQuery } from '@modules/users/queries/get-users-digest';
 import { GetUsersRecapQuery } from '@modules/users/queries/get-users-recap';
 
 import { GetSumByDtRangeQuery } from '../nodes-usage-history/queries/get-sum-by-dt-range';
 import { ShortUserStats } from '../users/interfaces/user-stats.interface';
 import { GetShortUserStatsQuery } from '../users/queries/get-short-user-stats';
-import { DebugSrrMatcherRequestDto } from './dtos';
-import { GetStatsRequestQueryDto } from './dtos/get-stats.dto';
+import { DebugSrrMatcherBodyDto, GetStatsDigestQueryDto, GetStatsQueryDto } from './dtos';
 import { InboundStats, Metric, NodeMetrics, OutboundStats } from './interfaces';
 import {
     GenerateX25519ResponseModel,
     GetBandwidthStatsResponseModel,
+    GetConfigurationResponseModel,
     GetMetadataResponseModel,
     GetNodesStatisticsResponseModel,
     GetNodesStatsResponseModel,
     GetRecapResponseModel,
     GetRemnawaveHealthResponseModel,
+    GetStatsDigestResponseModel,
     IBaseStat,
 } from './models';
 import { GetStatsResponseModel } from './models/get-stats.response.model';
@@ -102,6 +106,50 @@ export class SystemService implements OnApplicationBootstrap {
         }
     }
 
+    public async getConfiguration(): Promise<TResult<GetConfigurationResponseModel>> {
+        try {
+            const config = this.configService;
+
+            return ok(
+                new GetConfigurationResponseModel({
+                    notifications: {
+                        webhook: config.getOrThrow('WEBHOOK_ENABLED'),
+                        bandwidthUsage: config.getIfEnabled(
+                            'BANDWIDTH_USAGE_NOTIFICATIONS_ENABLED',
+                            'BANDWIDTH_USAGE_NOTIFICATIONS_THRESHOLD',
+                        ),
+                        notConnectedAfter: config.getIfEnabled(
+                            'NOT_CONNECTED_USERS_NOTIFICATIONS_ENABLED',
+                            'NOT_CONNECTED_USERS_NOTIFICATIONS_AFTER_HOURS',
+                        ),
+                        expirationNotifications: config.getIfEnabled(
+                            'EXPIRATION_NOTIFICATIONS_ENABLED',
+                            'EXPIRATION_NOTIFICATIONS',
+                        ),
+                    },
+                    service: {
+                        cleanUsageHistory: config.getOrThrow('SERVICE_CLEAN_USAGE_HISTORY'),
+                        disableUserUsageRecords: config.getOrThrow(
+                            'SERVICE_DISABLE_USER_USAGE_RECORDS',
+                        ),
+                        disableSrhRecords: config.getOrThrow('SERVICE_DISABLE_SRH_RECORDS'),
+                        exportToRedisStream: config.getOrThrow('EXPORT_TO_STREAM_ENABLED'),
+                    },
+                    misc: {
+                        shortUuidLength: config.getOrThrow('SHORT_UUID_LENGTH'),
+                        userUsageIgnoreBelowBytes: Number(
+                            config.getOrThrow('USER_USAGE_IGNORE_BELOW_BYTES'),
+                        ),
+                        subPublicDomain: config.getOrThrow('SUB_PUBLIC_DOMAIN'),
+                    },
+                }),
+            );
+        } catch (error) {
+            this.logger.error('Error getting system configuration:', error);
+            return fail(ERRORS.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     public async getStats(): Promise<TResult<GetStatsResponseModel>> {
         try {
             const userStats = await this.getShortUserStats();
@@ -141,7 +189,7 @@ export class SystemService implements OnApplicationBootstrap {
     }
 
     public async getBandwidthStats(
-        query: GetStatsRequestQueryDto,
+        query: GetStatsQueryDto,
     ): Promise<TResult<GetBandwidthStatsResponseModel>> {
         try {
             let tz = 'UTC';
@@ -274,7 +322,7 @@ export class SystemService implements OnApplicationBootstrap {
     public async debugSrrMatcher(
         request: Request,
         response: Response,
-        body: DebugSrrMatcherRequestDto,
+        body: DebugSrrMatcherBodyDto,
     ): Promise<Response> {
         try {
             const parsedResponseRules = await this.srrParser.parseConfig(body.responseRules);
@@ -355,6 +403,65 @@ export class SystemService implements OnApplicationBootstrap {
         } catch (error) {
             this.logger.error('Error getting system recap:', error);
             return fail(ERRORS.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public async getStatsDigest(
+        query: GetStatsDigestQueryDto,
+    ): Promise<TResult<GetStatsDigestResponseModel>> {
+        try {
+            const start = dayjs.utc(query.start);
+            const endExclusive = dayjs.utc(query.end);
+
+            if (!start.isBefore(endExclusive)) {
+                return fail(ERRORS.GET_STATS_DIGEST_INVALID_RANGE);
+            }
+
+            const [usersDigest, totalTraffic, newUsersTraffic, devicesCount] = await Promise.all([
+                this.queryBus.execute(
+                    new GetUsersDigestQuery(start.toDate(), endExclusive.toDate()),
+                ),
+                this.queryBus.execute(
+                    new GetSumByDtRangeQuery(
+                        start.toDate(),
+                        endExclusive.subtract(1, 'millisecond').toDate(),
+                    ),
+                ),
+                this.queryBus.execute(
+                    new GetNewUsersTrafficQuery(start.toDate(), endExclusive.toDate()),
+                ),
+                this.queryBus.execute<CountDevicesByRangeQuery, TResult<number>>(
+                    new CountDevicesByRangeQuery(start.toDate(), endExclusive.toDate()),
+                ),
+            ]);
+
+            if (
+                !usersDigest.isOk ||
+                !totalTraffic.isOk ||
+                !newUsersTraffic.isOk ||
+                !devicesCount.isOk
+            ) {
+                return fail(ERRORS.GET_STATS_DIGEST_ERROR);
+            }
+
+            return ok(
+                new GetStatsDigestResponseModel({
+                    users: {
+                        createdCount: usersDigest.response.createdCount,
+                        expiredCount: usersDigest.response.expiredCount,
+                    },
+                    traffic: {
+                        totalBytes: totalTraffic.response.toString(),
+                        byUsersCreatedInRangeBytes: newUsersTraffic.response.toString(),
+                    },
+                    hwidDevices: {
+                        createdCount: devicesCount.response,
+                    },
+                }),
+            );
+        } catch (error) {
+            this.logger.error('Error getting stats digest:', error);
+            return fail(ERRORS.GET_STATS_DIGEST_ERROR);
         }
     }
 

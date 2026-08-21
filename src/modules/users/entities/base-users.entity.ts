@@ -2,8 +2,7 @@ import { TResetPeriods, TUsersStatus } from '@contract/constants';
 import { Users } from '@prisma/client';
 
 export class BaseUserEntity implements Users {
-    public tId: bigint;
-    public uuid: string;
+    public id: bigint;
     public shortUuid: string;
     public username: string;
     public status: TUsersStatus;

@@ -1,1 +1,1 @@
-export * from './get-pubkey.command';
+export * from './get-node-secret-key.command';

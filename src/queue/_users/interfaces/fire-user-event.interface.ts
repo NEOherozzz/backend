@@ -5,14 +5,14 @@ import { IMetaInfo } from '@integration-modules/notifications/interfaces/meta-in
 import { ITorrentBlockerReport } from '@modules/node-plugins/interfaces';
 
 export interface IFireUserEventPayload {
-    users: { tId: bigint }[];
+    users: { id: bigint }[];
     userEvent: TUserEvents;
     skipTelegramNotification?: boolean;
     meta?: IMetaInfo;
 }
 
 export interface IFireUserEventJobData {
-    tId: string;
+    id: string;
     meta?: IMetaInfo;
     userEvent: TUserEvents;
     skipTelegramNotification?: boolean;
@@ -20,7 +20,7 @@ export interface IFireUserEventJobData {
 
 export interface IFireTorrentBlockerEventJobData {
     event: TTorrentBlockerEvents;
-    tId: string;
+    id: string;
     nodeUuid: string;
     report: ITorrentBlockerReport;
     skipTelegramNotification?: boolean;

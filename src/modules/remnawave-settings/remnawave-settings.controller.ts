@@ -1,8 +1,8 @@
-import { CONTROLLERS_INFO, REMNAAWAVE_SETTINGS_CONTROLLER } from '@contract/api';
+import { CONTROLLERS_INFO, REMNAWAVE_SETTINGS_CONTROLLER } from '@contract/api';
 import { ROLE } from '@contract/constants';
 
 import { Body, Controller, HttpStatus, UseFilters, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { Endpoint } from '@common/decorators/base-endpoint';
 import { Roles } from '@common/decorators/roles/roles';
@@ -17,7 +17,7 @@ import {
 
 import {
     GetRemnawaveSettingsResponseDto,
-    UpdateRemnawaveSettingsRequestDto,
+    UpdateRemnawaveSettingsBodyDto,
     UpdateRemnawaveSettingsResponseDto,
 } from './dto';
 import { RemnawaveSettingsResponseModel } from './models/get-remnawave-settings.response.model';
@@ -28,17 +28,14 @@ import { RemnawaveSettingsService } from './remnawave-settings.service';
 @Roles(ROLE.ADMIN)
 @UseGuards(JwtDefaultGuard, RolesGuard)
 @UseFilters(HttpExceptionFilter)
-@Controller(REMNAAWAVE_SETTINGS_CONTROLLER)
+@Controller(REMNAWAVE_SETTINGS_CONTROLLER)
 export class RemnawaveSettingsController {
     constructor(private readonly remnawaveSettingsService: RemnawaveSettingsService) {}
 
-    @ApiOkResponse({
-        type: GetRemnawaveSettingsResponseDto,
-        description: 'Remnawave settings retrieved successfully',
-    })
     @Endpoint({
         command: GetRemnawaveSettingsCommand,
         httpCode: HttpStatus.OK,
+        type: GetRemnawaveSettingsResponseDto,
     })
     async getSettings(): Promise<GetRemnawaveSettingsResponseDto> {
         const result = await this.remnawaveSettingsService.getSettingsFromController();
@@ -49,17 +46,13 @@ export class RemnawaveSettingsController {
         };
     }
 
-    @ApiOkResponse({
-        type: UpdateRemnawaveSettingsResponseDto,
-        description: 'Subscription settings updated successfully',
-    })
     @Endpoint({
         command: UpdateRemnawaveSettingsCommand,
         httpCode: HttpStatus.OK,
-        apiBody: UpdateRemnawaveSettingsRequestDto,
+        type: UpdateRemnawaveSettingsResponseDto,
     })
     async updateSettings(
-        @Body() body: UpdateRemnawaveSettingsRequestDto,
+        @Body() body: UpdateRemnawaveSettingsBodyDto,
     ): Promise<UpdateRemnawaveSettingsResponseDto> {
         const result = await this.remnawaveSettingsService.updateSettingsFromController(body);
 

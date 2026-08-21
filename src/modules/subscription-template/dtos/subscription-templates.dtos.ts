@@ -13,8 +13,8 @@ export class GetTemplatesResponseDto extends createZodDto(
     GetSubscriptionTemplatesCommand.ResponseSchema,
 ) {} // GET_ALL
 
-export class UpdateTemplateRequestDto extends createZodDto(
-    UpdateSubscriptionTemplateCommand.RequestSchema,
+export class UpdateTemplateBodyDto extends createZodDto(
+    UpdateSubscriptionTemplateCommand.RequestBodySchema,
 ) {} // UPDATE
 
 export class UpdateTemplateResponseDto extends createZodDto(
@@ -25,28 +25,24 @@ export class GetTemplateResponseDto extends createZodDto(
     GetSubscriptionTemplateCommand.ResponseSchema,
 ) {} // GET BY UUID
 
-export class GetTemplateRequestDto extends createZodDto(
-    GetSubscriptionTemplateCommand.RequestSchema,
+export class GetTemplateParamDto extends createZodDto(
+    GetSubscriptionTemplateCommand.RequestParamSchema,
 ) {} // GET BY UUID
 
-export class DeleteSubscriptionTemplateRequestDto extends createZodDto(
-    DeleteSubscriptionTemplateCommand.RequestSchema,
+export class DeleteSubscriptionTemplateParamDto extends createZodDto(
+    DeleteSubscriptionTemplateCommand.RequestParamSchema,
 ) {} // DELETE
 
-export class DeleteSubscriptionTemplateResponseDto extends createZodDto(
-    DeleteSubscriptionTemplateCommand.ResponseSchema,
-) {} // DELETE
-
-export class CreateSubscriptionTemplateRequestDto extends createZodDto(
-    CreateSubscriptionTemplateCommand.RequestSchema,
+export class CreateSubscriptionTemplateBodyDto extends createZodDto(
+    CreateSubscriptionTemplateCommand.RequestBodySchema,
 ) {} // CREATE
 
 export class CreateSubscriptionTemplateResponseDto extends createZodDto(
     CreateSubscriptionTemplateCommand.ResponseSchema,
 ) {} // CREATE
 
-export class ReorderSubscriptionTemplatesRequestDto extends createZodDto(
-    ReorderSubscriptionTemplateCommand.RequestSchema,
+export class ReorderSubscriptionTemplatesBodyDto extends createZodDto(
+    ReorderSubscriptionTemplateCommand.RequestBodySchema,
 ) {} // REORDER
 export class ReorderSubscriptionTemplatesResponseDto extends createZodDto(
     ReorderSubscriptionTemplateCommand.ResponseSchema,

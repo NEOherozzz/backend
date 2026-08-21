@@ -2,7 +2,7 @@ import { CONTROLLERS_INFO, NODE_PLUGINS_CONTROLLER } from '@contract/api';
 import { ROLE } from '@contract/constants';
 
 import { Body, Controller, HttpStatus, Param, UseFilters, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { Endpoint } from '@common/decorators/base-endpoint';
 import { Roles } from '@common/decorators/roles/roles';
@@ -15,32 +15,50 @@ import { errorHandler } from '@common/helpers/error-handler.helper';
 import {
     CloneNodePluginCommand,
     CreateNodePluginCommand,
+    CreateSharedListCommand,
     DeleteNodePluginCommand,
+    DeleteSharedListCommand,
     GetNodePluginCommand,
     GetNodePluginsCommand,
+    GetSharedListCommand,
+    GetSharedListsCommand,
     PluginExecutorCommand,
     ReorderNodePluginCommand,
+    SyncNodePluginCommand,
+    SyncSharedListCommand,
     UpdateNodePluginCommand,
+    UpdateSharedListCommand,
 } from '@libs/contracts/commands';
 
 import {
-    ReorderNodePluginsRequestDto,
+    ReorderNodePluginsBodyDto,
     ReorderNodePluginsResponseDto,
     GetNodePluginsResponseDto,
     GetNodePluginResponseDto,
-    UpdateNodePluginRequestDto,
+    UpdateNodePluginBodyDto,
     UpdateNodePluginResponseDto,
-    DeleteNodePluginRequestDto,
-    DeleteNodePluginResponseDto,
-    CreateNodePluginRequestDto,
+    DeleteNodePluginParamDto,
+    CreateNodePluginBodyDto,
     CreateNodePluginResponseDto,
-    GetNodePluginRequestDto,
     CloneNodePluginResponseDto,
-    CloneNodePluginRequestDto,
-    PluginExecutorResponseDto,
-    PluginExecutorRequestDto,
+    CloneNodePluginBodyDto,
+    PluginExecutorBodyDto,
+    GetNodePluginParamDto,
+    SyncNodePluginBodyDto,
 } from './dtos/node-plugins.dtos';
+import {
+    CreateSharedListBodyDto,
+    CreateSharedListResponseDto,
+    DeleteSharedListParamDto,
+    GetSharedListParamDto,
+    GetSharedListResponseDto,
+    GetSharedListsResponseDto,
+    SyncSharedListBodyDto,
+    UpdateSharedListBodyDto,
+    UpdateSharedListResponseDto,
+} from './dtos/shared-lists.dtos';
 import { NodePluginService } from './node-plugins.service';
+import { SharedListsService } from './shared-lists.service';
 
 @ApiBearerAuth('Authorization')
 @ApiScopeResource(CONTROLLERS_INFO.NODE_PLUGINS.resource)
@@ -50,13 +68,97 @@ import { NodePluginService } from './node-plugins.service';
 @UseFilters(HttpExceptionFilter)
 @Controller(NODE_PLUGINS_CONTROLLER)
 export class NodePluginController {
-    constructor(private readonly nodePluginService: NodePluginService) {}
+    constructor(
+        private readonly nodePluginService: NodePluginService,
+        private readonly sharedListsService: SharedListsService,
+    ) {}
 
-    @ApiOkResponse({
-        type: GetNodePluginsResponseDto,
-        description: 'Node plugins retrieved successfully',
-    })
     @Endpoint({
+        type: GetSharedListsResponseDto,
+        command: GetSharedListsCommand,
+        httpCode: HttpStatus.OK,
+    })
+    async getAllSharedLists(): Promise<GetSharedListsResponseDto> {
+        const result = await this.sharedListsService.getAllSharedLists();
+
+        const data = errorHandler(result);
+        return {
+            response: data,
+        };
+    }
+
+    @Endpoint({
+        type: GetSharedListResponseDto,
+        command: GetSharedListCommand,
+        httpCode: HttpStatus.OK,
+    })
+    async getSharedListByName(
+        @Param() param: GetSharedListParamDto,
+    ): Promise<GetSharedListResponseDto> {
+        const result = await this.sharedListsService.getSharedListByName(param.name);
+
+        const data = errorHandler(result);
+        return {
+            response: data,
+        };
+    }
+
+    @Endpoint({
+        type: CreateSharedListResponseDto,
+        command: CreateSharedListCommand,
+        httpCode: HttpStatus.CREATED,
+    })
+    async createSharedList(
+        @Body() body: CreateSharedListBodyDto,
+    ): Promise<CreateSharedListResponseDto> {
+        const result = await this.sharedListsService.createSharedList(body.name, body.config);
+
+        const data = errorHandler(result);
+        return {
+            response: data,
+        };
+    }
+
+    @Endpoint({
+        type: UpdateSharedListResponseDto,
+        command: UpdateSharedListCommand,
+        httpCode: HttpStatus.OK,
+    })
+    async updateSharedList(
+        @Body() body: UpdateSharedListBodyDto,
+    ): Promise<UpdateSharedListResponseDto> {
+        const result = await this.sharedListsService.updateSharedList(body.name, body.config);
+
+        const data = errorHandler(result);
+        return {
+            response: data,
+        };
+    }
+
+    @Endpoint({
+        command: SyncSharedListCommand,
+        httpCode: HttpStatus.ACCEPTED,
+    })
+    async syncSharedList(@Body() body: SyncSharedListBodyDto) {
+        const result = await this.sharedListsService.syncSharedList(body.name);
+
+        errorHandler(result);
+        return;
+    }
+
+    @Endpoint({
+        command: DeleteSharedListCommand,
+        httpCode: HttpStatus.NO_CONTENT,
+    })
+    async deleteSharedList(@Param() param: DeleteSharedListParamDto) {
+        const result = await this.sharedListsService.deleteSharedListByName(param.name);
+
+        errorHandler(result);
+        return;
+    }
+
+    @Endpoint({
+        type: GetNodePluginsResponseDto,
         command: GetNodePluginsCommand,
         httpCode: HttpStatus.OK,
     })
@@ -69,19 +171,15 @@ export class NodePluginController {
         };
     }
 
-    @ApiOkResponse({
-        type: GetNodePluginResponseDto,
-        description: 'Node plugin retrieved successfully',
-    })
-    @ApiParam({ name: 'uuid', type: String, description: 'Node plugin UUID' })
     @Endpoint({
+        type: GetNodePluginResponseDto,
         command: GetNodePluginCommand,
         httpCode: HttpStatus.OK,
     })
     async getConfigByUuid(
-        @Param() paramData: GetNodePluginRequestDto,
+        @Param() param: GetNodePluginParamDto,
     ): Promise<GetNodePluginResponseDto> {
-        const { uuid } = paramData;
+        const { uuid } = param;
         const result = await this.nodePluginService.getConfigByUuid(uuid);
         const data = errorHandler(result);
         return {
@@ -92,17 +190,13 @@ export class NodePluginController {
         };
     }
 
-    @ApiOkResponse({
-        type: UpdateNodePluginResponseDto,
-        description: 'Node plugin updated successfully',
-    })
     @Endpoint({
+        type: UpdateNodePluginResponseDto,
         command: UpdateNodePluginCommand,
         httpCode: HttpStatus.OK,
-        apiBody: UpdateNodePluginRequestDto,
     })
     async updateConfig(
-        @Body() body: UpdateNodePluginRequestDto,
+        @Body() body: UpdateNodePluginBodyDto,
     ): Promise<UpdateNodePluginResponseDto> {
         const result = await this.nodePluginService.updateConfig(
             body.uuid,
@@ -119,37 +213,24 @@ export class NodePluginController {
         };
     }
 
-    @ApiOkResponse({
-        type: DeleteNodePluginResponseDto,
-        description: 'Node plugin deleted successfully',
-    })
-    @ApiParam({ name: 'uuid', type: String, description: 'Node plugin UUID' })
     @Endpoint({
         command: DeleteNodePluginCommand,
-        httpCode: HttpStatus.OK,
+        httpCode: HttpStatus.NO_CONTENT,
     })
-    async deleteConfig(
-        @Param() paramData: DeleteNodePluginRequestDto,
-    ): Promise<DeleteNodePluginResponseDto> {
-        const result = await this.nodePluginService.deleteConfig(paramData.uuid);
+    async deleteConfig(@Param() param: DeleteNodePluginParamDto) {
+        const result = await this.nodePluginService.deleteConfig(param.uuid);
 
-        const data = errorHandler(result);
-        return {
-            response: data,
-        };
+        errorHandler(result);
+        return;
     }
 
-    @ApiOkResponse({
-        type: CreateNodePluginResponseDto,
-        description: 'Node plugin created successfully',
-    })
     @Endpoint({
+        type: CreateNodePluginResponseDto,
         command: CreateNodePluginCommand,
         httpCode: HttpStatus.CREATED,
-        apiBody: CreateNodePluginRequestDto,
     })
     async createConfig(
-        @Body() body: CreateNodePluginRequestDto,
+        @Body() body: CreateNodePluginBodyDto,
     ): Promise<CreateNodePluginResponseDto> {
         const result = await this.nodePluginService.createConfig(body.name);
 
@@ -159,17 +240,13 @@ export class NodePluginController {
         };
     }
 
-    @ApiOkResponse({
-        type: ReorderNodePluginsResponseDto,
-        description: 'Node plugins reordered successfully',
-    })
     @Endpoint({
+        type: ReorderNodePluginsResponseDto,
         command: ReorderNodePluginCommand,
         httpCode: HttpStatus.OK,
-        apiBody: ReorderNodePluginsRequestDto,
     })
     async reorderNodePlugins(
-        @Body() body: ReorderNodePluginsRequestDto,
+        @Body() body: ReorderNodePluginsBodyDto,
     ): Promise<ReorderNodePluginsResponseDto> {
         const result = await this.nodePluginService.reorderNodePlugins(body.items);
 
@@ -179,17 +256,13 @@ export class NodePluginController {
         };
     }
 
-    @ApiOkResponse({
-        type: CloneNodePluginResponseDto,
-        description: 'Node plugin cloned successfully',
-    })
     @Endpoint({
+        type: CloneNodePluginResponseDto,
         command: CloneNodePluginCommand,
         httpCode: HttpStatus.OK,
-        apiBody: CloneNodePluginRequestDto,
     })
     async cloneNodePlugin(
-        @Body() body: CloneNodePluginRequestDto,
+        @Body() body: CloneNodePluginBodyDto,
     ): Promise<CloneNodePluginResponseDto> {
         const result = await this.nodePluginService.cloneNodePlugin(body.cloneFromUuid);
 
@@ -199,23 +272,25 @@ export class NodePluginController {
         };
     }
 
-    @ApiOkResponse({
-        type: PluginExecutorResponseDto,
-        description: 'Node plugin cloned successfully',
+    @Endpoint({
+        command: SyncNodePluginCommand,
+        httpCode: HttpStatus.ACCEPTED,
     })
+    async syncNodePlugin(@Body() body: SyncNodePluginBodyDto) {
+        const result = await this.nodePluginService.syncNodePluginByUuid(body.uuid);
+
+        errorHandler(result);
+        return;
+    }
+
     @Endpoint({
         command: PluginExecutorCommand,
-        httpCode: HttpStatus.OK,
-        apiBody: PluginExecutorRequestDto,
+        httpCode: HttpStatus.ACCEPTED,
     })
-    async pluginExecutor(
-        @Body() body: PluginExecutorRequestDto,
-    ): Promise<PluginExecutorResponseDto> {
+    async pluginExecutor(@Body() body: PluginExecutorBodyDto) {
         const result = await this.nodePluginService.executePluginCommand(body);
 
-        const data = errorHandler(result);
-        return {
-            response: data,
-        };
+        errorHandler(result);
+        return;
     }
 }

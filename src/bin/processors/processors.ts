@@ -48,7 +48,7 @@ const logger = createLogger({
         }),
         // winston.format.ms(),
         winston.format.align(),
-        nestWinstonModuleUtilities.format.nestLike(`Processors: #${instanceId}`, {
+        nestWinstonModuleUtilities.format.nestLike(`work-${instanceId}`, {
             colors: true,
             prettyPrint: true,
             processId: false,
@@ -75,5 +75,10 @@ async function bootstrap(): Promise<void> {
 
     const axiosService = app.get(AxiosService);
     await axiosService.setJwt();
+
+    if (import.meta.webpackHot) {
+        import.meta.webpackHot.accept();
+        import.meta.webpackHot.dispose(() => app.close());
+    }
 }
 void bootstrap();

@@ -1,5 +1,5 @@
 import { Body, Controller, HttpStatus, Param, UseFilters, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 
 import { Endpoint } from '@common/decorators/base-endpoint';
 import { Roles } from '@common/decorators/roles/roles';
@@ -11,19 +11,20 @@ import { API_TOKENS_CONTROLLER, CONTROLLERS_INFO } from '@libs/contracts/api';
 import {
     CreateApiTokenCommand,
     DeleteApiTokenCommand,
-    FindAllApiTokensCommand,
+    GetApiTokensCommand,
     GetApiTokenScopesCommand,
+    GetOttCommand,
 } from '@libs/contracts/commands';
 import { ROLE } from '@libs/contracts/constants';
 
 import { ApiTokensService } from './api-tokens.service';
 import {
-    CreateApiTokenRequestDto,
+    CreateApiTokenBodyDto,
     CreateApiTokenResponseDto,
-    DeleteApiTokenRequestDto,
-    DeleteApiTokenResponseDto,
-    FindAllApiTokensResponseDto,
+    DeleteApiTokenParamDto,
+    GetApiTokensResponseDto,
     GetApiTokenScopesResponseDto,
+    GetOttResponseDto,
 } from './dtos';
 
 @ApiBearerAuth('Authorization')
@@ -35,17 +36,12 @@ import {
 export class ApiTokensController {
     constructor(private readonly apiTokensService: ApiTokensService) {}
 
-    @ApiResponse({
-        status: 201,
-        description: 'Token created successfully',
-        type: CreateApiTokenResponseDto,
-    })
     @Endpoint({
         command: CreateApiTokenCommand,
         httpCode: HttpStatus.CREATED,
-        apiBody: CreateApiTokenRequestDto,
+        type: CreateApiTokenResponseDto,
     })
-    async create(@Body() body: CreateApiTokenRequestDto): Promise<CreateApiTokenResponseDto> {
+    async createApiToken(@Body() body: CreateApiTokenBodyDto): Promise<CreateApiTokenResponseDto> {
         const result = await this.apiTokensService.create(body);
 
         const data = errorHandler(result);
@@ -54,32 +50,21 @@ export class ApiTokensController {
         };
     }
 
-    @ApiParam({ name: 'uuid', type: String, description: 'UUID of the API token' })
-    @ApiResponse({
-        status: 200,
-        description: 'Token deleted successfully',
-        type: DeleteApiTokenResponseDto,
-    })
     @Endpoint({
         command: DeleteApiTokenCommand,
-        httpCode: HttpStatus.OK,
+        httpCode: HttpStatus.NO_CONTENT,
     })
-    async delete(@Param() paramData: DeleteApiTokenRequestDto): Promise<DeleteApiTokenResponseDto> {
-        const result = await this.apiTokensService.delete(paramData.uuid);
-        const data = errorHandler(result);
-        return {
-            response: data.result,
-        };
+    async deleteApiToken(@Param() param: DeleteApiTokenParamDto) {
+        const result = await this.apiTokensService.delete(param.uuid);
+
+        errorHandler(result);
+        return;
     }
 
-    @ApiResponse({
-        status: 200,
-        description: 'Available API token scopes fetched successfully',
-        type: GetApiTokenScopesResponseDto,
-    })
     @Endpoint({
         command: GetApiTokenScopesCommand,
         httpCode: HttpStatus.OK,
+        type: GetApiTokenScopesResponseDto,
     })
     async getScopes(): Promise<GetApiTokenScopesResponseDto> {
         const result = this.apiTokensService.getAvailableScopes();
@@ -89,17 +74,28 @@ export class ApiTokensController {
         };
     }
 
-    @ApiResponse({
-        status: 200,
-        description: 'Tokens fetched successfully',
-        type: FindAllApiTokensResponseDto,
-    })
     @Endpoint({
-        command: FindAllApiTokensCommand,
+        command: GetApiTokensCommand,
         httpCode: HttpStatus.OK,
+        type: GetApiTokensResponseDto,
     })
-    async findAll(): Promise<FindAllApiTokensResponseDto> {
-        const result = await this.apiTokensService.findAll();
+    async getApiTokens(): Promise<GetApiTokensResponseDto> {
+        const result = await this.apiTokensService.get();
+        const data = errorHandler(result);
+        return {
+            response: data,
+        };
+    }
+
+    @ApiExcludeEndpoint()
+    @Endpoint({
+        command: GetOttCommand,
+        httpCode: HttpStatus.OK,
+        type: GetOttResponseDto,
+    })
+    async getOtt(): Promise<GetOttResponseDto> {
+        const result = await this.apiTokensService.getOtt();
+
         const data = errorHandler(result);
         return {
             response: data,

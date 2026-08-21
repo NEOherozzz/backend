@@ -4,7 +4,7 @@ import { REST_API, SUBSCRIPTION_PAGE_CONFIGS_ROUTES } from '../../api';
 import { getEndpointDetails } from '../../constants';
 import { SubscriptionPageConfigSchema } from '../../models';
 
-export namespace GetSubscriptionPageConfigsCommand {
+export namespace GetSubpageConfigsCommand {
     export const url = REST_API.SUBSCRIPTION_PAGE_CONFIGS.GET_ALL;
     export const TSQ_url = url;
 

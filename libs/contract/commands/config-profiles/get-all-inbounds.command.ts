@@ -20,7 +20,7 @@ export namespace GetAllInboundsCommand {
             total: z.number(),
             inbounds: z.array(
                 ConfigProfileInboundsSchema.extend({
-                    activeSquads: z.array(z.string().uuid()),
+                    activeSquads: z.array(z.uuid()),
                 }),
             ),
         }),

@@ -8,7 +8,7 @@ interface IBulkUpdateUsedTraffic {
     n: string;
 }
 
-export class BulkIncrementUsedTrafficCommand extends Command<TResult<{ tId: bigint }[]>> {
+export class BulkIncrementUsedTrafficCommand extends Command<TResult<{ id: bigint }[]>> {
     constructor(public readonly userUsageList: IBulkUpdateUsedTraffic[]) {
         super();
     }

@@ -245,7 +245,7 @@ export const DEFAULT_SUBPAGE_CONFIG = {
                             },
                             buttons: [
                                 {
-                                    link: 'https://apps.apple.com/ru/app/happ-proxy-utility-plus/id6746188973',
+                                    link: 'https://apps.apple.com/ru/app/happ-proxy-utility/id6783623643',
                                     text: {
                                         en: 'App Store (RU)',
                                         fa: 'اپ استور (RU)',
@@ -1106,7 +1106,7 @@ export const DEFAULT_SUBPAGE_CONFIG = {
                             },
                             buttons: [
                                 {
-                                    link: 'https://apps.apple.com/ru/app/happ-proxy-utility-plus/id6746188973',
+                                    link: 'https://apps.apple.com/ru/app/happ-proxy-utility/id6783623643',
                                     text: {
                                         en: 'App Store (RU)',
                                         fa: 'اپ استور (RU)',

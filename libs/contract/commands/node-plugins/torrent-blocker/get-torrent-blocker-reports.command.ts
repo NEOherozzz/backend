@@ -13,11 +13,10 @@ export namespace GetTorrentBlockerReportsCommand {
         'get',
         'Get Torrent Blocker Reports',
         { scope: 'torrent-blocker-reports', kind: 'read' },
+        'Please note that the filters here are primarily intended for use by the frontend and rely on expensive operators such as LIKE under the hood. Misusing these filters may negatively impact the performance of your database.',
     );
 
     export const RequestQuerySchema = TanstackQueryRequestQuerySchema;
-
-    export type RequestQuery = z.infer<typeof RequestQuerySchema>;
 
     export const ResponseSchema = z.object({
         response: z.object({
@@ -26,5 +25,6 @@ export namespace GetTorrentBlockerReportsCommand {
         }),
     });
 
+    export type RequestQuery = z.infer<typeof RequestQuerySchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

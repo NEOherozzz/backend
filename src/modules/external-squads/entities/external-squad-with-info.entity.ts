@@ -4,7 +4,7 @@ import z from 'zod';
 import { TSubscriptionTemplateType } from '@libs/contracts/constants';
 import {
     ExternalSquadHostOverridesSchema,
-    ExternalSquadResponseHeadersSchema,
+    ExternalSquadResponseHeadersAddSchema,
     ExternalSquadSubscriptionSettingsSchema,
     TCustomRemarks,
     THwidSettings,
@@ -24,7 +24,8 @@ export class ExternalSquadWithInfoEntity implements ExternalSquads {
 
     public subscriptionSettings: z.infer<typeof ExternalSquadSubscriptionSettingsSchema> | null;
     public hostOverrides: z.infer<typeof ExternalSquadHostOverridesSchema> | null;
-    public responseHeaders: z.infer<typeof ExternalSquadResponseHeadersSchema> | null;
+    public responseHeadersAdd: z.infer<typeof ExternalSquadResponseHeadersAddSchema>;
+    public responseHeadersRemove: string[];
     public hwidSettings: THwidSettings | null;
     public customRemarks: TCustomRemarks | null;
     public subpageConfigUuid: string | null;

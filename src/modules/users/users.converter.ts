@@ -12,8 +12,7 @@ const modelToEntity = (model: Users): BaseUserEntity => {
 
 const entityToModel = (entity: BaseUserEntity): Users => {
     return {
-        tId: entity.tId,
-        uuid: entity.uuid,
+        id: entity.id,
         shortUuid: entity.shortUuid,
         username: entity.username,
         status: entity.status,

@@ -1,7 +1,7 @@
 import { UserTraffic } from '@prisma/client';
 
 export class UserTrafficEntity implements UserTraffic {
-    public tId: bigint;
+    public id: bigint;
     public usedTrafficBytes: bigint;
     public lifetimeUsedTrafficBytes: bigint;
     public firstConnectedAt: Date | null;

@@ -1,7 +1,7 @@
 import { IGetUserAccessibleNodesResponse } from '../interfaces';
 
 export class GetUserAccessibleNodesResponseModel {
-    public readonly userUuid: string;
+    public readonly userId: number;
     public readonly activeNodes: {
         uuid: string;
         nodeName: string;
@@ -14,8 +14,8 @@ export class GetUserAccessibleNodesResponseModel {
         }[];
     }[];
 
-    constructor(data: IGetUserAccessibleNodesResponse, userUuid: string) {
-        this.userUuid = userUuid;
+    constructor(data: IGetUserAccessibleNodesResponse, userId: bigint) {
+        this.userId = Number(userId);
         this.activeNodes = data.activeNodes;
     }
 }

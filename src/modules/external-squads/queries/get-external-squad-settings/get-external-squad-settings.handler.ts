@@ -1,33 +1,19 @@
 import { Logger } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
-import { fail, ok, TResult } from '@common/types';
+import { fail, ok } from '@common/types';
 import { ERRORS } from '@libs/contracts/constants';
 
-import { ExternalSquadEntity } from '@modules/external-squads/entities';
 import { ExternalSquadRepository } from '@modules/external-squads/repositories/external-squad.repository';
 
 import { GetExternalSquadSettingsQuery } from './get-external-squad-settings.query';
 
 @QueryHandler(GetExternalSquadSettingsQuery)
-export class GetExternalSquadSettingsHandler implements IQueryHandler<
-    GetExternalSquadSettingsQuery,
-    TResult<Pick<
-        ExternalSquadEntity,
-        'subscriptionSettings' | 'hostOverrides' | 'responseHeaders' | 'hwidSettings'
-    > | null>
-> {
+export class GetExternalSquadSettingsHandler implements IQueryHandler<GetExternalSquadSettingsQuery> {
     private readonly logger = new Logger(GetExternalSquadSettingsHandler.name);
     constructor(private readonly externalSquadRepository: ExternalSquadRepository) {}
 
-    async execute(
-        query: GetExternalSquadSettingsQuery,
-    ): Promise<
-        TResult<Pick<
-            ExternalSquadEntity,
-            'subscriptionSettings' | 'hostOverrides' | 'responseHeaders' | 'hwidSettings'
-        > | null>
-    > {
+    async execute(query: GetExternalSquadSettingsQuery) {
         try {
             const result = await this.externalSquadRepository.getExternalSquadSettings(
                 query.externalSquadUuid,

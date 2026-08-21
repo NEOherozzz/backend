@@ -11,13 +11,13 @@ import { UpdateExceededTrafficUsersCommand } from './update-exceeded-users.comma
 @CommandHandler(UpdateExceededTrafficUsersCommand)
 export class UpdateExceededTrafficUsersHandler implements ICommandHandler<
     UpdateExceededTrafficUsersCommand,
-    TResult<{ tId: bigint }[]>
+    TResult<{ id: bigint }[]>
 > {
     public readonly logger = new Logger(UpdateExceededTrafficUsersHandler.name);
 
     constructor(private readonly usersRepository: UsersRepository) {}
 
-    async execute(): Promise<TResult<{ tId: bigint }[]>> {
+    async execute(): Promise<TResult<{ id: bigint }[]>> {
         try {
             const result = await this.usersRepository.updateExceededTrafficUsers();
 

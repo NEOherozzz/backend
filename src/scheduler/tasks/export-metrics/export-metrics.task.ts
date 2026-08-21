@@ -1,10 +1,4 @@
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
-import configureMeasurements, { Converter } from 'convert-units';
-import allMeasures, {
-    AllMeasures,
-    AllMeasuresSystems,
-    AllMeasuresUnits,
-} from 'convert-units/definitions/all';
 import { Gauge } from 'prom-client';
 
 import { Injectable, Logger } from '@nestjs/common';
@@ -34,10 +28,6 @@ import {
 export class ExportMetricsTask {
     private static readonly CRON_NAME = 'exportMetrics';
     private readonly logger = new Logger(ExportMetricsTask.name);
-
-    private convert: (
-        value?: number | undefined,
-    ) => Converter<AllMeasures, AllMeasuresSystems, AllMeasuresUnits, number>;
 
     private cachedUserStats: ShortUserStats | null;
     private lastUserStatsUpdateTime: number;
@@ -104,7 +94,6 @@ export class ExportMetricsTask {
         this.lastUserStatsUpdateTime = 0;
         this.CACHE_TTL_MS = 60000;
         this.cachedUserStats = null;
-        this.convert = configureMeasurements(allMeasures);
     }
 
     @Cron(JOBS_INTERVALS.METRIC_EXPORT_METRICS, {

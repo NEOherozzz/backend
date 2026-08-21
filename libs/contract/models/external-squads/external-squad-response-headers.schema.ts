@@ -1,3 +1,4 @@
 import { z } from 'zod';
 
-export const ExternalSquadResponseHeadersSchema = z.nullable(z.record(z.string(), z.string()));
+export const ExternalSquadResponseHeadersAddSchema = z.record(z.string(), z.string());
+export const ExternalSquadResponseHeadersRemoveSchema = z.array(z.string());

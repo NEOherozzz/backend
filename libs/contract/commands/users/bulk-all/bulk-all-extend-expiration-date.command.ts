@@ -14,17 +14,9 @@ export namespace BulkAllExtendExpirationDateCommand {
         { scope: 'bulk-all-extend-expiration-date', kind: 'write' },
     );
 
-    export const RequestSchema = z.object({
-        extendDays: z.number().int().min(1, 'Extend days must be greater than 0'),
+    export const RequestBodySchema = z.object({
+        extendDays: z.int().min(1),
     });
 
-    export type Request = z.infer<typeof RequestSchema>;
-
-    export const ResponseSchema = z.object({
-        response: z.object({
-            eventSent: z.boolean(),
-        }),
-    });
-
-    export type Response = z.infer<typeof ResponseSchema>;
+    export type RequestBody = z.infer<typeof RequestBodySchema>;
 }

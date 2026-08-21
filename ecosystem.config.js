@@ -2,7 +2,7 @@ module.exports = {
     apps: [
         {
             name: 'remnawave-api',
-            script: 'dist/src/main.js',
+            script: 'dist/app.js',
             watch: false,
             instances: process.env.API_INSTANCES || 1,
             merge_logs: true,
@@ -22,7 +22,7 @@ module.exports = {
         },
         {
             name: 'remnawave-jobs',
-            script: 'dist/src/bin/processors/processors.js',
+            script: 'dist/processors.js',
             watch: false,
             instances: process.env.WORKER_INSTANCES || 1,
             exec_mode: 'cluster',
@@ -42,7 +42,7 @@ module.exports = {
         },
         {
             name: 'remnawave-scheduler',
-            script: 'dist/src/bin/scheduler/scheduler.js',
+            script: 'dist/scheduler.js',
             watch: false,
             instances: 1, // DO NOT SCALE
             exec_mode: 'fork',

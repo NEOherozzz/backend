@@ -76,15 +76,17 @@ export async function seedSubscriptionSettings(prisma: PrismaClient) {
     await prisma.subscriptionSettings.create({
         data: {
             uuid: '00000000-0000-0000-0000-000000000000',
-            profileTitle: 'Remnawave',
-            supportLink: 'https://dummy.docs.rw',
-            profileUpdateInterval: 12,
-            isProfileWebpageUrlEnabled: true,
             serveJsonAtBaseSubscription: false,
             randomizeHosts: false,
             hwidSettings: DEFAULT_HWID_SETTINGS,
             isShowCustomRemarks: true,
             customRemarks,
+            customResponseHeaders: {
+                'profile-title': 'rwEncodeBase64:Remnawave',
+                'profile-update-interval': '12',
+                'support-url': 'https://dummy.docs.rw',
+                'profile-web-page-url': '{{SUBSCRIPTION_URL}}',
+            },
         },
     });
 }

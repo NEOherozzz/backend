@@ -1,18 +1,14 @@
 import { z } from 'zod';
 
 export const InfraProviderSchema = z.object({
-    uuid: z.string().uuid(),
+    uuid: z.uuid(),
     name: z.string(),
     faviconLink: z.nullable(z.string()),
     loginUrl: z.nullable(z.string()),
 
-    createdAt: z
-        .string()
-        .datetime()
+    createdAt: z.iso.datetime()
         .transform((str) => new Date(str)),
-    updatedAt: z
-        .string()
-        .datetime()
+    updatedAt: z.iso.datetime()
         .transform((str) => new Date(str)),
 
     billingHistory: z.object({
@@ -24,7 +20,7 @@ export const InfraProviderSchema = z.object({
             name: z.string(),
             details: z
                 .object({
-                    nodeUuid: z.string().uuid(),
+                    nodeUuid: z.uuid(),
                     countryCode: z.string(),
                 })
                 .nullable(),
@@ -33,17 +29,13 @@ export const InfraProviderSchema = z.object({
 });
 
 export const PartialInfraProviderSchema = z.object({
-    uuid: z.string().uuid(),
+    uuid: z.uuid(),
     name: z.string(),
     faviconLink: z.nullable(z.string()),
     loginUrl: z.nullable(z.string()),
 
-    createdAt: z
-        .string()
-        .datetime()
+    createdAt: z.iso.datetime()
         .transform((str) => new Date(str)),
-    updatedAt: z
-        .string()
-        .datetime()
+    updatedAt: z.iso.datetime()
         .transform((str) => new Date(str)),
 });

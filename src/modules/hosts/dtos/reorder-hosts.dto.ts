@@ -1,6 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
 
-import { ReorderHostCommand } from '@libs/contracts/commands';
+import { ReorderHostsCommand } from '@libs/contracts/commands';
 
-export class ReorderHostRequestDto extends createZodDto(ReorderHostCommand.RequestSchema) {}
-export class ReorderHostResponseDto extends createZodDto(ReorderHostCommand.ResponseSchema) {}
+export class ReorderHostsBodyDto extends createZodDto(ReorderHostsCommand.RequestBodySchema) {}
+export class ReorderHostsResponseDto extends createZodDto(ReorderHostsCommand.ResponseSchema) {}

@@ -19,8 +19,6 @@ export namespace GetStatsCommand {
         tz: z.string().optional(),
     });
 
-    export type Request = z.infer<typeof RequestQuerySchema>;
-
     export const ResponseSchema = z.object({
         response: z.object({
             cpu: z.object({
@@ -34,10 +32,7 @@ export namespace GetStatsCommand {
             uptime: z.number(),
             timestamp: z.number(),
             users: z.object({
-                statusCounts: z.record(
-                    z.enum(Object.values(USERS_STATUS) as [string, ...string[]]),
-                    z.number(),
-                ),
+                statusCounts: z.record(z.enum(USERS_STATUS), z.number()),
                 totalUsers: z.number(),
             }),
             onlineStats: z.object({
@@ -53,5 +48,6 @@ export namespace GetStatsCommand {
         }),
     });
 
+    export type RequestQuery = z.infer<typeof RequestQuerySchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

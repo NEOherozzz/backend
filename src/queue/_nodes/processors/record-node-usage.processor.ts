@@ -1,21 +1,23 @@
 import { Job } from 'bullmq';
 
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { Inject, Logger } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { ClientProxy } from '@nestjs/microservices';
 
 import { GetCombinedStatsCommand } from '@remnawave/node-contract';
 
 import { AxiosService } from '@common/axios';
-import { MESSAGING_NAMES, MICROSERVICES_NAMES } from '@common/microservices';
+import { RawCacheService } from '@common/raw-cache';
 import { multiplyConsumption } from '@common/utils/nano';
 
 import { NodesUsageHistoryEntity } from '@modules/nodes-usage-history';
 import { UpsertHistoryEntryCommand } from '@modules/nodes-usage-history/commands/upsert-history-entry';
 import { IncrementUsedTrafficCommand } from '@modules/nodes/commands/increment-used-traffic';
 
-import { INodeMetrics } from '@scheduler/tasks/export-metrics/node-metrics.message.interface';
+import {
+    INodeMetrics,
+    NODE_METRICS_MESSAGE_CHANNEL,
+} from '@scheduler/tasks/export-metrics/node-metrics.message.interface';
 
 import { QUEUES_NAMES } from '@queue/queue.enum';
 
@@ -31,7 +33,7 @@ export class RecordNodeUsageQueueProcessor extends WorkerHost {
     constructor(
         private readonly commandBus: CommandBus,
         private readonly axios: AxiosService,
-        @Inject(MICROSERVICES_NAMES.REDIS_PRODUCER) private readonly redisProducer: ClientProxy,
+        private readonly rawCacheService: RawCacheService,
     ) {
         super();
     }
@@ -131,7 +133,7 @@ export class RecordNodeUsageQueueProcessor extends WorkerHost {
             });
         });
 
-        await this.sendNodeMetrics({
+        this.sendNodeMetrics({
             nodeUuid,
             nodeOutboundsMetrics,
             nodeInboundsMetrics,
@@ -140,12 +142,12 @@ export class RecordNodeUsageQueueProcessor extends WorkerHost {
         return;
     }
 
-    private async sendNodeMetrics(dto: {
+    private sendNodeMetrics(dto: {
         nodeUuid: string;
         nodeOutboundsMetrics: Map<string, { downlink: string; uplink: string }>;
         nodeInboundsMetrics: Map<string, { downlink: string; uplink: string }>;
-    }): Promise<void> {
-        this.redisProducer.emit(MESSAGING_NAMES.NODE_METRICS, {
+    }): void {
+        this.rawCacheService.publishSafe(NODE_METRICS_MESSAGE_CHANNEL, {
             nodeUuid: dto.nodeUuid,
             inbounds: Array.from(dto.nodeInboundsMetrics.entries()).map(([tag, metrics]) => ({
                 tag,

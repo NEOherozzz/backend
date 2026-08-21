@@ -1,13 +1,5 @@
-import { Body, Controller, HttpStatus, Param, UseFilters, UseGuards } from '@nestjs/common';
-import {
-    ApiBearerAuth,
-    ApiConflictResponse,
-    ApiCreatedResponse,
-    ApiNotFoundResponse,
-    ApiOkResponse,
-    ApiParam,
-    ApiTags,
-} from '@nestjs/swagger';
+import { Body, Controller, HttpStatus, Param, Query, UseFilters, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiConflictResponse, ApiTags } from '@nestjs/swagger';
 
 import { Endpoint } from '@common/decorators/base-endpoint/base-endpoint';
 import { Roles } from '@common/decorators/roles/roles';
@@ -19,32 +11,43 @@ import { ScopesGuard } from '@common/guards/scopes';
 import { errorHandler } from '@common/helpers/error-handler.helper';
 import { CONTROLLERS_INFO, INTERNAL_SQUADS_CONTROLLER } from '@libs/contracts/api';
 import {
+    AddManyUsersToInternalSquadCommand,
     AddUsersToInternalSquadCommand,
     CreateInternalSquadCommand,
     DeleteInternalSquadCommand,
+    DeleteManyUsersFromInternalSquadCommand,
     DeleteUsersFromInternalSquadCommand,
     GetInternalSquadAccessibleNodesCommand,
-    GetInternalSquadByUuidCommand,
+    GetInternalSquadCommand,
     GetInternalSquadsCommand,
+    GetInternalSquadUsageCommand,
     ReorderInternalSquadCommand,
     UpdateInternalSquadCommand,
 } from '@libs/contracts/commands';
 import { ROLE } from '@libs/contracts/constants';
 
 import {
-    AddUsersToInternalSquadResponseDto,
-    CreateInternalSquadRequestDto,
+    AddUsersToInternalSquadParamDto,
+    CreateInternalSquadBodyDto,
     CreateInternalSquadResponseDto,
-    DeleteInternalSquadResponseDto,
-    GetInternalSquadAccessibleNodesRequestDto,
+    DeleteInternalSquadParamDto,
+    GetInternalSquadAccessibleNodesParamDto,
     GetInternalSquadAccessibleNodesResponseDto,
-    GetInternalSquadByUuidResponseDto,
+    GetInternalSquadUsageParamDto,
+    GetInternalSquadUsageQueryDto,
+    GetInternalSquadUsageResponseDto,
+    GetInternalSquadParamDto,
+    GetInternalSquadResponseDto,
     GetInternalSquadsResponseDto,
-    RemoveUsersFromInternalSquadResponseDto,
-    ReorderInternalSquadsRequestDto,
+    RemoveUsersFromInternalSquadParamDto,
+    ReorderInternalSquadsBodyDto,
     ReorderInternalSquadsResponseDto,
-    UpdateInternalSquadRequestDto,
+    UpdateInternalSquadBodyDto,
     UpdateInternalSquadResponseDto,
+    DeleteManyUsersFromInternalSquadBodyDto,
+    AddManyUsersToInternalSquadBodyDto,
+    AddManyUsersToInternalSquadParamDto,
+    DeleteManyUsersFromInternalSquadParamDto,
 } from './dtos';
 import { InternalSquadService } from './internal-squad.service';
 
@@ -58,13 +61,10 @@ import { InternalSquadService } from './internal-squad.service';
 export class InternalSquadController {
     constructor(private readonly internalSquadService: InternalSquadService) {}
 
-    @ApiOkResponse({
-        type: GetInternalSquadsResponseDto,
-        description: 'Internal squads retrieved successfully',
-    })
     @Endpoint({
         command: GetInternalSquadsCommand,
         httpCode: HttpStatus.OK,
+        type: GetInternalSquadsResponseDto,
     })
     async getInternalSquads(): Promise<GetInternalSquadsResponseDto> {
         const result = await this.internalSquadService.getInternalSquads();
@@ -75,18 +75,15 @@ export class InternalSquadController {
         };
     }
 
-    @ApiOkResponse({
-        type: GetInternalSquadByUuidResponseDto,
-        description: 'Internal squad retrieved successfully',
-    })
     @Endpoint({
-        command: GetInternalSquadByUuidCommand,
+        command: GetInternalSquadCommand,
         httpCode: HttpStatus.OK,
+        type: GetInternalSquadResponseDto,
     })
     async getInternalSquadByUuid(
-        @Param('uuid') uuid: string,
-    ): Promise<GetInternalSquadByUuidResponseDto> {
-        const result = await this.internalSquadService.getInternalSquadByUuid(uuid);
+        @Param() param: GetInternalSquadParamDto,
+    ): Promise<GetInternalSquadResponseDto> {
+        const result = await this.internalSquadService.getInternalSquadByUuid(param.uuid);
 
         const data = errorHandler(result);
         return {
@@ -97,16 +94,13 @@ export class InternalSquadController {
     @ApiConflictResponse({
         description: 'Internal squad already exists',
     })
-    @ApiCreatedResponse({
-        type: CreateInternalSquadResponseDto,
-        description: 'Internal squad created successfully',
-    })
     @Endpoint({
         command: CreateInternalSquadCommand,
         httpCode: HttpStatus.CREATED,
+        type: CreateInternalSquadResponseDto,
     })
     async createInternalSquad(
-        @Body() createInternalSquadDto: CreateInternalSquadRequestDto,
+        @Body() createInternalSquadDto: CreateInternalSquadBodyDto,
     ): Promise<CreateInternalSquadResponseDto> {
         const result = await this.internalSquadService.createInternalSquad(
             createInternalSquadDto.name,
@@ -119,29 +113,32 @@ export class InternalSquadController {
         };
     }
 
-    @ApiNotFoundResponse({
-        description: 'Internal squad not found',
-    })
-    @ApiOkResponse({
-        type: GetInternalSquadAccessibleNodesResponseDto,
-        description: 'Internal squad accessible nodes fetched successfully',
-    })
-    @ApiParam({
-        name: 'uuid',
-        type: String,
-        description: 'UUID of the internal squad',
-        required: true,
-    })
     @Endpoint({
         command: GetInternalSquadAccessibleNodesCommand,
         httpCode: HttpStatus.OK,
+        type: GetInternalSquadAccessibleNodesResponseDto,
     })
     async getInternalSquadAccessibleNodes(
-        @Param() paramData: GetInternalSquadAccessibleNodesRequestDto,
+        @Param() param: GetInternalSquadAccessibleNodesParamDto,
     ): Promise<GetInternalSquadAccessibleNodesResponseDto> {
-        const result = await this.internalSquadService.getInternalSquadAccessibleNodes(
-            paramData.uuid,
-        );
+        const result = await this.internalSquadService.getInternalSquadAccessibleNodes(param.uuid);
+
+        const data = errorHandler(result);
+        return {
+            response: data,
+        };
+    }
+
+    @Endpoint({
+        command: GetInternalSquadUsageCommand,
+        httpCode: HttpStatus.OK,
+        type: GetInternalSquadUsageResponseDto,
+    })
+    async getInternalSquadUsage(
+        @Param() param: GetInternalSquadUsageParamDto,
+        @Query() query: GetInternalSquadUsageQueryDto,
+    ): Promise<GetInternalSquadUsageResponseDto> {
+        const result = await this.internalSquadService.getSquadUsage(param.uuid, query);
 
         const data = errorHandler(result);
         return {
@@ -152,24 +149,18 @@ export class InternalSquadController {
     @ApiConflictResponse({
         description: 'Internal squad already exists',
     })
-    @ApiNotFoundResponse({
-        description: 'Internal squad not found',
-    })
-    @ApiOkResponse({
-        type: UpdateInternalSquadResponseDto,
-        description: 'Internal squad updated successfully',
-    })
     @Endpoint({
         command: UpdateInternalSquadCommand,
         httpCode: HttpStatus.OK,
+        type: UpdateInternalSquadResponseDto,
     })
     async updateInternalSquad(
-        @Body() updateInternalSquadDto: UpdateInternalSquadRequestDto,
+        @Body() body: UpdateInternalSquadBodyDto,
     ): Promise<UpdateInternalSquadResponseDto> {
         const result = await this.internalSquadService.updateInternalSquad(
-            updateInternalSquadDto.uuid,
-            updateInternalSquadDto.name,
-            updateInternalSquadDto.inbounds,
+            body.uuid,
+            body.name,
+            body.inbounds,
         );
 
         const data = errorHandler(result);
@@ -178,83 +169,46 @@ export class InternalSquadController {
         };
     }
 
-    @ApiNotFoundResponse({
-        description: 'Internal squad not found',
-    })
-    @ApiOkResponse({
-        type: DeleteInternalSquadResponseDto,
-        description: 'Internal squad deleted successfully',
-    })
     @Endpoint({
         command: DeleteInternalSquadCommand,
-        httpCode: HttpStatus.OK,
+        httpCode: HttpStatus.NO_CONTENT,
     })
-    async deleteInternalSquad(
-        @Param('uuid') uuid: string,
-    ): Promise<DeleteInternalSquadResponseDto> {
-        const result = await this.internalSquadService.deleteInternalSquad(uuid);
+    async deleteInternalSquad(@Param() param: DeleteInternalSquadParamDto) {
+        const result = await this.internalSquadService.deleteInternalSquad(param.uuid);
 
-        const data = errorHandler(result);
-        return {
-            response: data,
-        };
+        errorHandler(result);
+        return;
     }
 
-    @ApiNotFoundResponse({
-        description: 'Internal squad not found',
-    })
-    @ApiOkResponse({
-        type: AddUsersToInternalSquadResponseDto,
-        description: 'Task added to internal job queue',
-    })
     @Endpoint({
         command: AddUsersToInternalSquadCommand,
-        httpCode: HttpStatus.OK,
+        httpCode: HttpStatus.ACCEPTED,
     })
-    async addUsersToInternalSquad(
-        @Param('uuid') uuid: string,
-    ): Promise<AddUsersToInternalSquadResponseDto> {
-        const result = await this.internalSquadService.addUsersToInternalSquad(uuid);
+    async addUsersToInternalSquad(@Param() param: AddUsersToInternalSquadParamDto) {
+        const result = await this.internalSquadService.addUsersToInternalSquad(param.uuid);
 
-        const data = errorHandler(result);
-        return {
-            response: data,
-        };
+        errorHandler(result);
+        return;
     }
 
-    @ApiNotFoundResponse({
-        description: 'Internal squad not found',
-    })
-    @ApiOkResponse({
-        type: RemoveUsersFromInternalSquadResponseDto,
-        description: 'Task added to internal job queue',
-    })
     @Endpoint({
         command: DeleteUsersFromInternalSquadCommand,
-        httpCode: HttpStatus.OK,
+        httpCode: HttpStatus.ACCEPTED,
     })
-    async removeUsersFromInternalSquad(
-        @Param('uuid') uuid: string,
-    ): Promise<RemoveUsersFromInternalSquadResponseDto> {
-        const result = await this.internalSquadService.removeUsersFromInternalSquad(uuid);
+    async removeUsersFromInternalSquad(@Param() param: RemoveUsersFromInternalSquadParamDto) {
+        const result = await this.internalSquadService.removeUsersFromInternalSquad(param.uuid);
 
-        const data = errorHandler(result);
-        return {
-            response: data,
-        };
+        errorHandler(result);
+        return;
     }
 
-    @ApiOkResponse({
-        type: ReorderInternalSquadsResponseDto,
-        description: 'Internal squads reordered successfully',
-    })
     @Endpoint({
         command: ReorderInternalSquadCommand,
         httpCode: HttpStatus.OK,
-        apiBody: ReorderInternalSquadsRequestDto,
+        type: ReorderInternalSquadsResponseDto,
     })
     async reorderInternalSquads(
-        @Body() body: ReorderInternalSquadsRequestDto,
+        @Body() body: ReorderInternalSquadsBodyDto,
     ): Promise<ReorderInternalSquadsResponseDto> {
         const result = await this.internalSquadService.reorderInternalSquads(body);
 
@@ -262,5 +216,39 @@ export class InternalSquadController {
         return {
             response: data,
         };
+    }
+
+    @Endpoint({
+        command: AddManyUsersToInternalSquadCommand,
+        httpCode: HttpStatus.ACCEPTED,
+    })
+    async addManyUsersToInternalSquad(
+        @Param() param: AddManyUsersToInternalSquadParamDto,
+        @Body() body: AddManyUsersToInternalSquadBodyDto,
+    ) {
+        const result = await this.internalSquadService.addManyUsersToInternalSquad(
+            param.uuid,
+            body.userIds,
+        );
+
+        errorHandler(result);
+        return;
+    }
+
+    @Endpoint({
+        command: DeleteManyUsersFromInternalSquadCommand,
+        httpCode: HttpStatus.ACCEPTED,
+    })
+    async removeManyUsersFromInternalSquad(
+        @Param() param: DeleteManyUsersFromInternalSquadParamDto,
+        @Body() body: DeleteManyUsersFromInternalSquadBodyDto,
+    ) {
+        const result = await this.internalSquadService.removeManyUsersFromInternalSquad(
+            param.uuid,
+            body.userIds,
+        );
+
+        errorHandler(result);
+        return;
     }
 }

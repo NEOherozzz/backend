@@ -2,11 +2,11 @@ export const METADATA_CONTROLLER = 'metadata' as const;
 
 export const METADATA_ROUTES = {
     NODE: {
-        GET: (uuid: string) => `node/${uuid}`,
-        UPSERT: (uuid: string) => `node/${uuid}`,
+        GET: (nodeId: string) => `node/${nodeId}`,
+        UPSERT: (nodeId: string) => `node/${nodeId}`,
     },
     USER: {
-        GET: (uuid: string) => `user/${uuid}`,
-        UPSERT: (uuid: string) => `user/${uuid}`,
+        GET: (userId: string) => `user/${userId}`,
+        UPSERT: (userId: string) => `user/${userId}`,
     },
 } as const;

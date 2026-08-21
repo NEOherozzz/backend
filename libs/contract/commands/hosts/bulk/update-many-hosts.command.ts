@@ -2,7 +2,6 @@ import { z } from 'zod';
 
 import { HOSTS_ROUTES, REST_API } from '../../../api';
 import { getEndpointDetails } from '../../../constants';
-import { HostsSchema } from '../../../models';
 import { UpdateHostCommand } from '../update.command';
 
 export namespace UpdateManyHostsCommand {
@@ -16,16 +15,11 @@ export namespace UpdateManyHostsCommand {
         { scope: 'bulk-update', kind: 'write' },
     );
 
-    export const RequestSchema = UpdateHostCommand.RequestSchema.omit({ uuid: true })
+    export const RequestBodySchema = UpdateHostCommand.RequestBodySchema.omit({ uuid: true })
         .partial()
         .extend({
-            uuids: z.array(z.string().uuid()).min(1, 'Must be at least 1 host UUID'),
+            uuids: z.array(z.uuid()).min(1),
         });
-    export type Request = z.infer<typeof RequestSchema>;
 
-    export const ResponseSchema = z.object({
-        response: z.array(HostsSchema),
-    });
-
-    export type Response = z.infer<typeof ResponseSchema>;
+    export type RequestBody = z.infer<typeof RequestBodySchema>;
 }

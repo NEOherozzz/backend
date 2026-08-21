@@ -1,9 +1,9 @@
 // init: 0c6711a63dc2571a9b7a69a5ae00219be616ac47d38f4c6e02caff8b3c7315b4
-// prev: 4761b7f5422b0e47df79e2208805f958472a680431f149ddfc1ad716d3f4d74d
-// next: 7fc425120da84b74dc56832b3058c775f5595e65e690bf97668ff4819c662127
+// prev: 7fc425120da84b74dc56832b3058c775f5595e65e690bf97668ff4819c662127
+// next: 8360aea32ccc607381501994bd15cee0557c0e7ae7db5153f385bde714496d24
 
 export const PREV_SRR_CONFIG_HASH =
-    '4761b7f5422b0e47df79e2208805f958472a680431f149ddfc1ad716d3f4d74d';
+    '7fc425120da84b74dc56832b3058c775f5595e65e690bf97668ff4819c662127';
 
 export const SRR_DEFAULT_CONFIG = {
     version: '1',
@@ -62,7 +62,7 @@ export const SRR_DEFAULT_CONFIG = {
                 {
                     headerName: 'user-agent',
                     operator: 'REGEX',
-                    value: '^sfa|sfi|sfm|sft|karing|singbox|inhive',
+                    value: '^sfa|sfi|sfm|sft|karing|singbox',
                     caseSensitive: false,
                 },
             ],

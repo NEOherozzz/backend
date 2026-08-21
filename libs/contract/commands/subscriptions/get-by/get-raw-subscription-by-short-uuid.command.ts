@@ -15,21 +15,17 @@ export namespace GetRawSubscriptionByShortUuidCommand {
         { scope: 'raw', kind: 'read' },
     );
 
-    export const RequestSchema = z.object({
+    export const RequestParamSchema = z.object({
         shortUuid: z.string(),
     });
-
-    export type Request = z.infer<typeof RequestSchema>;
 
     export const RequestQuerySchema = z.object({
         withDisabledHosts: z
             .string()
             .transform((str) => str === 'true')
             .optional()
-            .default('false'),
+            .prefault('false'),
     });
-
-    export type RequestQuery = z.infer<typeof RequestQuerySchema>;
 
     export const ResponseSchema = z.object({
         response: z.object({
@@ -53,5 +49,7 @@ export namespace GetRawSubscriptionByShortUuidCommand {
         }),
     });
 
+    export type RequestParam = z.infer<typeof RequestParamSchema>;
+    export type RequestQuery = z.infer<typeof RequestQuerySchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

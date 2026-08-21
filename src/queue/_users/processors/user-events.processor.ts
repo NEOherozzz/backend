@@ -52,12 +52,12 @@ export class UserEventsQueueProcessor extends WorkerHost {
         try {
             const { userEvent, skipTelegramNotification, meta } = job.data;
 
-            const tId = BigInt(job.data.tId);
+            const id = BigInt(job.data.id);
 
             const getUserResult = await this.queryBus.execute(
                 new GetUserByUniqueFieldQuery(
                     {
-                        tId,
+                        id,
                     },
                     {
                         activeInternalSquads: true,
@@ -83,7 +83,7 @@ export class UserEventsQueueProcessor extends WorkerHost {
                     );
 
                     await this.eventBus.publish(
-                        new RemoveUserFromNodeEvent(user.tId, user.vlessUuid),
+                        new RemoveUserFromNodeEvent(user.id, user.vlessUuid),
                     );
 
                     break;
@@ -141,7 +141,7 @@ export class UserEventsQueueProcessor extends WorkerHost {
                         }),
                     );
 
-                    this.eventBus.publish(new AddUserToNodeEvent(user.uuid));
+                    this.eventBus.publish(new AddUserToNodeEvent(user.id));
                     break;
                 default:
                     this.logger.warn(`User event "${userEvent}" is not implemented.`);
@@ -156,12 +156,12 @@ export class UserEventsQueueProcessor extends WorkerHost {
         try {
             const { event, nodeUuid, report } = job.data;
 
-            const tId = BigInt(job.data.tId);
+            const id = BigInt(job.data.id);
 
             const getUserResult = await this.queryBus.execute(
                 new GetUserByUniqueFieldQuery(
                     {
-                        tId,
+                        id,
                     },
                     {
                         activeInternalSquads: true,
@@ -199,7 +199,7 @@ export class UserEventsQueueProcessor extends WorkerHost {
                     await this.commandBus.execute(
                         new CreateTorrentReportCommand(
                             new BaseTorrentBlockerReportEntity({
-                                userId: user.tId,
+                                userId: user.id,
                                 nodeId: node.id,
                                 report,
                             }),

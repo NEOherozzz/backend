@@ -1,7 +1,9 @@
 export class KeygenResponseModel {
-    public pubKey: string;
+    public secretKey: string;
+    public pubKey: string; // TODO: remove
 
     constructor(payload: string) {
+        this.secretKey = payload;
         this.pubKey = payload;
     }
 }

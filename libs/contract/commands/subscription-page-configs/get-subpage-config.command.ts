@@ -4,7 +4,7 @@ import { REST_API, SUBSCRIPTION_PAGE_CONFIGS_ROUTES } from '../../api';
 import { getEndpointDetails } from '../../constants';
 import { SubscriptionPageConfigSchema } from '../../models';
 
-export namespace GetSubscriptionPageConfigCommand {
+export namespace GetSubpageConfigCommand {
     export const url = REST_API.SUBSCRIPTION_PAGE_CONFIGS.GET;
     export const TSQ_url = url(':uuid');
 
@@ -15,11 +15,9 @@ export namespace GetSubscriptionPageConfigCommand {
         { scope: 'get', kind: 'read' },
     );
 
-    export const RequestSchema = z.object({
-        uuid: z.string().uuid(),
+    export const RequestParamSchema = z.object({
+        uuid: z.uuid(),
     });
-
-    export type Request = z.infer<typeof RequestSchema>;
 
     export const ResponseSchema = z.object({
         response: SubscriptionPageConfigSchema.extend({
@@ -27,5 +25,6 @@ export namespace GetSubscriptionPageConfigCommand {
         }),
     });
 
+    export type RequestParam = z.infer<typeof RequestParamSchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

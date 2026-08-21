@@ -3,7 +3,7 @@ import z from 'zod';
 const HostSelectorSchema = z.discriminatedUnion('type', [
     z.object({
         type: z.literal('uuids'),
-        values: z.array(z.string().uuid()).min(1),
+        values: z.array(z.uuid()).min(1),
     }),
     z.object({
         type: z.literal('remarkRegex'),

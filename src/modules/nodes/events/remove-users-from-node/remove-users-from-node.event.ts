@@ -1,7 +1,7 @@
 export class RemoveUsersFromNodeEvent {
     constructor(
         public readonly users: {
-            tId: bigint;
+            id: bigint;
             vlessUuid: string;
         }[],
     ) {}

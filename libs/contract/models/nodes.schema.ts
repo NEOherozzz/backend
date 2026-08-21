@@ -2,52 +2,45 @@ import { z } from 'zod';
 
 import { ConfigProfileInboundsSchema } from './config-profile-inbounds.schema';
 import { PartialInfraProviderSchema } from './infra-provider.schema';
+import { NodeIpsSchema } from './node-ips.schema';
 import { NodeSystemSchema } from './node-system.schema';
 
 export const NodesSchema = z.object({
-    uuid: z.string().uuid(),
+    uuid: z.uuid(),
+    id: z.number(),
     name: z.string(),
     address: z.string(),
-    port: z.nullable(z.number().int()),
+    port: z.nullable(z.int()),
     proxyUrl: z.nullable(z.string()),
     isConnected: z.boolean(),
     isDisabled: z.boolean(),
     isConnecting: z.boolean(),
-    lastStatusChange: z.nullable(
-        z
-            .string()
-            .datetime()
-            .transform((str) => new Date(str)),
-    ),
+    lastStatusChange: z.nullable(z.iso.datetime().transform((str) => new Date(str))),
     lastStatusMessage: z.nullable(z.string()),
     isTrafficTrackingActive: z.boolean(),
-    trafficResetDay: z.nullable(z.number().int()),
+    trafficResetDay: z.nullable(z.int()),
     trafficLimitBytes: z.nullable(z.number()),
     trafficUsedBytes: z.nullable(z.number()),
-    notifyPercent: z.nullable(z.number().int()),
-    viewPosition: z.number().int(),
+    notifyPercent: z.nullable(z.int()),
+    viewPosition: z.int(),
     countryCode: z.string(),
     consumptionMultiplier: z.number(),
     nodeConsumptionMultiplier: z.number(),
     tags: z.array(z.string()),
+    integrationUuids: z.array(z.uuid()),
+    ips: NodeIpsSchema,
 
-    createdAt: z
-        .string()
-        .datetime()
-        .transform((str) => new Date(str)),
-    updatedAt: z
-        .string()
-        .datetime()
-        .transform((str) => new Date(str)),
+    createdAt: z.iso.datetime().transform((str) => new Date(str)),
+    updatedAt: z.iso.datetime().transform((str) => new Date(str)),
 
     configProfile: z.object({
-        activeConfigProfileUuid: z.nullable(z.string().uuid()),
+        activeConfigProfileUuid: z.nullable(z.uuid()),
         activeInbounds: z.array(ConfigProfileInboundsSchema),
     }),
 
-    providerUuid: z.nullable(z.string().uuid()),
+    providerUuid: z.nullable(z.uuid()),
     provider: z.nullable(PartialInfraProviderSchema),
-    activePluginUuid: z.nullable(z.string().uuid()),
+    activePluginUuid: z.nullable(z.uuid()),
     system: z.nullable(NodeSystemSchema),
     versions: z.nullable(
         z.object({

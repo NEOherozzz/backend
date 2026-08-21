@@ -2,9 +2,10 @@
 
 echo "Starting entrypoint script..."
 
-echo "Migrating database..."
+PRISMA="/opt/app/node_modules/.bin/prisma"
 
-if ! npm run migrate:deploy; then
+echo "Migrating database..."
+if ! "$PRISMA" migrate deploy; then
     echo "Database migration failed! Exiting container..."
     exit 1
 fi
@@ -12,7 +13,7 @@ fi
 echo "Migrations deployed successfully!"
 
 echo "Seeding database..."
-if ! npm run migrate:seed; then
+if ! "$PRISMA" db seed; then
     echo "Database seeding failed! Exiting container..."
     exit 1
 fi

@@ -14,11 +14,9 @@ export namespace GetSubpageConfigByShortUuidCommand {
         { scope: 'subpage-config', kind: 'read' },
     );
 
-    export const RequestSchema = z.object({
+    export const RequestParamSchema = z.object({
         shortUuid: z.string(),
     });
-
-    export type Request = z.infer<typeof RequestSchema>;
 
     export const RequestBodySchema = z.object({
         requestHeaders: z.record(z.string(), z.string()),
@@ -28,10 +26,11 @@ export namespace GetSubpageConfigByShortUuidCommand {
 
     export const ResponseSchema = z.object({
         response: z.object({
-            subpageConfigUuid: z.string().uuid().nullable(),
+            subpageConfigUuid: z.uuid().nullable(),
             webpageAllowed: z.boolean(),
         }),
     });
 
+    export type RequestParam = z.infer<typeof RequestParamSchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

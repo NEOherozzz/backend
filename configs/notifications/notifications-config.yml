@@ -21,6 +21,10 @@
 #     user.expired:
 #       telegram: false   # Disable Telegram for this event
 #       webhook: true     # Keep webhook enabled
+#       # Additional webhook URLs to send to, this will be added to the default webhook URLs (WEBHOOK_URL)
+#       additionalWebhookUrls:
+#         - https://example.com/webhook
+#         - https://example.com/webhook2
 #
 # ══════════════════════════════════════════════════════════════════════════════
 

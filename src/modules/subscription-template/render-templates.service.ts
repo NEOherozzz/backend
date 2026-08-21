@@ -109,13 +109,14 @@ export class RenderTemplatesService {
     public async generateRawSubscription(
         options: IResolveProxyConfigOptions,
     ): Promise<ResolvedProxyConfig[]> {
-        const { user, hosts, hostsOverrides, subscriptionSettings } = options;
+        const { user, hosts, hostsOverrides, subscriptionSettings, fallbackOptions } = options;
 
         return await this.resolveProxyConfigService.resolveProxyConfig({
             subscriptionSettings,
             hosts,
             user,
             hostsOverrides,
+            fallbackOptions,
         });
     }
 }

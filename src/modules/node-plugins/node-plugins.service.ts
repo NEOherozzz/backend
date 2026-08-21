@@ -1,5 +1,4 @@
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { NodePluginSchema } from 'libs/node-plugins';
 import { nanoid } from 'nanoid';
 
 import { Injectable, Logger } from '@nestjs/common';
@@ -8,6 +7,7 @@ import { QueryBus } from '@nestjs/cqrs';
 import { fail, ok, TResult } from '@common/types';
 import { GetTorrentBlockerReportsCommand } from '@libs/contracts/commands';
 import { ERRORS } from '@libs/contracts/constants';
+import { NodePluginEditorSchema } from '@libs/node-plugins/models';
 
 import { NodesEntity } from '@modules/nodes/entities/nodes.entity';
 import { FindNodesByCriteriaQuery } from '@modules/nodes/queries/find-nodes-by-criteria';
@@ -16,14 +16,12 @@ import { GetNodesByPluginUuidQuery } from '@modules/nodes/queries/get-nodes-by-p
 import { NodesQueuesService } from '@queue/_nodes';
 
 import { EXAMPLE_NODE_PLUGIN_CONFIG } from './constants';
-import { PluginExecutorRequestDto } from './dtos';
+import { PluginExecutorBodyDto } from './dtos';
 import { ExtendedTorrentBlockerReportEntity } from './entities';
 import { NodePluginEntity } from './entities/node-plugin.entity';
 import {
-    DeleteNodePluginResponseModel,
     BaseNodePluginResponseModel,
     GetNodePluginsResponseModel,
-    BaseEventResponseModel,
     TorrentBlockerReportsStatsResponseModel,
 } from './models';
 import {} from './models/base-node-plugin.response.model';
@@ -80,18 +78,17 @@ export class NodePluginService {
             }
 
             if (inputConfig) {
-                const validatedConfig = await NodePluginSchema.safeParseAsync(inputConfig);
+                const validatedConfig = await NodePluginEditorSchema.safeParseAsync(inputConfig);
 
                 if (!validatedConfig.success) {
-                    this.logger.error(
-                        validatedConfig.error.errors
-                            .map(
-                                (err) =>
-                                    `${err.path.length ? `${err.path.join('.')}: ` : ''}${err.message}`,
-                            )
-                            .join(', '),
-                    );
-                    return fail(ERRORS.INVALID_NODE_PLUGIN_CONFIG);
+                    const errorMessage = validatedConfig.error.issues
+                        .map(
+                            (err) =>
+                                `${err.path.length ? `${err.path.join('.')}: ` : ''}${err.message}`,
+                        )
+                        .join(', ');
+                    this.logger.error(errorMessage);
+                    return fail(ERRORS.INVALID_NODE_PLUGIN_CONFIG.withMessage(errorMessage));
                 }
 
                 inputConfig = validatedConfig.data;
@@ -102,8 +99,6 @@ export class NodePluginService {
                 name: name ?? undefined,
                 pluginConfig: inputConfig ?? undefined,
             });
-
-            await this.syncNodePlugins(nodePlugin.uuid);
 
             return ok(new BaseNodePluginResponseModel(updatedConfig));
         } catch (error) {
@@ -125,7 +120,7 @@ export class NodePluginService {
         }
     }
 
-    public async deleteConfig(uuid: string): Promise<TResult<DeleteNodePluginResponseModel>> {
+    public async deleteConfig(uuid: string): Promise<TResult<boolean>> {
         try {
             const nodePlugin = await this.nodePluginRepository.findByUUID(uuid);
 
@@ -137,7 +132,7 @@ export class NodePluginService {
                 new GetNodesByPluginUuidQuery(nodePlugin.uuid),
             );
 
-            const deletedConfig = await this.nodePluginRepository.deleteByUUID(uuid);
+            await this.nodePluginRepository.deleteByUUID(uuid);
 
             if (nodeUuids.isOk && nodeUuids.response.length > 0) {
                 await this.nodeQueuesService.syncNodePluginsBulk(
@@ -145,7 +140,7 @@ export class NodePluginService {
                 );
             }
 
-            return ok(new DeleteNodePluginResponseModel(deletedConfig));
+            return ok(true);
         } catch (error) {
             this.logger.error(error);
             return fail(ERRORS.INTERNAL_SERVER_ERROR);
@@ -221,6 +216,23 @@ export class NodePluginService {
         }
     }
 
+    public async syncNodePluginByUuid(pluginUuid: string): Promise<TResult<boolean>> {
+        try {
+            const nodePlugin = await this.nodePluginRepository.findByUUID(pluginUuid);
+
+            if (!nodePlugin) {
+                return fail(ERRORS.NODE_PLUGIN_NOT_FOUND);
+            }
+
+            await this.syncNodePlugins(nodePlugin.uuid);
+
+            return ok(true);
+        } catch (error) {
+            this.logger.error(error);
+            return fail(ERRORS.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     private async syncNodePlugins(pluginUuid: string): Promise<void> {
         const nodeUuids = await this.queryBus.execute(new GetNodesByPluginUuidQuery(pluginUuid));
 
@@ -233,9 +245,7 @@ export class NodePluginService {
         return;
     }
 
-    public async executePluginCommand(
-        data: PluginExecutorRequestDto,
-    ): Promise<TResult<BaseEventResponseModel>> {
+    public async executePluginCommand(dto: PluginExecutorBodyDto): Promise<TResult<boolean>> {
         try {
             const findResult = await this.queryBus.execute(
                 new FindNodesByCriteriaQuery({
@@ -251,10 +261,10 @@ export class NodePluginService {
 
             let nodes: NodesEntity[] = [];
 
-            if (data.targetNodes.target === 'allNodes') {
+            if (dto.targetNodes.target === 'allNodes') {
                 nodes = findResult.response;
             } else {
-                const { nodeUuids } = data.targetNodes;
+                const { nodeUuids } = dto.targetNodes;
                 nodes = findResult.response.filter((node) => nodeUuids.includes(node.uuid));
             }
 
@@ -262,12 +272,12 @@ export class NodePluginService {
                 return fail(ERRORS.CONNECTED_NODES_NOT_FOUND);
             }
 
-            switch (data.command.command) {
+            switch (dto.command.command) {
                 case 'blockIps':
                     for (const node of nodes) {
                         await this.nodeQueuesService.blockIps({
                             data: {
-                                ips: data.command.ips,
+                                ips: dto.command.ips,
                             },
                             node: {
                                 address: node.address,
@@ -281,7 +291,7 @@ export class NodePluginService {
                     for (const node of nodes) {
                         await this.nodeQueuesService.unblockIps({
                             data: {
-                                ips: data.command.ips,
+                                ips: dto.command.ips,
                             },
                             node: {
                                 address: node.address,
@@ -303,11 +313,11 @@ export class NodePluginService {
                     }
                     break;
                 default:
-                    this.logger.error(`Invalid command: ${data.command}`);
+                    this.logger.error(`Invalid command: ${dto.command}`);
                     return fail(ERRORS.INTERNAL_SERVER_ERROR);
             }
 
-            return ok(new BaseEventResponseModel(true));
+            return ok(true);
         } catch (error) {
             this.logger.error(error);
             return fail(ERRORS.INTERNAL_SERVER_ERROR);
@@ -335,18 +345,10 @@ export class NodePluginService {
         }
     }
 
-    public async truncateTorrentBlockerReports(): Promise<
-        TResult<{
-            total: number;
-            records: ExtendedTorrentBlockerReportEntity[];
-        }>
-    > {
+    public async truncateTorrentBlockerReports(): Promise<TResult<boolean>> {
         try {
             await this.torrentBlockerReportsRepository.truncateReports();
-            return ok({
-                total: 0,
-                records: [],
-            });
+            return ok(true);
         } catch (error) {
             this.logger.error(error);
             return fail(ERRORS.INTERNAL_SERVER_ERROR);

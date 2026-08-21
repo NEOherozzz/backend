@@ -12,7 +12,7 @@ export class UserEntity extends BaseUserEntity {
         InternalSquadEntity,
         'createdAt' | 'updatedAt' | 'viewPosition'
     >[];
-    public readonly userTraffic: Omit<UserTrafficEntity, 'tId'>;
+    public readonly userTraffic: Omit<UserTrafficEntity, 'id'>;
 
     constructor(user: BaseUserEntity & IActiveInternalSquads & UserTrafficEntity) {
         super(user);

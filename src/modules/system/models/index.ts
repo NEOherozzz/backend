@@ -4,5 +4,8 @@ export * from './get-metadata.response.model';
 export * from './get-nodes-statistics.response.model';
 export * from './get-nodes-stats.response.model';
 export * from './get-recap.response.model';
+export * from './get-stats-digest.response.model';
 export * from './get-remnawave-health.response.model';
 export * from './get-stats.response.model';
+export * from './get-http-stats.response.model';
+export * from './get-configuration.response.model';

@@ -13,7 +13,7 @@ export class ResetUserTrafficHandler implements ICommandHandler<ResetUserTraffic
 
     async execute(command: ResetUserTrafficCommand) {
         try {
-            await this.usersService.resetUserTraffic(command.uuid);
+            await this.usersService.resetUserTraffic(command.userId);
 
             return;
         } catch (error: unknown) {

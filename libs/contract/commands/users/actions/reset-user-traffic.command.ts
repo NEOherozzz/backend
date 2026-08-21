@@ -2,28 +2,26 @@ import { z } from 'zod';
 
 import { REST_API, USERS_ROUTES } from '../../../api';
 import { getEndpointDetails } from '../../../constants';
-import { ExtendedUsersSchema } from '../../../models';
+import { numberParamSchema } from '../../../models';
+import { UserResponseSchema } from '../user.response';
 
 export namespace ResetUserTrafficCommand {
     export const url = REST_API.USERS.ACTIONS.RESET_TRAFFIC;
-    export const TSQ_url = url(':uuid');
+    export const TSQ_url = url(':userId');
 
     export const endpointDetails = getEndpointDetails(
-        USERS_ROUTES.ACTIONS.RESET_TRAFFIC(':uuid'),
+        USERS_ROUTES.ACTIONS.RESET_TRAFFIC(':userId'),
         'post',
         'Reset user traffic',
         { scope: 'reset-traffic', kind: 'write' },
     );
 
-    export const RequestSchema = z.object({
-        uuid: z.string().uuid(),
+    export const RequestParamSchema = z.object({
+        userId: numberParamSchema,
     });
 
-    export type Request = z.infer<typeof RequestSchema>;
+    export const ResponseSchema = UserResponseSchema;
 
-    export const ResponseSchema = z.object({
-        response: ExtendedUsersSchema,
-    });
-
+    export type RequestParam = z.infer<typeof RequestParamSchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

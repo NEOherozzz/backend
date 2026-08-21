@@ -1,12 +1,5 @@
 import { Body, Controller, HttpStatus, Param, UseFilters, UseGuards } from '@nestjs/common';
-import {
-    ApiBearerAuth,
-    ApiConflictResponse,
-    ApiCreatedResponse,
-    ApiNotFoundResponse,
-    ApiOkResponse,
-    ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConflictResponse, ApiTags } from '@nestjs/swagger';
 
 import { Endpoint } from '@common/decorators/base-endpoint/base-endpoint';
 import { Roles } from '@common/decorators/roles/roles';
@@ -30,16 +23,17 @@ import {
 import { ROLE } from '@libs/contracts/constants';
 
 import {
-    AddUsersToExternalSquadResponseDto,
-    CreateExternalSquadRequestDto,
+    AddUsersToExternalSquadParamDto,
+    CreateExternalSquadBodyDto,
     CreateExternalSquadResponseDto,
-    DeleteExternalSquadResponseDto,
+    DeleteExternalSquadParamDto,
+    GetExternalSquadByUuidParamDto,
     GetExternalSquadByUuidResponseDto,
     GetExternalSquadsResponseDto,
-    RemoveUsersFromExternalSquadResponseDto,
-    ReorderExternalSquadsRequestDto,
+    RemoveUsersFromExternalSquadParamDto,
+    ReorderExternalSquadsBodyDto,
     ReorderExternalSquadsResponseDto,
-    UpdateExternalSquadRequestDto,
+    UpdateExternalSquadBodyDto,
     UpdateExternalSquadResponseDto,
 } from './dtos';
 import { ExternalSquadService } from './external-squads.service';
@@ -54,13 +48,10 @@ import { ExternalSquadService } from './external-squads.service';
 export class ExternalSquadController {
     constructor(private readonly externalSquadService: ExternalSquadService) {}
 
-    @ApiOkResponse({
-        type: GetExternalSquadsResponseDto,
-        description: 'External squads retrieved successfully',
-    })
     @Endpoint({
         command: GetExternalSquadsCommand,
         httpCode: HttpStatus.OK,
+        type: GetExternalSquadsResponseDto,
     })
     async getExternalSquads(): Promise<GetExternalSquadsResponseDto> {
         const result = await this.externalSquadService.getExternalSquads();
@@ -71,18 +62,15 @@ export class ExternalSquadController {
         };
     }
 
-    @ApiOkResponse({
-        type: GetExternalSquadByUuidResponseDto,
-        description: 'External squad retrieved successfully',
-    })
     @Endpoint({
         command: GetExternalSquadByUuidCommand,
         httpCode: HttpStatus.OK,
+        type: GetExternalSquadByUuidResponseDto,
     })
     async getExternalSquadByUuid(
-        @Param('uuid') uuid: string,
+        @Param() param: GetExternalSquadByUuidParamDto,
     ): Promise<GetExternalSquadByUuidResponseDto> {
-        const result = await this.externalSquadService.getExternalSquadByUuid(uuid);
+        const result = await this.externalSquadService.getExternalSquadByUuid(param.uuid);
 
         const data = errorHandler(result);
         return {
@@ -92,21 +80,16 @@ export class ExternalSquadController {
 
     @ApiConflictResponse({
         description: 'External squad already exists',
-    })
-    @ApiCreatedResponse({
-        type: CreateExternalSquadResponseDto,
-        description: 'External squad created successfully',
     })
     @Endpoint({
         command: CreateExternalSquadCommand,
         httpCode: HttpStatus.CREATED,
+        type: CreateExternalSquadResponseDto,
     })
     async createExternalSquad(
-        @Body() createExternalSquadDto: CreateExternalSquadRequestDto,
+        @Body() body: CreateExternalSquadBodyDto,
     ): Promise<CreateExternalSquadResponseDto> {
-        const result = await this.externalSquadService.createExternalSquad(
-            createExternalSquadDto.name,
-        );
+        const result = await this.externalSquadService.createExternalSquad(body.name);
 
         const data = errorHandler(result);
         return {
@@ -117,21 +100,15 @@ export class ExternalSquadController {
     @ApiConflictResponse({
         description: 'External squad already exists',
     })
-    @ApiNotFoundResponse({
-        description: 'External squad not found',
-    })
-    @ApiOkResponse({
-        type: UpdateExternalSquadResponseDto,
-        description: 'External squad updated successfully',
-    })
     @Endpoint({
         command: UpdateExternalSquadCommand,
         httpCode: HttpStatus.OK,
+        type: UpdateExternalSquadResponseDto,
     })
     async updateExternalSquad(
-        @Body() updateExternalSquadDto: UpdateExternalSquadRequestDto,
+        @Body() body: UpdateExternalSquadBodyDto,
     ): Promise<UpdateExternalSquadResponseDto> {
-        const result = await this.externalSquadService.updateExternalSquad(updateExternalSquadDto);
+        const result = await this.externalSquadService.updateExternalSquad(body);
 
         const data = errorHandler(result);
         return {
@@ -139,83 +116,46 @@ export class ExternalSquadController {
         };
     }
 
-    @ApiNotFoundResponse({
-        description: 'External squad not found',
-    })
-    @ApiOkResponse({
-        type: DeleteExternalSquadResponseDto,
-        description: 'External squad deleted successfully',
-    })
     @Endpoint({
         command: DeleteExternalSquadCommand,
-        httpCode: HttpStatus.OK,
+        httpCode: HttpStatus.NO_CONTENT,
     })
-    async deleteExternalSquad(
-        @Param('uuid') uuid: string,
-    ): Promise<DeleteExternalSquadResponseDto> {
-        const result = await this.externalSquadService.deleteExternalSquad(uuid);
+    async deleteExternalSquad(@Param() param: DeleteExternalSquadParamDto) {
+        const result = await this.externalSquadService.deleteExternalSquad(param.uuid);
 
-        const data = errorHandler(result);
-        return {
-            response: data,
-        };
+        errorHandler(result);
+        return;
     }
 
-    @ApiNotFoundResponse({
-        description: 'External squad not found',
-    })
-    @ApiOkResponse({
-        type: AddUsersToExternalSquadResponseDto,
-        description: 'Task added to external job queue',
-    })
     @Endpoint({
         command: AddUsersToExternalSquadCommand,
-        httpCode: HttpStatus.OK,
+        httpCode: HttpStatus.ACCEPTED,
     })
-    async addUsersToExternalSquad(
-        @Param('uuid') uuid: string,
-    ): Promise<AddUsersToExternalSquadResponseDto> {
-        const result = await this.externalSquadService.addUsersToExternalSquad(uuid);
+    async addUsersToExternalSquad(@Param() param: AddUsersToExternalSquadParamDto) {
+        const result = await this.externalSquadService.addUsersToExternalSquad(param.uuid);
 
-        const data = errorHandler(result);
-        return {
-            response: data,
-        };
+        errorHandler(result);
+        return;
     }
 
-    @ApiNotFoundResponse({
-        description: 'External squad not found',
-    })
-    @ApiOkResponse({
-        type: RemoveUsersFromExternalSquadResponseDto,
-        description: 'Task added to external job queue',
-    })
     @Endpoint({
         command: DeleteUsersFromExternalSquadCommand,
-        httpCode: HttpStatus.OK,
+        httpCode: HttpStatus.ACCEPTED,
     })
-    async removeUsersFromExternalSquad(
-        @Param('uuid') uuid: string,
-    ): Promise<RemoveUsersFromExternalSquadResponseDto> {
-        const result = await this.externalSquadService.removeUsersFromExternalSquad(uuid);
+    async removeUsersFromExternalSquad(@Param() param: RemoveUsersFromExternalSquadParamDto) {
+        const result = await this.externalSquadService.removeUsersFromExternalSquad(param.uuid);
 
-        const data = errorHandler(result);
-        return {
-            response: data,
-        };
+        errorHandler(result);
+        return;
     }
 
-    @ApiOkResponse({
-        type: ReorderExternalSquadsResponseDto,
-        description: 'External squads reordered successfully',
-    })
     @Endpoint({
         command: ReorderExternalSquadCommand,
         httpCode: HttpStatus.OK,
-        apiBody: ReorderExternalSquadsRequestDto,
+        type: ReorderExternalSquadsResponseDto,
     })
     async reorderExternalSquads(
-        @Body() body: ReorderExternalSquadsRequestDto,
+        @Body() body: ReorderExternalSquadsBodyDto,
     ): Promise<ReorderExternalSquadsResponseDto> {
         const result = await this.externalSquadService.reorderExternalSquads(body);
 

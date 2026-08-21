@@ -1,17 +1,23 @@
 import { TransactionHost } from '@nestjs-cls/transactional';
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
+import { sql } from 'kysely';
 
 import { Injectable } from '@nestjs/common';
 
+import { TxKyselyService } from '@common/database';
+import { values } from '@common/helpers/kysely/values';
 import { ICrud } from '@common/types/crud-port';
 
 import { NodePluginEntity } from '../entities/node-plugin.entity';
 import { NodePluginConverter } from '../node-plugins.converter';
 
+const SHARED_LIST_USAGE_JSONPATH = `$.** ? (@ == $name)`;
+
 @Injectable()
 export class NodePluginRepository implements ICrud<NodePluginEntity> {
     constructor(
         private readonly prisma: TransactionHost<TransactionalAdapterPrisma>,
+        private readonly qb: TxKyselyService,
         private readonly converter: NodePluginConverter,
     ) {}
 
@@ -111,20 +117,44 @@ export class NodePluginRepository implements ICrud<NodePluginEntity> {
         return result.map((item) => new NodePluginEntity(item));
     }
 
+    public async getUuidsBySharedListName(name: string): Promise<string[]> {
+        const result = await this.qb.kysely
+            .selectFrom('nodePlugin')
+            .select('uuid')
+            .where(
+                sql<boolean>`jsonb_path_exists(
+                    ${sql.ref('node_plugin.plugin_config')},
+                    ${SHARED_LIST_USAGE_JSONPATH}::jsonpath,
+                    jsonb_build_object('name', ${`ext:${name}`}::text)
+                )`,
+            )
+            .execute();
+
+        return result.map((row) => row.uuid);
+    }
+
     public async reorderMany(
         dto: {
             uuid: string;
             viewPosition: number;
         }[],
     ): Promise<boolean> {
-        await this.prisma.withTransaction(async () => {
-            for (const { uuid, viewPosition } of dto) {
-                await this.prisma.tx.nodePlugin.updateMany({
-                    where: { uuid },
-                    data: { viewPosition },
-                });
-            }
-        });
+        if (dto.length === 0) return true;
+
+        const v = values(
+            dto.map(({ uuid, viewPosition }) => ({
+                uuid: sql<string>`${uuid}::uuid`,
+                viewPosition: sql<number>`${viewPosition}::int`,
+            })),
+            'v',
+        );
+
+        await this.qb.kysely
+            .updateTable('nodePlugin')
+            .from(v)
+            .set((eb) => ({ viewPosition: eb.ref('v.viewPosition') }))
+            .whereRef('nodePlugin.uuid', '=', 'v.uuid')
+            .execute();
 
         await this.prisma.tx
             .$executeRaw`SELECT setval('node_plugin_view_position_seq', (SELECT MAX(view_position) FROM node_plugin) + 1)`;

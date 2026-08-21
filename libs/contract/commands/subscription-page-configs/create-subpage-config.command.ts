@@ -4,7 +4,7 @@ import { REST_API, SUBSCRIPTION_PAGE_CONFIGS_ROUTES } from '../../api';
 import { getEndpointDetails } from '../../constants';
 import { SubscriptionPageConfigSchema } from '../../models';
 
-export namespace CreateSubscriptionPageConfigCommand {
+export namespace CreateSubpageConfigCommand {
     export const url = REST_API.SUBSCRIPTION_PAGE_CONFIGS.CREATE;
     export const TSQ_url = url;
 
@@ -15,7 +15,7 @@ export namespace CreateSubscriptionPageConfigCommand {
         { scope: 'create', kind: 'write' },
     );
 
-    export const RequestSchema = z.object({
+    export const RequestBodySchema = z.object({
         name: z
             .string()
             .min(2, 'Name must be at least 2 characters')
@@ -26,11 +26,10 @@ export namespace CreateSubscriptionPageConfigCommand {
             ),
     });
 
-    export type Request = z.infer<typeof RequestSchema>;
-
     export const ResponseSchema = z.object({
         response: SubscriptionPageConfigSchema,
     });
 
+    export type RequestBody = z.infer<typeof RequestBodySchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

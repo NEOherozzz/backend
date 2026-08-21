@@ -398,9 +398,9 @@ export const ERRORS = {
         message: 'Bulk disable hosts error',
         httpCode: 500,
     },
-    BULK_DELETE_USERS_BY_UUID_ERROR: {
+    BULK_DELETE_USERS_BY_USER_IDS_ERROR: {
         code: 'A084',
-        message: 'Bulk delete users by UUID error',
+        message: 'Bulk delete users by user IDs error',
         httpCode: 500,
     },
     BULK_REVOKE_USERS_SUBSCRIPTION_ERROR: {
@@ -451,11 +451,6 @@ export const ERRORS = {
     ACTIVATE_ALL_INBOUNDS_ERROR: {
         code: 'A093',
         message: 'Activate all inbounds error',
-        httpCode: 500,
-    },
-    GET_NODES_USER_USAGE_BY_RANGE_ERROR: {
-        code: 'A094',
-        message: 'Get nodes user usage by range error',
         httpCode: 500,
     },
     CREATE_HWID_USER_DEVICE_ERROR: {
@@ -939,12 +934,12 @@ export const ERRORS = {
         message: 'Passkey not found',
         httpCode: 404,
     },
-    GET_REMNAAWAVE_SETTINGS_ERROR: {
+    GET_REMNAWAVE_SETTINGS_ERROR: {
         code: 'A192',
         message: 'Get Remnawave settings error',
         httpCode: 500,
     },
-    UPDATE_REMNAAWAVE_SETTINGS_ERROR: {
+    UPDATE_REMNAWAVE_SETTINGS_ERROR: {
         code: 'A193',
         message: 'Update Remnawave settings error',
         httpCode: 500,
@@ -979,7 +974,7 @@ export const ERRORS = {
         message: 'Delete passkey error',
         httpCode: 500,
     },
-    VALIDATE_REMNAAWAVE_SETTINGS_ERROR: {
+    VALIDATE_REMNAWAVE_SETTINGS_ERROR: {
         code: 'A199',
         message: 'Validate Remnawave settings error',
         httpCode: 500,
@@ -1108,6 +1103,11 @@ export const ERRORS = {
         code: 'A222',
         message: 'Invalid node plugin config',
         httpCode: 400,
+        withMessage: (message: string) => ({
+            code: 'A222',
+            message,
+            httpCode: 400,
+        }),
     },
     NODE_PLUGIN_NAME_ALREADY_EXISTS: {
         code: 'A223',
@@ -1148,5 +1148,125 @@ export const ERRORS = {
         code: 'A230',
         message: 'Either nodeUuid or name must be provided',
         httpCode: 400,
+    },
+    CUSTOM_RAW_REMARK_VALIDATION_ERROR: {
+        code: 'A231',
+        message: 'Invalid custom raw remark',
+        httpCode: 500,
+        withMessage: (message: string) => ({
+            code: 'A231',
+            message,
+            httpCode: 500,
+        }),
+    },
+    GET_INTERNAL_SQUAD_USAGE_ERROR: {
+        code: 'A232',
+        message: 'Get internal squad usage error',
+        httpCode: 500,
+    },
+    ADD_MANY_USERS_TO_INTERNAL_SQUAD_ERROR: {
+        code: 'A233',
+        message: 'Add many users to internal squad error',
+        httpCode: 500,
+    },
+    REMOVE_MANY_USERS_FROM_INTERNAL_SQUAD_ERROR: {
+        code: 'A234',
+        message: 'Remove many users from internal squad error',
+        httpCode: 500,
+    },
+    GET_STATS_DIGEST_INVALID_RANGE: {
+        code: 'A235',
+        message: 'Start date must be before or equal to end date',
+        httpCode: 400,
+    },
+    GET_STATS_DIGEST_ERROR: {
+        code: 'A236',
+        message: 'Get stats digest error',
+        httpCode: 500,
+    },
+    SYNC_SNIPPET_ERROR: {
+        code: 'A237',
+        message: 'Sync snippet error',
+        httpCode: 500,
+    },
+    NODE_INTEGRATION_NOT_FOUND: {
+        code: 'A238',
+        message: 'Node integration not found',
+        httpCode: 404,
+    },
+    GET_ALL_NODE_INTEGRATIONS_ERROR: {
+        code: 'A239',
+        message: 'Get all node integrations error',
+        httpCode: 500,
+    },
+    GET_NODE_INTEGRATION_BY_UUID_ERROR: {
+        code: 'A240',
+        message: 'Get node integration by UUID error',
+        httpCode: 500,
+    },
+    CREATE_NODE_INTEGRATION_ERROR: {
+        code: 'A241',
+        message: 'Create node integration error',
+        httpCode: 500,
+    },
+    UPDATE_NODE_INTEGRATION_ERROR: {
+        code: 'A242',
+        message: 'Update node integration error',
+        httpCode: 500,
+    },
+    DELETE_NODE_INTEGRATION_ERROR: {
+        code: 'A243',
+        message: 'Delete node integration error',
+        httpCode: 500,
+    },
+    NODE_INTEGRATION_NAME_ALREADY_EXISTS: {
+        code: 'A244',
+        message: 'Node integration name already exists',
+        httpCode: 400,
+    },
+    SHARED_LIST_NOT_FOUND: {
+        code: 'A245',
+        message: 'Shared list not found',
+        httpCode: 404,
+    },
+    SHARED_LIST_NAME_ALREADY_EXISTS: {
+        code: 'A246',
+        message: 'Shared list name already exists',
+        httpCode: 400,
+    },
+    GET_ALL_SHARED_LISTS_ERROR: {
+        code: 'A247',
+        message: 'Get all shared lists error',
+        httpCode: 500,
+    },
+    GET_SHARED_LIST_BY_NAME_ERROR: {
+        code: 'A248',
+        message: 'Get shared list by name error',
+        httpCode: 500,
+    },
+    CREATE_SHARED_LIST_ERROR: {
+        code: 'A249',
+        message: 'Create shared list error',
+        httpCode: 500,
+    },
+    UPDATE_SHARED_LIST_ERROR: {
+        code: 'A250',
+        message: 'Update shared list error',
+        httpCode: 500,
+    },
+    DELETE_SHARED_LIST_ERROR: {
+        code: 'A251',
+        message: 'Delete shared list error',
+        httpCode: 500,
+    },
+    INVALID_SHARED_LIST_CONFIG: {
+        code: 'A252',
+        message: 'Invalid shared list config',
+        httpCode: 400,
+        withMessage: (message: string) => ({
+            code: 'A252',
+            message,
+            httpCode: 400,
+        }),
     },
 } as const;

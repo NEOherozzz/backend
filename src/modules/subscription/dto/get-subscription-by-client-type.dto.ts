@@ -1,7 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
 
-import { GetSubscriptionByShortUuidByClientTypeCommand } from '@libs/contracts/commands/subscription';
+import { GetSubscriptionByShortUuidByClientTypeCommand } from '@libs/contracts/commands';
 
-export class GetSubscriptionByShortUuidByClientTypeRequestDto extends createZodDto(
-    GetSubscriptionByShortUuidByClientTypeCommand.RequestSchema,
+export class GetSubscriptionByShortUuidByClientTypeParamDto extends createZodDto(
+    GetSubscriptionByShortUuidByClientTypeCommand.RequestParamSchema,
 ) {}

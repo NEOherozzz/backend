@@ -14,7 +14,7 @@ import { BulkAllExtendExpirationDateCommand } from '@modules/users/commands/bulk
 import { BulkDeleteByStatusCommand } from '@modules/users/commands/bulk-delete-by-status';
 import { BulkSyncUsersCommand } from '@modules/users/commands/bulk-sync-users';
 import { BulkUpdateAllUsersCommand } from '@modules/users/commands/bulk-update-all-users';
-import { BulkAllUpdateUsersRequestDto } from '@modules/users/dtos/bulk/bulk-operations.dto';
+import { BulkAllUpdateUsersBodyDto } from '@modules/users/dtos/bulk/bulk-operations.dto';
 import { GetUsersByExpireAtQuery } from '@modules/users/queries/get-users-by-expire-at/get-users-by-expire-at.query';
 
 import { NodesQueuesService } from '@queue/_nodes/nodes-queues.service';
@@ -96,8 +96,6 @@ export class SerialUsersOperationsQueueProcessor extends WorkerHost {
                     );
 
                     skipTelegramNotification = true;
-                } else {
-                    skipTelegramNotification = false;
                 }
 
                 await this.usersQueuesService.fireUserEventBulk({
@@ -178,7 +176,7 @@ export class SerialUsersOperationsQueueProcessor extends WorkerHost {
         >(new BulkDeleteByStatusCommand(status, limit));
     }
 
-    private async handleBulkUpdateAllUsersJob(job: Job<{ dto: BulkAllUpdateUsersRequestDto }>) {
+    private async handleBulkUpdateAllUsersJob(job: Job<{ dto: BulkAllUpdateUsersBodyDto }>) {
         try {
             const { dto } = job.data;
 

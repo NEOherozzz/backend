@@ -4,7 +4,7 @@ import { INFRA_BILLING_ROUTES, REST_API } from '../../api';
 import { getEndpointDetails } from '../../constants';
 import { InfraBillingHistoryRecordSchema } from '../../models';
 
-export namespace GetInfraBillingHistoryRecordsCommand {
+export namespace GetInfraBillingRecordsCommand {
     export const url = REST_API.INFRA_BILLING.GET_BILLING_HISTORY;
     export const TSQ_url = url;
 
@@ -24,13 +24,11 @@ export namespace GetInfraBillingHistoryRecordsCommand {
             ),
         size: z.coerce
             .number()
-            .min(1, 'Size (limit) must be greater than 0')
-            .max(500, 'Size (limit) must be less than 500')
+            .min(1)
+            .max(500)
             .describe('Number of billing records to return, no more than 500')
             .default(50),
     });
-
-    export type RequestQuery = z.infer<typeof RequestQuerySchema>;
 
     export const ResponseSchema = z.object({
         response: z.object({
@@ -39,5 +37,6 @@ export namespace GetInfraBillingHistoryRecordsCommand {
         }),
     });
 
+    export type RequestQuery = z.infer<typeof RequestQuerySchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

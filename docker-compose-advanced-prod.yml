@@ -1,5 +1,5 @@
 x-base: &base
-  image: remnawave/backend:2
+  image: remnawave/backend:3
 
 x-common: &common
   ulimits:

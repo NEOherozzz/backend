@@ -11,16 +11,7 @@ export class FindAllApiTokensResponseModel {
         updatedAt: Date;
     }[];
 
-    public docs: {
-        enabled: boolean;
-        scalarPath: null | string;
-        swaggerPath: null | string;
-    };
-
-    constructor(
-        data: ApiTokenEntity,
-        docs: { enabled: boolean; scalarPath: null | string; swaggerPath: null | string },
-    ) {
+    constructor(data: ApiTokenEntity) {
         this.tokens = [
             {
                 uuid: data.uuid,
@@ -31,10 +22,5 @@ export class FindAllApiTokensResponseModel {
                 updatedAt: data.updatedAt,
             },
         ];
-        this.docs = {
-            enabled: docs.enabled,
-            scalarPath: docs.scalarPath,
-            swaggerPath: docs.swaggerPath,
-        };
     }
 }

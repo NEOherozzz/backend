@@ -19,8 +19,6 @@ export namespace GetBandwidthStatsCommand {
         tz: z.string().optional(),
     });
 
-    export type Request = z.infer<typeof RequestQuerySchema>;
-
     export const ResponseSchema = z.object({
         response: z.object({
             bandwidthLastTwoDays: BaseStatSchema,
@@ -31,5 +29,6 @@ export namespace GetBandwidthStatsCommand {
         }),
     });
 
+    export type RequestQuery = z.infer<typeof RequestQuerySchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

@@ -5,8 +5,8 @@ import { UserEntity } from '@modules/users/entities';
 export interface IGetSubscriptionInfo {
     userEntity?: UserEntity;
     searchBy?: {
-        uniqueField: string;
-        uniqueFieldKey: 'username' | 'shortUuid' | 'uuid';
+        uniqueField: string | bigint;
+        uniqueFieldKey: 'username' | 'shortUuid' | 'id';
     };
     authenticated?: boolean;
     subscriptionSettingsRaw?: SubscriptionSettingsEntity;

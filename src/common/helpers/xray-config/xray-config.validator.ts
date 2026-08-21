@@ -1,5 +1,4 @@
 import { hasher } from 'node-object-hash';
-import { readFileSync } from 'node:fs';
 import {
     BalancingRule,
     InboundConfig,
@@ -14,11 +13,17 @@ import {
 
 import { HashedSet } from '@remnawave/hashed-set';
 
+import { readPemLines } from '@common/utils/certs';
 import { getVlessFlow } from '@common/utils/flow/get-vless-flow';
 
 import { UserForConfigEntity } from '@modules/users/entities/users-for-config';
 
-import { getSsPassword, isSS2022MethodFromMethod, SHADOWSOCKS_METHODS } from './ss-cipher';
+import {
+    getDecodedKeySize,
+    getSsPassword,
+    isSS2022MethodFromMethod,
+    SHADOWSOCKS_METHODS,
+} from './ss-cipher';
 
 const MANAGED_CLIENT_PROTOCOLS = new Set(['hysteria', 'shadowsocks', 'trojan', 'vless']);
 type ManagedInboundSettings = VLessInboundConfig | TrojanInboundConfig | ShadowsocksInboundConfig;
@@ -35,6 +40,8 @@ const ALLOWED_PROTOCOLS = new Set([
     'vless',
     'wireguard',
 ]);
+
+const PROTECTED_ROOT_KEYS = new Set(['api', 'inbounds', 'metrics', 'snippets', 'stats']);
 
 const ALLOWED_NETWORKS = new Set([
     'grpc',
@@ -130,12 +137,12 @@ export class XRayConfig {
             const resolved = { ...cert };
 
             if (resolved.certificateFile) {
-                resolved.certificate = this.readPemLines(resolved.certificateFile);
+                resolved.certificate = readPemLines(resolved.certificateFile);
                 delete resolved.certificateFile;
             }
 
             if (resolved.keyFile) {
-                resolved.key = this.readPemLines(resolved.keyFile);
+                resolved.key = readPemLines(resolved.keyFile);
                 delete resolved.keyFile;
             }
 
@@ -143,13 +150,6 @@ export class XRayConfig {
         } catch {
             return cert;
         }
-    }
-
-    private readPemLines(filePath: string): string[] {
-        return readFileSync(filePath, 'utf-8')
-            .replace(/\r\n/g, '\n')
-            .split('\n')
-            .filter((line) => line);
     }
 
     private hasManagedClients(inbound: InboundConfig): inbound is {
@@ -233,7 +233,7 @@ export class XRayConfig {
                 for (const user of users) {
                     inbound.settings.clients.push({
                         password: user.trojanPassword,
-                        email: user.tId.toString(),
+                        email: user.id.toString(),
                         id: user.vlessUuid,
                     });
                 }
@@ -248,7 +248,7 @@ export class XRayConfig {
                 for (const user of users) {
                     inbound.settings.clients.push({
                         id: user.vlessUuid,
-                        email: user.tId.toString(),
+                        email: user.id.toString(),
                     });
                 }
                 break;
@@ -263,7 +263,7 @@ export class XRayConfig {
                     inbound.settings.clients.push({
                         id: user.vlessUuid,
                         auth: user.vlessUuid,
-                        email: user.tId.toString(),
+                        email: user.id.toString(),
                     });
                 }
                 break;
@@ -281,7 +281,7 @@ export class XRayConfig {
                     inbound.settings.clients.push({
                         password: getSsPassword(user.ssPassword, isSS2022),
                         ...(!isSS2022 && { method: method || 'chacha20-ietf-poly1305' }),
-                        email: user.tId.toString(),
+                        email: user.id.toString(),
                         id: user.vlessUuid,
                     });
                 }
@@ -315,6 +315,8 @@ export class XRayConfig {
     }
 
     public replaceSnippets(snippets: Map<string, unknown>): void {
+        this.replaceSnippetsInRoot(snippets);
+
         if (this.config.outbounds) {
             this.replaceSnippetsInArray(this.config.outbounds, snippets);
         }
@@ -322,12 +324,45 @@ export class XRayConfig {
         if (!this.config.routing) return;
 
         if (this.config.routing.rules) {
-            if (this.config.routing.rules) {
-                this.replaceSnippetsInArray(this.config.routing.rules, snippets);
+            this.replaceSnippetsInArray(this.config.routing.rules, snippets);
+        }
+
+        if (this.config.routing.balancers) {
+            this.replaceSnippetsInArray(this.config.routing.balancers, snippets);
+        }
+    }
+
+    public validateOutbounds(): void {
+        if (!this.config.outbounds || this.config.outbounds.length === 0) {
+            throw new Error("Config doesn't have outbounds.");
+        }
+    }
+
+    private replaceSnippetsInRoot(snippetsMap: Map<string, unknown>): void {
+        const config = this.config;
+        const names = config.snippets;
+
+        delete config.snippets;
+
+        if (!Array.isArray(names)) return;
+
+        const merged: Record<string, unknown> = {};
+
+        for (const name of names) {
+            const snippet = snippetsMap.get(name);
+            if (!snippet) continue;
+
+            for (const part of Array.isArray(snippet) ? snippet : [snippet]) {
+                if (!part || typeof part !== 'object' || Array.isArray(part)) continue;
+
+                Object.assign(merged, part);
             }
-            if (this.config.routing.balancers) {
-                this.replaceSnippetsInArray(this.config.routing.balancers, snippets);
-            }
+        }
+
+        for (const [key, value] of Object.entries(merged)) {
+            if (PROTECTED_ROOT_KEYS.has(key) || key in config) continue;
+
+            (config as Record<string, unknown>)[key] = value;
         }
     }
 
@@ -446,10 +481,11 @@ export class XRayConfig {
                         '(inbound → settings → password – generate with: openssl rand -base64 32)',
                 );
             }
-            if (settings.password.length < 32) {
+            // https://xtls.github.io/config/inbounds/shadowsocks.html#inboundconfigurationobject
+            if (getDecodedKeySize(settings.password) !== 32) {
                 throw new Error(
-                    'Shadowsocks password must be at least 32 characters long for 2022-blake3-* methods. ' +
-                        '(inbound → settings → password – generate with: openssl rand -base64 32)',
+                    `Shadowsocks password for "${method}" must be a base64 string that decodes to exactly 32 bytes. ` +
+                        `(inbound → settings → password – generate with: openssl rand -base64 32)`,
                 );
             }
         }

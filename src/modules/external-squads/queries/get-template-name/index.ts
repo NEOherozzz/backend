@@ -1,2 +1,2 @@
-export * from './get-template-name.handler';
-export * from './get-template-name.query';
+export * from './get-cached-template-name.handler';
+export * from './get-cached-template-name.query';

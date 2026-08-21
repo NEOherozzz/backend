@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { REMNAAWAVE_SETTINGS_ROUTES, REST_API } from '../../api';
+import { REMNAWAVE_SETTINGS_ROUTES, REST_API } from '../../api';
 import { getEndpointDetails } from '../../constants';
 import { RemnawaveSettingsSchema } from '../../models';
 
@@ -9,7 +9,7 @@ export namespace GetRemnawaveSettingsCommand {
     export const TSQ_url = url;
 
     export const endpointDetails = getEndpointDetails(
-        REMNAAWAVE_SETTINGS_ROUTES.GET,
+        REMNAWAVE_SETTINGS_ROUTES.GET,
         'get',
         'Get Remnawave settings',
         { scope: 'get', kind: 'read' },

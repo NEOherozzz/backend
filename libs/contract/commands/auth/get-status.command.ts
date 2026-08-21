@@ -24,7 +24,7 @@ export namespace GetStatusCommand {
                         enabled: z.boolean(),
                     }),
                     oauth2: z.object({
-                        providers: z.record(z.nativeEnum(OAUTH2_PROVIDERS), z.boolean()),
+                        providers: z.record(z.enum(OAUTH2_PROVIDERS), z.boolean()),
                     }),
                     password: z.object({
                         enabled: z.boolean(),

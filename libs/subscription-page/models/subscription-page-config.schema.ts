@@ -16,17 +16,19 @@ import {
 const LocalizedTextSchema = z
     .record(z.string().regex(/^[a-z]{2}$/, 'Language code must be 2 lowercase letters'), z.string())
     .refine((obj) => Object.keys(obj).length > 0, {
-        message: 'At least one language must be specified',
+        error: 'At least one language must be specified',
     });
 
 const SvgLibrarySchema = z.record(
-    z.string().regex(/^[A-Za-z]+$/, { message: 'Only latin characters, no spaces allowed' }),
+    z.string().regex(/^[A-Za-z]+$/, {
+        error: 'Only latin characters, no spaces allowed',
+    }),
     z.string(),
 );
 
 const ButtonSchema = z.object({
     link: z.string(),
-    type: z.nativeEnum(BUTTON_TYPES),
+    type: z.enum(BUTTON_TYPES),
     text: LocalizedTextSchema,
     svgIconKey: z.string(),
 });
@@ -54,8 +56,7 @@ const BlockSchema = z.object({
                     'yellow',
                 ].includes(value) || /^#[0-9a-fA-F]{3,8}$/.test(value),
             {
-                message:
-                    'svgIconColor must be one of the predefined colors or a hex color beginning with #',
+                error: 'svgIconColor must be one of the predefined colors or a hex color beginning with #',
             },
         ),
     title: LocalizedTextSchema,
@@ -79,12 +80,12 @@ const PlatformSchema = z.object({
 const BrandingSettingsSchema = z.object({
     title: z.string(),
     logoUrl: z.string(),
-    supportUrl: z.string().url(),
+    supportUrl: z.url(),
 });
 
 const UiConfigSchema = z.object({
-    subscriptionInfoBlockType: z.nativeEnum(SUBSCRIPTION_INFO_BLOCK_VARIANTS),
-    installationGuidesBlockType: z.nativeEnum(INSTALLATION_GUIDE_BLOCKS_VARIANTS),
+    subscriptionInfoBlockType: z.enum(SUBSCRIPTION_INFO_BLOCK_VARIANTS),
+    installationGuidesBlockType: z.enum(INSTALLATION_GUIDE_BLOCKS_VARIANTS),
 });
 
 const SubscriptionPageTranslateKeysSchema = z.object({
@@ -125,14 +126,14 @@ const BaseSettingsSchema = z
 
 export const SubscriptionPageRawConfigSchema = z
     .object({
-        version: z.nativeEnum(SUBSCRIPTION_PAGE_CONFIG_VERSION),
+        version: z.enum(SUBSCRIPTION_PAGE_CONFIG_VERSION),
         locales: z.array(z.enum(LANGUAGE_CODES)).min(1, 'At least one locale must be specified'),
         brandingSettings: BrandingSettingsSchema,
         uiConfig: UiConfigSchema,
         baseSettings: BaseSettingsSchema,
         baseTranslations: SubscriptionPageTranslateKeysSchema,
         svgLibrary: SvgLibrarySchema,
-        platforms: z.record(z.nativeEnum(SUBSCRIPTION_PAGE_CONFIG_PLATFORM_TYPES), PlatformSchema),
+        platforms: z.partialRecord(z.enum(SUBSCRIPTION_PAGE_CONFIG_PLATFORM_TYPES), PlatformSchema),
     })
     .superRefine((data, ctx) => {
         validateLocalizedTexts(data, data.locales, ctx);

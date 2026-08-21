@@ -2,7 +2,7 @@ import { CONTROLLERS_INFO, SUBSCRIPTION_SETTINGS_CONTROLLER } from '@contract/ap
 import { ROLE } from '@contract/constants';
 
 import { Body, Controller, HttpStatus, UseFilters, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { Endpoint } from '@common/decorators/base-endpoint';
 import { Roles } from '@common/decorators/roles/roles';
@@ -19,7 +19,7 @@ import {
 
 import {
     GetSubscriptionSettingsResponseDto,
-    UpdateSubscriptionSettingsRequestDto,
+    UpdateSubscriptionSettingsBodyDto,
     UpdateSubscriptionSettingsResponseDto,
 } from './dtos';
 import { SubscriptionSettingsResponseModel } from './models/get-subscription-settings.response.model';
@@ -35,13 +35,10 @@ import { SubscriptionSettingsService } from './subscription-settings.service';
 export class SubscriptionSettingsController {
     constructor(private readonly subscriptionSettingsService: SubscriptionSettingsService) {}
 
-    @ApiOkResponse({
-        type: GetSubscriptionSettingsResponseDto,
-        description: 'Subscription settings retrieved successfully',
-    })
     @Endpoint({
         command: GetSubscriptionSettingsCommand,
         httpCode: HttpStatus.OK,
+        type: GetSubscriptionSettingsResponseDto,
     })
     async getSettings(): Promise<GetSubscriptionSettingsResponseDto> {
         const result = await this.subscriptionSettingsService.getSubscriptionSettings();
@@ -52,17 +49,13 @@ export class SubscriptionSettingsController {
         };
     }
 
-    @ApiOkResponse({
-        type: UpdateSubscriptionSettingsResponseDto,
-        description: 'Subscription settings updated successfully',
-    })
     @Endpoint({
         command: UpdateSubscriptionSettingsCommand,
         httpCode: HttpStatus.OK,
-        apiBody: UpdateSubscriptionSettingsRequestDto,
+        type: UpdateSubscriptionSettingsResponseDto,
     })
     async updateSettings(
-        @Body() body: UpdateSubscriptionSettingsRequestDto,
+        @Body() body: UpdateSubscriptionSettingsBodyDto,
     ): Promise<UpdateSubscriptionSettingsResponseDto> {
         const result = await this.subscriptionSettingsService.updateSettings(body);
 

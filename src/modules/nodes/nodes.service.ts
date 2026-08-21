@@ -12,26 +12,19 @@ import { toNano } from '@common/utils/nano';
 import { NodeEvent } from '@integration-modules/notifications/interfaces';
 
 import { GetConfigProfileByUuidQuery } from '@modules/config-profiles/queries/get-config-profile-by-uuid';
-import { CreateNodeTrafficUsageHistoryCommand } from '@modules/nodes-traffic-usage-history/commands/create-node-traffic-usage-history';
-import { NodesTrafficUsageHistoryEntity } from '@modules/nodes-traffic-usage-history/entities/nodes-traffic-usage-history.entity';
 
 import { NodesQueuesService } from '@queue/_nodes';
 
 import {
-    BulkNodesActionsRequestDto,
-    BulkNodesUpdateRequestDto,
-    CreateNodeRequestDto,
-    ProfileModificationRequestDto,
-    ReorderNodeRequestDto,
-    UpdateNodeRequestDto,
+    BulkNodesActionsBodyDto,
+    BulkNodesUpdateBodyDto,
+    CreateNodeBodyDto,
+    ProfileModificationBodyDto,
+    ReorderNodesBodyDto,
+    UpdateNodeBodyDto,
 } from './dtos';
 import { NodesEntity } from './entities';
-import {
-    BaseEventResponseModel,
-    DeleteNodeResponseModel,
-    NodeResponseModel,
-    RestartNodeResponseModel,
-} from './models';
+import { NodeResponseModel } from './models';
 import { NodesSystemCacheService } from './nodes-system-cache.service';
 import { NodesRepository } from './repositories/nodes.repository';
 
@@ -48,7 +41,7 @@ export class NodesService {
         private readonly nodesSystemCacheService: NodesSystemCacheService,
     ) {}
 
-    public async createNode(body: CreateNodeRequestDto): Promise<TResult<NodeResponseModel>> {
+    public async createNode(body: CreateNodeBodyDto): Promise<TResult<NodeResponseModel>> {
         try {
             const { configProfile, ...nodeData } = body;
 
@@ -151,10 +144,7 @@ export class NodesService {
         }
     }
 
-    public async restartNode(
-        uuid: string,
-        force: boolean,
-    ): Promise<TResult<RestartNodeResponseModel>> {
+    public async restartNode(uuid: string, force: boolean): Promise<TResult<boolean>> {
         try {
             const node = await this.nodesRepository.findByUUID(uuid);
             if (!node) {
@@ -170,45 +160,33 @@ export class NodesService {
                 force,
             });
 
-            return ok(new RestartNodeResponseModel(true));
+            return ok(true);
         } catch (error) {
             this.logger.error(JSON.stringify(error));
             return fail(ERRORS.RESTART_NODE_ERROR);
         }
     }
 
-    public async resetNodeTraffic(uuid: string): Promise<TResult<BaseEventResponseModel>> {
+    public async resetNodeTraffic(uuid: string): Promise<TResult<boolean>> {
         try {
             const node = await this.nodesRepository.findByUUID(uuid);
             if (!node) {
                 return fail(ERRORS.NODE_NOT_FOUND);
             }
 
-            await this.commandBus.execute(
-                new CreateNodeTrafficUsageHistoryCommand(
-                    new NodesTrafficUsageHistoryEntity({
-                        nodeUuid: node.uuid,
-                        trafficBytes: node.trafficUsedBytes || BigInt(0),
-                        resetAt: new Date(),
-                    }),
-                ),
-            );
-
             await this.nodesRepository.update({
                 uuid: node.uuid,
                 trafficUsedBytes: BigInt(0),
             });
 
-            return ok(new BaseEventResponseModel(true));
+            return ok(true);
         } catch (error) {
             this.logger.error(JSON.stringify(error));
             return fail(ERRORS.RESET_NODE_TRAFFIC_ERROR);
         }
     }
 
-    public async restartAllNodes(
-        forceRestart: boolean,
-    ): Promise<TResult<RestartNodeResponseModel>> {
+    public async restartAllNodes(forceRestart: boolean): Promise<TResult<boolean>> {
         try {
             const nodes = await this.nodesRepository.findByCriteria({
                 isDisabled: false,
@@ -222,7 +200,7 @@ export class NodesService {
                 force: forceRestart,
             });
 
-            return ok(new RestartNodeResponseModel(true));
+            return ok(true);
         } catch (error) {
             this.logger.error(JSON.stringify(error));
             return fail(ERRORS.RESTART_NODE_ERROR);
@@ -245,7 +223,7 @@ export class NodesService {
         }
     }
 
-    public async deleteNode(uuid: string): Promise<TResult<DeleteNodeResponseModel>> {
+    public async deleteNode(uuid: string): Promise<TResult<boolean>> {
         try {
             const node = await this.nodesRepository.findByUUID(uuid);
             if (!node) {
@@ -261,14 +239,14 @@ export class NodesService {
 
             await this.nodesSystemCacheService.delete(node.uuid);
 
-            return ok(new DeleteNodeResponseModel({ isDeleted: true }));
+            return ok(true);
         } catch (error) {
             this.logger.error(error);
             return fail(ERRORS.DELETE_NODE_ERROR);
         }
     }
 
-    public async updateNode(body: UpdateNodeRequestDto): Promise<TResult<NodeResponseModel>> {
+    public async updateNode(body: UpdateNodeBodyDto): Promise<TResult<NodeResponseModel>> {
         try {
             const { configProfile, ...nodeData } = body;
 
@@ -319,6 +297,7 @@ export class NodesService {
             if (!node.isDisabled) {
                 await this.nodesQueuesService.startNode({
                     nodeUuid: result.uuid,
+                    force: nodeData.integrationUuids !== undefined,
                 });
             }
 
@@ -463,7 +442,7 @@ export class NodesService {
         }
     }
 
-    public async reorderNodes(dto: ReorderNodeRequestDto): Promise<TResult<NodeResponseModel[]>> {
+    public async reorderNodes(dto: ReorderNodesBodyDto): Promise<TResult<NodeResponseModel[]>> {
         try {
             await this.nodesRepository.reorderMany(dto.nodes);
 
@@ -498,9 +477,7 @@ export class NodesService {
         }
     }
 
-    public async profileModification(
-        body: ProfileModificationRequestDto,
-    ): Promise<TResult<BaseEventResponseModel>> {
+    public async profileModification(body: ProfileModificationBodyDto): Promise<TResult<boolean>> {
         try {
             const { uuids, configProfile } = body;
 
@@ -536,16 +513,14 @@ export class NodesService {
                 emitter: 'bulkProfileModification',
             }); // no need to restart all nodes
 
-            return ok(new BaseEventResponseModel(true));
+            return ok(true);
         } catch (error) {
             this.logger.error(error);
             return fail(ERRORS.INTERNAL_SERVER_ERROR);
         }
     }
 
-    public async bulkNodesActions(
-        body: BulkNodesActionsRequestDto,
-    ): Promise<TResult<BaseEventResponseModel>> {
+    public async bulkNodesActions(body: BulkNodesActionsBodyDto): Promise<TResult<boolean>> {
         try {
             const { uuids, action } = body;
 
@@ -566,16 +541,14 @@ export class NodesService {
                 await handler(uuid);
             }
 
-            return ok(new BaseEventResponseModel(true));
+            return ok(true);
         } catch (error) {
             this.logger.error(error);
             return fail(ERRORS.INTERNAL_SERVER_ERROR);
         }
     }
 
-    public async bulkNodesUpdate(
-        body: BulkNodesUpdateRequestDto,
-    ): Promise<TResult<BaseEventResponseModel>> {
+    public async bulkNodesUpdate(body: BulkNodesUpdateBodyDto): Promise<TResult<boolean>> {
         try {
             const { uuids, fields } = body;
 
@@ -586,6 +559,7 @@ export class NodesService {
                 providerUuid: fields.providerUuid,
                 tags: fields.tags,
                 activePluginUuid: fields.activePluginUuid,
+                integrationUuids: fields.integrationUuids,
                 note: fields.note,
             };
 
@@ -597,7 +571,19 @@ export class NodesService {
                 );
             }
 
-            return ok(new BaseEventResponseModel(true));
+            if (fieldsToUpdate.integrationUuids !== undefined) {
+                const profileUuids = await this.nodesRepository.getProfileUuidsByNodeUuids(uuids);
+
+                for (const profileUuid of profileUuids) {
+                    await this.nodesQueuesService.startAllNodesByProfile({
+                        profileUuid,
+                        emitter: 'bulkNodesUpdate',
+                        force: true,
+                    });
+                }
+            }
+
+            return ok(true);
         } catch (error) {
             this.logger.error(error);
             return fail(ERRORS.INTERNAL_SERVER_ERROR);

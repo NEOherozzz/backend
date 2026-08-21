@@ -1,11 +1,11 @@
 import { createZodDto } from 'nestjs-zod';
 
-import { CreateInfraBillingHistoryRecordCommand } from '@libs/contracts/commands';
+import { CreateInfraBillingRecordCommand } from '@libs/contracts/commands';
 
-export class CreateInfraBillingHistoryRecordRequestDto extends createZodDto(
-    CreateInfraBillingHistoryRecordCommand.RequestSchema,
+export class CreateInfraBillingRecordBodyDto extends createZodDto(
+    CreateInfraBillingRecordCommand.RequestBodySchema,
 ) {}
 
-export class CreateInfraBillingHistoryRecordResponseDto extends createZodDto(
-    CreateInfraBillingHistoryRecordCommand.ResponseSchema,
+export class CreateInfraBillingRecordResponseDto extends createZodDto(
+    CreateInfraBillingRecordCommand.ResponseSchema,
 ) {}

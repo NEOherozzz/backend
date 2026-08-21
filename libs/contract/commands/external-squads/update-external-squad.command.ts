@@ -5,7 +5,8 @@ import { getEndpointDetails, SUBSCRIPTION_TEMPLATE_TYPE } from '../../constants'
 import {
     CustomRemarksSchema,
     ExternalSquadHostOverridesSchema,
-    ExternalSquadResponseHeadersSchema,
+    ExternalSquadResponseHeadersAddSchema,
+    ExternalSquadResponseHeadersRemoveSchema,
     ExternalSquadSchema,
     ExternalSquadSubscriptionSettingsSchema,
     HwidSettingsSchema,
@@ -22,12 +23,12 @@ export namespace UpdateExternalSquadCommand {
         { scope: 'update', kind: 'write' },
     );
 
-    export const RequestSchema = z.object({
-        uuid: z.string().uuid(),
+    export const RequestBodySchema = z.object({
+        uuid: z.uuid().describe('UUID of the external squad'),
         name: z
             .string()
-            .min(2, 'Name must be at least 2 characters')
-            .max(30, 'Name must be less than 30 characters')
+            .min(2)
+            .max(30)
             .regex(
                 /^[A-Za-z0-9_\s-]+$/,
                 'Name can only contain letters, numbers, underscores, dashes and spaces',
@@ -36,24 +37,26 @@ export namespace UpdateExternalSquadCommand {
         templates: z
             .array(
                 z.object({
-                    templateUuid: z.string().uuid(),
-                    templateType: z.nativeEnum(SUBSCRIPTION_TEMPLATE_TYPE),
+                    templateUuid: z.uuid().describe('UUID of the subscription template'),
+                    templateType: z
+                        .enum(SUBSCRIPTION_TEMPLATE_TYPE)
+                        .describe('Type of the subscription template'),
                 }),
             )
             .optional(),
         subscriptionSettings: ExternalSquadSubscriptionSettingsSchema.optional(),
         hostOverrides: ExternalSquadHostOverridesSchema.optional(),
-        responseHeaders: ExternalSquadResponseHeadersSchema.optional(),
-        hwidSettings: z.optional(z.nullable(HwidSettingsSchema)),
-        customRemarks: z.optional(z.nullable(CustomRemarksSchema)),
-        subpageConfigUuid: z.optional(z.nullable(z.string().uuid())),
+        responseHeadersAdd: ExternalSquadResponseHeadersAddSchema.optional(),
+        responseHeadersRemove: ExternalSquadResponseHeadersRemoveSchema.optional(),
+        hwidSettings: HwidSettingsSchema.nullish(),
+        customRemarks: CustomRemarksSchema.nullish(),
+        subpageConfigUuid: z.uuid().nullish(),
     });
-
-    export type Request = z.infer<typeof RequestSchema>;
 
     export const ResponseSchema = z.object({
         response: ExternalSquadSchema,
     });
 
+    export type RequestBody = z.infer<typeof RequestBodySchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

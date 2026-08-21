@@ -9,17 +9,15 @@ import {
     ReorderNodePluginCommand,
     CloneNodePluginCommand,
     PluginExecutorCommand,
+    SyncNodePluginCommand,
 } from '@libs/contracts/commands';
-import {
-    GetTorrentBlockerReportsCommand,
-    TruncateTorrentBlockerReportsCommand,
-} from '@libs/contracts/commands/node-plugins/torrent-blocker';
+import { GetTorrentBlockerReportsCommand } from '@libs/contracts/commands/node-plugins/torrent-blocker';
 import { GetTorrentBlockerReportsStatsCommand } from '@libs/contracts/commands/node-plugins/torrent-blocker/get-torrent-blocker-reports-stats.command';
 
 export class GetNodePluginsResponseDto extends createZodDto(GetNodePluginsCommand.ResponseSchema) {} // GET_ALL
 
-export class UpdateNodePluginRequestDto extends createZodDto(
-    UpdateNodePluginCommand.RequestSchema,
+export class UpdateNodePluginBodyDto extends createZodDto(
+    UpdateNodePluginCommand.RequestBodySchema,
 ) {} // UPDATE
 
 export class UpdateNodePluginResponseDto extends createZodDto(
@@ -28,48 +26,43 @@ export class UpdateNodePluginResponseDto extends createZodDto(
 
 export class GetNodePluginResponseDto extends createZodDto(GetNodePluginCommand.ResponseSchema) {} // GET BY UUID
 
-export class GetNodePluginRequestDto extends createZodDto(GetNodePluginCommand.RequestSchema) {} // GET BY UUID
+export class GetNodePluginParamDto extends createZodDto(GetNodePluginCommand.RequestParamSchema) {} // GET BY UUID
 
-export class DeleteNodePluginRequestDto extends createZodDto(
-    DeleteNodePluginCommand.RequestSchema,
+export class DeleteNodePluginParamDto extends createZodDto(
+    DeleteNodePluginCommand.RequestParamSchema,
 ) {} // DELETE
 
-export class DeleteNodePluginResponseDto extends createZodDto(
-    DeleteNodePluginCommand.ResponseSchema,
-) {} // DELETE
-
-export class CreateNodePluginRequestDto extends createZodDto(
-    CreateNodePluginCommand.RequestSchema,
+export class CreateNodePluginBodyDto extends createZodDto(
+    CreateNodePluginCommand.RequestBodySchema,
 ) {} // CREATE
 
 export class CreateNodePluginResponseDto extends createZodDto(
     CreateNodePluginCommand.ResponseSchema,
 ) {} // CREATE
 
-export class ReorderNodePluginsRequestDto extends createZodDto(
-    ReorderNodePluginCommand.RequestSchema,
+export class ReorderNodePluginsBodyDto extends createZodDto(
+    ReorderNodePluginCommand.RequestBodySchema,
 ) {} // REORDER
 export class ReorderNodePluginsResponseDto extends createZodDto(
     ReorderNodePluginCommand.ResponseSchema,
 ) {} // REORDER
 
-export class CloneNodePluginRequestDto extends createZodDto(CloneNodePluginCommand.RequestSchema) {} // CLONE
+export class CloneNodePluginBodyDto extends createZodDto(
+    CloneNodePluginCommand.RequestBodySchema,
+) {} // CLONE
 export class CloneNodePluginResponseDto extends createZodDto(
     CloneNodePluginCommand.ResponseSchema,
 ) {} // CLONE
 
-export class PluginExecutorRequestDto extends createZodDto(PluginExecutorCommand.RequestSchema) {} // EXECUTOR
-export class PluginExecutorResponseDto extends createZodDto(PluginExecutorCommand.ResponseSchema) {} // EXECUTOR
+export class PluginExecutorBodyDto extends createZodDto(PluginExecutorCommand.RequestBodySchema) {} // EXECUTOR
 
-export class GetTorrentBlockerReportsRequestDto extends createZodDto(
+export class SyncNodePluginBodyDto extends createZodDto(SyncNodePluginCommand.RequestBodySchema) {} // SYNC
+
+export class GetTorrentBlockerReportsQueryDto extends createZodDto(
     GetTorrentBlockerReportsCommand.RequestQuerySchema,
 ) {} // TORRENT_BLOCKER_REPORT
 export class GetTorrentBlockerReportsResponseDto extends createZodDto(
     GetTorrentBlockerReportsCommand.ResponseSchema,
-) {} // TORRENT_BLOCKER_REPORT
-
-export class TruncateTorrentBlockerReportsResponseDto extends createZodDto(
-    TruncateTorrentBlockerReportsCommand.ResponseSchema,
 ) {} // TORRENT_BLOCKER_REPORT
 
 export class GetTorrentBlockerReportsStatsResponseDto extends createZodDto(

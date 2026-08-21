@@ -4,7 +4,7 @@ import { HOSTS_ROUTES, REST_API } from '../../api';
 import { getEndpointDetails } from '../../constants';
 import { HostsSchema } from '../../models';
 
-export namespace ReorderHostCommand {
+export namespace ReorderHostsCommand {
     export const url = REST_API.HOSTS.ACTIONS.REORDER;
     export const TSQ_url = url;
 
@@ -15,7 +15,7 @@ export namespace ReorderHostCommand {
         { scope: 'reorder', kind: 'write' },
     );
 
-    export const RequestSchema = z.object({
+    export const RequestBodySchema = z.object({
         hosts: z.array(
             HostsSchema.pick({
                 viewPosition: true,
@@ -23,7 +23,6 @@ export namespace ReorderHostCommand {
             }),
         ),
     });
-    export type Request = z.infer<typeof RequestSchema>;
 
     export const ResponseSchema = z.object({
         response: z.object({
@@ -31,5 +30,6 @@ export namespace ReorderHostCommand {
         }),
     });
 
+    export type RequestBody = z.infer<typeof RequestBodySchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

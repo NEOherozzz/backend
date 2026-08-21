@@ -2,7 +2,8 @@ import { z } from 'zod';
 
 import { NODES_ROUTES, REST_API } from '../../api';
 import { getEndpointDetails } from '../../constants';
-import { NodesSchema } from '../../models';
+import { NodeIpsSchema, NodesSchema } from '../../models';
+import { NodeResponseSchema } from './node.response';
 
 export namespace UpdateNodeCommand {
     export const url = REST_API.NODES.UPDATE;
@@ -13,66 +14,46 @@ export namespace UpdateNodeCommand {
         kind: 'write',
     });
 
-    export const RequestSchema = NodesSchema.pick({
+    export const RequestBodySchema = NodesSchema.pick({
         uuid: true,
     }).extend({
-        name: z.optional(z.string().min(3, 'Min. 3 characters').max(30, 'Max. 30 characters')),
-        address: z.optional(z.string().min(2, 'Min. 2 characters')),
-        port: z.optional(
-            z
-                .number()
-                .min(1, 'Port must be greater than 0')
-                .max(65535, 'Port must be less than 65535'),
-        ),
+        name: z.optional(z.string().min(3).max(30)),
+        address: z.optional(z.string().min(2)),
+        port: z.optional(z.number().min(1).max(65535)),
         proxyUrl: z
             .string()
             .regex(
                 /^socks5:\/\/(?:[^:@/\s]+(?::[^@/\s]*)?@)?[^:@/\s]+:\d{1,5}$/,
                 'Expected socks5://[user:pass@]host:port',
             )
-            .nullable()
-            .optional(),
+            .nullish(),
         isTrafficTrackingActive: z.optional(z.boolean()),
-        trafficLimitBytes: z.optional(z.number().min(0, 'Traffic limit must be greater than 0')),
-        notifyPercent: z.optional(
-            z
-                .number()
-                .min(0, 'Notify percent must be greater than 0')
-                .max(100, 'Notify percent must be less than 100'),
-        ),
-        trafficResetDay: z.optional(
-            z
-                .number()
-                .min(1, 'Traffic reset day must be greater than 0')
-                .max(31, 'Traffic reset day must be less than 31'),
-        ),
-        countryCode: z.optional(
-            z.string().max(2, 'Country code must be 2 characters').toUpperCase(),
-        ),
+        trafficLimitBytes: z.optional(z.number().min(0)),
+        notifyPercent: z.optional(z.number().min(0).max(100)),
+        trafficResetDay: z.optional(z.number().min(1).max(31)),
+        countryCode: z.optional(z.string().max(2).toUpperCase()),
         consumptionMultiplier: z.optional(
             z
                 .number()
-                .min(0.0, 'Consumption multiplier must be greater than 0.0')
-                .max(100.0, 'Consumption multiplier must be less than 100.0')
+                .min(0.0)
+                .max(100.0)
                 .transform((n) => Number(n.toFixed(1))),
         ),
         nodeConsumptionMultiplier: z.optional(
             z
                 .number()
-                .min(0.0, 'Node consumption multiplier must be greater than 0.0')
-                .max(100.0, 'Node consumption multiplier must be less than 100.0')
+                .min(0.0)
+                .max(100.0)
                 .transform((n) => Number(n.toFixed(1))),
         ),
         configProfile: z
             .object({
-                activeConfigProfileUuid: z.string().uuid(),
-                activeInbounds: z.array(z.string().uuid(), {
-                    invalid_type_error: 'Must be an array of UUIDs',
-                }),
+                activeConfigProfileUuid: z.uuid(),
+                activeInbounds: z.array(z.uuid()),
             })
             .optional(),
 
-        providerUuid: z.optional(z.nullable(z.string().uuid())),
+        providerUuid: z.uuid().nullish(),
         tags: z.optional(
             z
                 .array(
@@ -86,15 +67,14 @@ export namespace UpdateNodeCommand {
                 )
                 .max(10, 'Maximum 10 tags'),
         ),
-        activePluginUuid: z.optional(z.nullable(z.string().uuid())),
-        note: z.optional(z.string().max(255, 'Note must be less than 255 characters').nullable()),
+        activePluginUuid: z.uuid().nullish(),
+        integrationUuids: z.optional(z.array(z.uuid()).max(20, 'Maximum 20 integrations')),
+        note: z.optional(z.string().max(255).nullable()),
+        ips: z.optional(NodeIpsSchema),
     });
 
-    export type Request = z.infer<typeof RequestSchema>;
+    export const ResponseSchema = NodeResponseSchema;
 
-    export const ResponseSchema = z.object({
-        response: NodesSchema,
-    });
-
+    export type RequestBody = z.infer<typeof RequestBodySchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

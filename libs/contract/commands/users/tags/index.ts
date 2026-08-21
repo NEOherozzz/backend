@@ -1,1 +1,1 @@
-export * from './get-all-tags.command';
+export * from './get-users-tags.command';

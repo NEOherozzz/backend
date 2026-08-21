@@ -1,5 +1,5 @@
 import { Controller, HttpStatus, Query, UseFilters, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { Endpoint } from '@common/decorators/base-endpoint';
 import { Roles } from '@common/decorators/roles/roles';
@@ -13,7 +13,7 @@ import { BANDWIDTH_STATS_NODES_CONTROLLER, CONTROLLERS_INFO } from '@libs/contra
 import { GetStatsNodesUsageCommand } from '@libs/contracts/commands';
 import { ROLE } from '@libs/contracts/constants';
 
-import { GetStatsNodesUsageRequestQueryDto, GetStatsNodesUsageResponseDto } from './dtos';
+import { GetStatsNodesUsageQueryDto, GetStatsNodesUsageResponseDto } from './dtos';
 import { NodesUsageHistoryService } from './nodes-usage-history.service';
 
 @ApiBearerAuth('Authorization')
@@ -26,38 +26,13 @@ import { NodesUsageHistoryService } from './nodes-usage-history.service';
 export class NodesUsageHistoryController {
     constructor(private readonly nodesUsageHistoryService: NodesUsageHistoryService) {}
 
-    @ApiOkResponse({
-        type: GetStatsNodesUsageResponseDto,
-        description: 'Stats nodes usage fetched successfully',
-    })
-    @ApiQuery({
-        name: 'end',
-        type: String,
-        description: 'End date (YYYY-MM-DD)',
-        required: true,
-        example: '2026-01-01',
-        format: 'date',
-    })
-    @ApiQuery({
-        name: 'start',
-        type: String,
-        description: 'Start date (YYYY-MM-DD)',
-        required: true,
-        example: '2026-01-31',
-        format: 'date',
-    })
-    @ApiQuery({
-        name: 'topNodesLimit',
-        type: Number,
-        description: 'Limit of top nodes to return',
-        required: true,
-    })
     @Endpoint({
         command: GetStatsNodesUsageCommand,
         httpCode: HttpStatus.OK,
+        type: GetStatsNodesUsageResponseDto,
     })
     async getStatsNodesUsage(
-        @Query() query: GetStatsNodesUsageRequestQueryDto,
+        @Query() query: GetStatsNodesUsageQueryDto,
     ): Promise<GetStatsNodesUsageResponseDto> {
         const { start, end, topNodesLimit } = query;
 

@@ -7,11 +7,17 @@ import { ENQUEUE_SERVICES } from './enqueue';
 import { EVENT_LISTENERS } from './events';
 import { METRIC_PROVIDERS } from './metrics-providers';
 import { JOBS_SERVICES } from './tasks';
-import { NodesMetricMessageController } from './tasks/export-metrics/nodes-metric-message.controller';
+import { NodeMetricsSubscriber } from './tasks/export-metrics/node-metrics.subscriber';
 
 @Module({
     imports: [CqrsModule, PrometheusReporterModule],
-    controllers: [NodesMetricMessageController],
-    providers: [...ENQUEUE_SERVICES, ...JOBS_SERVICES, ...METRIC_PROVIDERS, ...EVENT_LISTENERS],
+    controllers: [],
+    providers: [
+        ...ENQUEUE_SERVICES,
+        ...JOBS_SERVICES,
+        ...METRIC_PROVIDERS,
+        ...EVENT_LISTENERS,
+        NodeMetricsSubscriber,
+    ],
 })
 export class SchedulerModule {}

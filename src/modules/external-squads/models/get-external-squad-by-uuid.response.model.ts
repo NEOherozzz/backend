@@ -3,7 +3,7 @@ import z from 'zod';
 import { TSubscriptionTemplateType } from '@libs/contracts/constants';
 import {
     ExternalSquadHostOverridesSchema,
-    ExternalSquadResponseHeadersSchema,
+    ExternalSquadResponseHeadersAddSchema,
     ExternalSquadSubscriptionSettingsSchema,
     TCustomRemarks,
     THwidSettings,
@@ -30,7 +30,8 @@ export class GetExternalSquadByUuidResponseModel {
 
     public readonly hostOverrides: z.infer<typeof ExternalSquadHostOverridesSchema> | null;
 
-    public readonly responseHeaders: z.infer<typeof ExternalSquadResponseHeadersSchema> | null;
+    public readonly responseHeadersAdd: z.infer<typeof ExternalSquadResponseHeadersAddSchema>;
+    public readonly responseHeadersRemove: string[];
 
     public readonly hwidSettings: THwidSettings | null;
     public readonly customRemarks: TCustomRemarks | null;
@@ -55,7 +56,8 @@ export class GetExternalSquadByUuidResponseModel {
         this.subscriptionSettings = entity.subscriptionSettings;
 
         this.hostOverrides = entity.hostOverrides;
-        this.responseHeaders = entity.responseHeaders;
+        this.responseHeadersAdd = entity.responseHeadersAdd;
+        this.responseHeadersRemove = entity.responseHeadersRemove;
 
         this.hwidSettings = entity.hwidSettings;
         this.customRemarks = entity.customRemarks;

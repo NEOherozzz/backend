@@ -6,13 +6,15 @@ import { nullifyEmpty } from '@common/utils/convert-type';
 import { ERRORS } from '@libs/contracts/constants';
 
 import { GetConfigProfileByUuidQuery } from '@modules/config-profiles/queries/get-config-profile-by-uuid';
-import { ReorderHostRequestDto } from '@modules/hosts/dtos/reorder-hosts.dto';
 import { GetSubscriptionTemplateByUuidQuery } from '@modules/subscription-template/queries/get-template-by-uuid';
 
-import { UpdateHostRequestDto, UpdateManyHostsRequestDto } from './dtos';
-import { CreateHostRequestDto } from './dtos/create-host.dto';
+import {
+    CreateHostBodyDto,
+    ReorderHostsBodyDto,
+    UpdateHostBodyDto,
+    UpdateManyHostsBodyDto,
+} from './dtos';
 import { HostsEntity } from './entities/hosts.entity';
-import { DeleteHostResponseModel } from './models/delete-host.response.model';
 import { HostsRepository } from './repositories/hosts.repository';
 
 @Injectable()
@@ -23,7 +25,7 @@ export class HostsService {
         private readonly queryBus: QueryBus,
     ) {}
 
-    public async createHost(dto: CreateHostRequestDto): Promise<TResult<HostsEntity>> {
+    public async createHost(dto: CreateHostBodyDto): Promise<TResult<HostsEntity>> {
         try {
             if (dto.xrayJsonTemplateUuid) {
                 const xrayJsonTemplate = await this.queryBus.execute(
@@ -107,7 +109,7 @@ export class HostsService {
         }
     }
 
-    public async updateHost(dto: UpdateHostRequestDto): Promise<TResult<HostsEntity>> {
+    public async updateHost(dto: UpdateHostBodyDto): Promise<TResult<HostsEntity>> {
         try {
             const { inbound: inboundObj, nodes, excludedInternalSquads, ...rest } = dto;
 
@@ -237,15 +239,15 @@ export class HostsService {
         }
     }
 
-    public async deleteHost(hostUuid: string): Promise<TResult<DeleteHostResponseModel>> {
+    public async deleteHost(hostUuid: string): Promise<TResult<boolean>> {
         try {
             const host = await this.hostsRepository.findByUUID(hostUuid);
             if (!host) {
                 return fail(ERRORS.HOST_NOT_FOUND);
             }
-            const result = await this.hostsRepository.deleteByUUID(host.uuid);
+            await this.hostsRepository.deleteByUUID(host.uuid);
 
-            return ok(new DeleteHostResponseModel({ isDeleted: result }));
+            return ok(true);
         } catch (error) {
             this.logger.error(error);
             this.logger.error(JSON.stringify(error));
@@ -253,7 +255,7 @@ export class HostsService {
         }
     }
 
-    public async getAllHosts(): Promise<TResult<HostsEntity[]>> {
+    public async getHosts(): Promise<TResult<HostsEntity[]>> {
         try {
             const result = await this.hostsRepository.findAll();
 
@@ -264,7 +266,7 @@ export class HostsService {
         }
     }
 
-    public async getOneHost(hostUuid: string): Promise<TResult<HostsEntity>> {
+    public async getHost(hostUuid: string): Promise<TResult<HostsEntity>> {
         try {
             const result = await this.hostsRepository.findByUUID(hostUuid);
 
@@ -279,7 +281,7 @@ export class HostsService {
         }
     }
 
-    public async reorderHosts(dto: ReorderHostRequestDto): Promise<
+    public async reorderHosts(dto: ReorderHostsBodyDto): Promise<
         TResult<{
             isUpdated: boolean;
         }>
@@ -294,58 +296,40 @@ export class HostsService {
         }
     }
 
-    public async deleteHosts(uuids: string[]): Promise<TResult<HostsEntity[]>> {
+    public async deleteHosts(uuids: string[]): Promise<TResult<boolean>> {
         try {
             await this.hostsRepository.deleteMany(uuids);
 
-            const result = await this.getAllHosts();
-
-            if (!result.isOk) {
-                return fail(ERRORS.DELETE_HOSTS_ERROR);
-            }
-
-            return ok(result.response);
+            return ok(true);
         } catch (error) {
             this.logger.error(error);
             return fail(ERRORS.DELETE_HOSTS_ERROR);
         }
     }
 
-    public async bulkEnableHosts(uuids: string[]): Promise<TResult<HostsEntity[]>> {
+    public async bulkEnableHosts(uuids: string[]): Promise<TResult<boolean>> {
         try {
             await this.hostsRepository.enableMany(uuids);
 
-            const result = await this.getAllHosts();
-
-            if (!result.isOk) {
-                return fail(ERRORS.BULK_ENABLE_HOSTS_ERROR);
-            }
-
-            return ok(result.response);
+            return ok(true);
         } catch (error) {
             this.logger.error(error);
             return fail(ERRORS.BULK_ENABLE_HOSTS_ERROR);
         }
     }
 
-    public async bulkDisableHosts(uuids: string[]): Promise<TResult<HostsEntity[]>> {
+    public async bulkDisableHosts(uuids: string[]): Promise<TResult<boolean>> {
         try {
             await this.hostsRepository.disableMany(uuids);
 
-            const result = await this.getAllHosts();
-
-            if (!result.isOk) {
-                return fail(ERRORS.BULK_DISABLE_HOSTS_ERROR);
-            }
-
-            return ok(result.response);
+            return ok(true);
         } catch (error) {
             this.logger.error(error);
             return fail(ERRORS.BULK_DISABLE_HOSTS_ERROR);
         }
     }
 
-    public async getAllHostTags(): Promise<TResult<string[]>> {
+    public async getHostsTags(): Promise<TResult<string[]>> {
         try {
             const result = await this.hostsRepository.findAllTags();
 
@@ -356,7 +340,7 @@ export class HostsService {
         }
     }
 
-    public async updateManyHosts(dto: UpdateManyHostsRequestDto): Promise<TResult<HostsEntity[]>> {
+    public async updateManyHosts(dto: UpdateManyHostsBodyDto): Promise<TResult<boolean>> {
         try {
             const {
                 uuids,
@@ -434,7 +418,7 @@ export class HostsService {
                 },
             });
 
-            return await this.getAllHosts();
+            return ok(true);
         } catch (error) {
             this.logger.error(error);
             return fail(ERRORS.UPDATE_HOSTS_ERROR);

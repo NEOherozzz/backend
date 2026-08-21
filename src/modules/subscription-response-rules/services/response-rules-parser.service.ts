@@ -15,7 +15,7 @@ export class ResponseRulesParserService {
             const config = await ResponseRulesConfigSchema.safeParseAsync(configData);
             if (!config.success) {
                 throw new Error(
-                    `Invalid config: ${config.error.errors.map((e) => e.message).join(', ')}`,
+                    `Invalid config: ${config.error.issues.map((issue) => issue.message).join(', ')}`,
                 );
             }
 
@@ -24,8 +24,10 @@ export class ResponseRulesParserService {
             return config.data;
         } catch (error) {
             if (error instanceof z.ZodError) {
-                this.logger.error('Config validation failed:', error.errors);
-                throw new Error(`Invalid config: ${error.errors.map((e) => e.message).join(', ')}`);
+                this.logger.error('Config validation failed:', error.issues);
+                throw new Error(
+                    `Invalid config: ${error.issues.map((issue) => issue.message).join(', ')}`,
+                );
             }
             throw error;
         }

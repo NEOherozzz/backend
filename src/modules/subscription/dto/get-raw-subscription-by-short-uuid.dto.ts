@@ -1,14 +1,15 @@
 import { createZodDto } from 'nestjs-zod';
 
-import { GetRawSubscriptionByShortUuidCommand } from '@libs/contracts/commands/subscription';
+import { GetRawSubscriptionByShortUuidCommand } from '@libs/contracts/commands';
 
-export class GetRawSubscriptionByShortUuidRequestDto extends createZodDto(
-    GetRawSubscriptionByShortUuidCommand.RequestSchema,
+export class GetRawSubscriptionByShortUuidParamDto extends createZodDto(
+    GetRawSubscriptionByShortUuidCommand.RequestParamSchema,
 ) {}
+
+export class GetRawSubscriptionByShortUuidQueryDto extends createZodDto(
+    GetRawSubscriptionByShortUuidCommand.RequestQuerySchema,
+) {}
+
 export class GetRawSubscriptionByShortUuidResponseDto extends createZodDto(
     GetRawSubscriptionByShortUuidCommand.ResponseSchema,
-) {}
-
-export class GetRawSubscriptionByShortUuidRequestQueryDto extends createZodDto(
-    GetRawSubscriptionByShortUuidCommand.RequestQuerySchema,
 ) {}

@@ -8,7 +8,6 @@ export class TorrentBlockerReportResponseModel {
     public report: ITorrentBlockerReport;
     public createdAt: Date;
     public user: {
-        uuid: string;
         username: string;
     };
     public node: {

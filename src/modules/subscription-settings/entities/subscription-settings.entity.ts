@@ -6,22 +6,11 @@ import { TResponseRulesConfig } from '@modules/subscription-response-rules/types
 
 export class SubscriptionSettingsEntity implements SubscriptionSettings {
     uuid: string;
-    profileTitle: string;
-    supportLink: string;
-    profileUpdateInterval: number;
-    isProfileWebpageUrlEnabled: boolean;
     serveJsonAtBaseSubscription: boolean;
-
-    happAnnounce: string | null;
-    happRouting: string | null;
-
     isShowCustomRemarks: boolean;
     customRemarks: TCustomRemarks;
-
     customResponseHeaders: Record<string, string> | null;
-
     randomizeHosts: boolean;
-
     responseRules: TResponseRulesConfig | null;
     hwidSettings: THwidSettings;
 

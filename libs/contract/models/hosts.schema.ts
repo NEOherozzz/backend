@@ -2,28 +2,29 @@ import { z } from 'zod';
 
 import { SUBSCRIPTION_TEMPLATE_TYPE } from '../constants';
 import { ALPN, MIHOMO_IP_VERSION, SECURITY_LAYERS } from '../constants/hosts';
+import { HostMapperSchema } from './host-mapper';
 
 export const HostsSchema = z.object({
-    uuid: z.string().uuid(),
-    viewPosition: z.number().int(),
+    uuid: z.uuid(),
+    viewPosition: z.int(),
     remark: z.string(),
     address: z.string(),
-    port: z.number().int(),
+    port: z.int(),
     path: z.string().nullable(),
     sni: z.string().nullable(),
     host: z.string().nullable(),
-    alpn: z.nativeEnum(ALPN).nullable(),
+    alpn: z.enum(ALPN).nullable(),
     fingerprint: z.string().nullable(),
     isDisabled: z.boolean(),
-    securityLayer: z.nativeEnum(SECURITY_LAYERS).default(SECURITY_LAYERS.DEFAULT),
+    securityLayer: z.enum(SECURITY_LAYERS).default(SECURITY_LAYERS.DEFAULT),
     xhttpExtraParams: z.nullable(z.unknown()),
     muxParams: z.nullable(z.unknown()),
     sockoptParams: z.nullable(z.unknown()),
     finalMask: z.nullable(z.unknown()),
 
     inbound: z.object({
-        configProfileUuid: z.string().uuid().nullable(),
-        configProfileInboundUuid: z.string().uuid().nullable(),
+        configProfileUuid: z.uuid().nullable(),
+        configProfileInboundUuid: z.uuid().nullable(),
     }),
 
     serverDescription: z.string().max(30).nullable(),
@@ -31,15 +32,16 @@ export const HostsSchema = z.object({
     isHidden: z.boolean().default(false),
     overrideSniFromAddress: z.boolean().default(false),
     keepSniBlank: z.boolean().default(false),
-    vlessRouteId: z.number().int().min(0).max(65535).nullable(),
+    vlessRouteId: z.int().min(0).max(65535).nullable(),
     pinnedPeerCertSha256: z.string().nullable(),
     verifyPeerCertByName: z.string().nullable(),
     shuffleHost: z.boolean(),
     mihomoX25519: z.boolean(),
-    mihomoIpVersion: z.nativeEnum(MIHOMO_IP_VERSION).nullable(),
+    mihomoIpVersion: z.enum(MIHOMO_IP_VERSION).nullable(),
 
-    nodes: z.array(z.string().uuid()),
-    xrayJsonTemplateUuid: z.string().uuid().nullable(),
-    excludedInternalSquads: z.array(z.string().uuid()),
-    excludeFromSubscriptionTypes: z.array(z.nativeEnum(SUBSCRIPTION_TEMPLATE_TYPE)),
+    nodes: z.array(z.uuid()),
+    xrayJsonTemplateUuid: z.uuid().nullable(),
+    excludedInternalSquads: z.array(z.uuid()),
+    excludeFromSubscriptionTypes: z.array(z.enum(SUBSCRIPTION_TEMPLATE_TYPE)),
+    mapper: HostMapperSchema,
 });

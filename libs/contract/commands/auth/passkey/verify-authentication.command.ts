@@ -14,10 +14,9 @@ export namespace VerifyPasskeyAuthenticationCommand {
         { scope: 'verify-authentication', kind: 'write' },
     );
 
-    export const RequestSchema = z.object({
+    export const RequestBodySchema = z.object({
         response: z.unknown(),
     });
-    export type Request = z.infer<typeof RequestSchema>;
 
     export const ResponseSchema = z.object({
         response: z.object({
@@ -25,5 +24,6 @@ export namespace VerifyPasskeyAuthenticationCommand {
         }),
     });
 
+    export type RequestBody = z.infer<typeof RequestBodySchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

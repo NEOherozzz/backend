@@ -114,18 +114,6 @@ export class InternalSquadRepository implements ICrud<InternalSquadEntity> {
                     .whereRef('internalSquadMembers.internalSquadUuid', '=', 'internalSquads.uuid')
                     .as('membersCount'),
 
-                // TODO: add members list
-                // jsonArrayFrom(
-                //     eb
-                //         .selectFrom('internalSquadMembers')
-                //         .select(['userUuid'])
-                //         .whereRef(
-                //             'internalSquadMembers.internalSquadUuid',
-                //             '=',
-                //             'internalSquads.uuid',
-                //         ),
-                // ).as('members'),
-
                 eb
                     .selectFrom('internalSquadInbounds')
                     .select(eb.fn.countAll().as('count'))
@@ -284,7 +272,7 @@ export class InternalSquadRepository implements ICrud<InternalSquadEntity> {
                     .selectFrom('users')
                     .select([
                         eb.val(getKyselyUuid(internalSquadUuid)).as('internalSquadUuid'),
-                        'tId',
+                        'id',
                     ]),
             )
             .onConflict((oc) => oc.doNothing())
@@ -337,6 +325,123 @@ export class InternalSquadRepository implements ICrud<InternalSquadEntity> {
             .execute();
 
         return result;
+    }
+
+    private getSquadNodesQuery(squadUuid: string) {
+        return this.qb.kysely
+            .selectFrom('nodes as n')
+            .innerJoin('configProfiles as cp', 'n.activeConfigProfileUuid', 'cp.uuid')
+            .innerJoin('configProfileInbounds as cpi', 'cpi.profileUuid', 'cp.uuid')
+            .innerJoin('configProfileInboundsToNodes as cpin', (join) =>
+                join
+                    .onRef('cpin.configProfileInboundUuid', '=', 'cpi.uuid')
+                    .onRef('cpin.nodeUuid', '=', 'n.uuid'),
+            )
+            .innerJoin('internalSquadInbounds as isi', 'isi.inboundUuid', 'cpi.uuid')
+            .where('isi.internalSquadUuid', '=', getKyselyUuid(squadUuid))
+            .select(['n.id', 'n.uuid'])
+            .distinct()
+            .execute();
+    }
+
+    public async getSquadUsage(params: {
+        squadUuid: string;
+        start: Date;
+        end: Date;
+        minTotalBytes: number;
+        limit: number;
+        cursor?: number;
+    }): Promise<{
+        users: { id: number; totalBytes: number }[];
+        nextCursor: string | null;
+        hasMore: boolean;
+    }> {
+        const { squadUuid, start, end, minTotalBytes, limit, cursor } = params;
+
+        const nodes = await this.getSquadNodesQuery(squadUuid);
+        if (nodes.length === 0) {
+            return { users: [], nextCursor: null, hasMore: false };
+        }
+
+        let qb = this.qb.kysely
+            .selectFrom('internalSquadMembers as m')
+            .innerJoin('nodesUserUsageHistory as h', 'h.userId', 'm.userId')
+            .where('m.internalSquadUuid', '=', getKyselyUuid(squadUuid))
+            .where('h.createdAt', '>=', start)
+            .where('h.createdAt', '<=', end)
+            .where(
+                'h.nodeId',
+                'in',
+                nodes.map((node) => node.id),
+            );
+
+        if (cursor) {
+            qb = qb.where('m.userId', '>', BigInt(cursor));
+        }
+
+        const rows = await qb
+            .groupBy(['m.userId'])
+            .having((eb) => eb(eb.fn.sum('h.totalBytes'), '>=', BigInt(minTotalBytes)))
+            .select((eb) => ['m.userId as id', eb.fn.sum('h.totalBytes').as('totalBytes')])
+            .orderBy('m.userId', 'asc')
+            .limit(limit + 1)
+            .execute();
+
+        const hasMore = rows.length > limit;
+        if (hasMore) {
+            rows.pop();
+        }
+
+        return {
+            users: rows.map((row) => ({
+                id: Number(row.id),
+                totalBytes: Number(row.totalBytes),
+            })),
+            nextCursor: hasMore ? String(rows[rows.length - 1].id) : null,
+            hasMore,
+        };
+    }
+
+    public async getUserSquadDailyUsage(params: {
+        squadUuid: string;
+        userId: bigint;
+        start: Date;
+        end: Date;
+        dates: string[];
+    }): Promise<{ date: string; nodes: { uuid: string; totalBytes: number }[] }[]> {
+        const { squadUuid, userId, start, end, dates } = params;
+
+        const nodes = await this.getSquadNodesQuery(squadUuid);
+        if (nodes.length === 0) {
+            return dates.map((date) => ({ date, nodes: [] }));
+        }
+        const nodeIds = nodes.map((node) => node.id);
+        const uuidByNodeId = new Map(nodes.map((node) => [node.id, node.uuid]));
+
+        const rows = await this.qb.kysely
+            .selectFrom('nodesUserUsageHistory as h')
+            .where('h.userId', '=', userId)
+            .where('h.createdAt', '>=', start)
+            .where('h.createdAt', '<=', end)
+            .where('h.nodeId', 'in', nodeIds)
+            .select((eb) => [
+                sql<string>`to_char(${eb.ref('h.createdAt')}, 'YYYY-MM-DD')`.as('date'),
+                'h.nodeId as nodeId',
+                'h.totalBytes as totalBytes',
+            ])
+            .execute();
+
+        const byDate = new Map<string, { uuid: string; totalBytes: number }[]>();
+        for (const row of rows) {
+            const bucket = byDate.get(row.date) ?? [];
+            bucket.push({
+                uuid: uuidByNodeId.get(row.nodeId)!,
+                totalBytes: Number(row.totalBytes),
+            });
+            byDate.set(row.date, bucket);
+        }
+
+        return dates.map((date) => ({ date, nodes: byDate.get(date) ?? [] }));
     }
 
     public async getSquadAccessibleNodes(squadUuid: string): Promise<IGetSquadAccessibleNodes> {
@@ -440,5 +545,37 @@ export class InternalSquadRepository implements ICrud<InternalSquadEntity> {
             .$executeRaw`SELECT setval('internal_squads_view_position_seq', (SELECT MAX(view_position) FROM internal_squads) + 1)`;
 
         return true;
+    }
+
+    public async removeManyUsersFromInternalSquad(
+        squadUuid: string,
+        usersIds: bigint[],
+    ): Promise<void> {
+        if (usersIds.length === 0) return;
+
+        await this.qb.kysely
+            .deleteFrom('internalSquadMembers')
+            .where(
+                'userId',
+                'in',
+                usersIds.map((userId) => userId),
+            )
+            .where('internalSquadUuid', '=', getKyselyUuid(squadUuid))
+            .execute();
+    }
+
+    public async addManyUsersToInternalSquad(squadUuid: string, usersIds: bigint[]): Promise<void> {
+        if (usersIds.length === 0) return;
+
+        const records = usersIds.map((userId) => ({
+            userId,
+            internalSquadUuid: getKyselyUuid(squadUuid),
+        }));
+
+        await this.qb.kysely
+            .insertInto('internalSquadMembers')
+            .values(records)
+            .onConflict((oc) => oc.columns(['userId', 'internalSquadUuid']).doNothing())
+            .execute();
     }
 }

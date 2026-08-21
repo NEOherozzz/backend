@@ -10,20 +10,14 @@ export namespace DeleteApiTokenCommand {
     export const endpointDetails = getEndpointDetails(
         API_TOKENS_ROUTES.DELETE(':uuid'),
         'delete',
-        'Delete an API token by UUID',
+        'Delete API token',
         { scope: 'delete', kind: 'write' },
         'This endpoint is forbidden to use via "API-key". It can be used only with an admin JWT-token.',
     );
 
-    export const RequestSchema = z.object({
-        uuid: z.string().uuid(),
+    export const RequestParamSchema = z.object({
+        uuid: z.uuid().describe('UUID of the API token'),
     });
 
-    export type Request = z.infer<typeof RequestSchema>;
-
-    export const ResponseSchema = z.object({
-        response: z.boolean(),
-    });
-
-    export type Response = z.infer<typeof ResponseSchema>;
+    export type RequestParam = z.infer<typeof RequestParamSchema>;
 }

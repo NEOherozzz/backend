@@ -1,6 +1,5 @@
 export class GetTopUsersByHwidDevicesResponseModel {
     public readonly users: {
-        userUuid: string;
         id: number;
         username: string;
         devicesCount: number;

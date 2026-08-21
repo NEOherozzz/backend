@@ -11,7 +11,7 @@ import { TriggerThresholdNotificationCommand } from './trigger-threshold-notific
 @CommandHandler(TriggerThresholdNotificationCommand)
 export class TriggerThresholdNotificationHandler implements ICommandHandler<
     TriggerThresholdNotificationCommand,
-    TResult<{ tId: bigint }[]>
+    TResult<{ id: bigint }[]>
 > {
     public readonly logger = new Logger(TriggerThresholdNotificationHandler.name);
 
@@ -19,7 +19,7 @@ export class TriggerThresholdNotificationHandler implements ICommandHandler<
 
     async execute(
         command: TriggerThresholdNotificationCommand,
-    ): Promise<TResult<{ tId: bigint }[]>> {
+    ): Promise<TResult<{ id: bigint }[]>> {
         try {
             const result = await this.usersRepository.triggerThresholdNotifications(
                 command.percentages,

@@ -14,15 +14,16 @@ export namespace OAuth2AuthorizeCommand {
         { scope: 'authorize', kind: 'read' },
     );
 
-    export const RequestSchema = z.object({
-        provider: z.nativeEnum(OAUTH2_PROVIDERS),
+    export const RequestBodySchema = z.object({
+        provider: z.enum(OAUTH2_PROVIDERS),
     });
 
     export const ResponseSchema = z.object({
         response: z.object({
-            authorizationUrl: z.nullable(z.string().url()),
+            authorizationUrl: z.nullable(z.url()),
         }),
     });
 
+    export type RequestBody = z.infer<typeof RequestBodySchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

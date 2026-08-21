@@ -1,1 +1,1 @@
-export * from './get-all-tags.dto';
+export * from './get-users-tags.dto';

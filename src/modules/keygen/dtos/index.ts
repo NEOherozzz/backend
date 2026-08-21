@@ -1,1 +1,1 @@
-export * from './get-pubkey-dto';
+export * from './get-node-secret-key.dto';

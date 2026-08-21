@@ -2,31 +2,28 @@ import { z } from 'zod';
 
 import { BANDWIDTH_STATS_ROUTES, REST_API } from '../../../api';
 import { getEndpointDetails } from '../../../constants';
+import { numberParamSchema } from '../../../models';
 
 export namespace GetStatsUserUsageCommand {
-    export const url = REST_API.BANDWIDTH_STATS.USERS.GET_BY_UUID;
-    export const TSQ_url = url(':uuid');
+    export const url = REST_API.BANDWIDTH_STATS.USERS.GET_BY_ID;
+    export const TSQ_url = url(':userId');
 
     export const endpointDetails = getEndpointDetails(
-        BANDWIDTH_STATS_ROUTES.USERS.GET_BY_UUID(':uuid'),
+        BANDWIDTH_STATS_ROUTES.USERS.GET_BY_ID(':userId'),
         'get',
         'Get User Usage by Range',
         { scope: 'user-usage', kind: 'read' },
     );
 
-    export const RequestSchema = z.object({
-        uuid: z.string().uuid(),
+    export const RequestParamSchema = z.object({
+        userId: numberParamSchema.describe('ID of the user'),
     });
-
-    export type Request = z.infer<typeof RequestSchema>;
 
     export const RequestQuerySchema = z.object({
-        start: z.string().date(),
-        end: z.string().date(),
+        start: z.iso.date().describe('Start date (YYYY-MM-DD)'),
+        end: z.iso.date().describe('End date (YYYY-MM-DD)'),
         topNodesLimit: z.coerce.number().min(1).default(20),
     });
-
-    export type RequestQuery = z.infer<typeof RequestQuerySchema>;
 
     export const ResponseSchema = z.object({
         response: z.object({
@@ -34,7 +31,7 @@ export namespace GetStatsUserUsageCommand {
             sparklineData: z.array(z.number()),
             topNodes: z.array(
                 z.object({
-                    uuid: z.string().uuid(),
+                    uuid: z.uuid(),
                     color: z.string(),
                     name: z.string(),
                     countryCode: z.string(),
@@ -43,7 +40,7 @@ export namespace GetStatsUserUsageCommand {
             ),
             series: z.array(
                 z.object({
-                    uuid: z.string().uuid(),
+                    uuid: z.uuid(),
                     name: z.string(),
                     color: z.string(),
                     countryCode: z.string(),
@@ -54,5 +51,7 @@ export namespace GetStatsUserUsageCommand {
         }),
     });
 
+    export type RequestParam = z.infer<typeof RequestParamSchema>;
+    export type RequestQuery = z.infer<typeof RequestQuerySchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

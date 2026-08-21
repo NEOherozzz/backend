@@ -5,4 +5,5 @@ export const API_TOKENS_ROUTES = {
     DELETE: (uuid: string) => `${uuid}`,
     GET: '',
     GET_SCOPES: 'scopes',
+    OTT: 'ott',
 } as const;

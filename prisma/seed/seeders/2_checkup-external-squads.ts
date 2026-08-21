@@ -9,7 +9,6 @@ export async function checkupExternalSquads(prisma: PrismaClient) {
         { name: 'hwid_settings', strictObjectCheck: true },
         { name: 'subscription_settings' },
         { name: 'host_overrides' },
-        { name: 'response_headers' },
     ];
 
     let total = 0;

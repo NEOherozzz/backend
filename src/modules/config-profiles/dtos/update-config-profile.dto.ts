@@ -2,8 +2,8 @@ import { createZodDto } from 'nestjs-zod';
 
 import { UpdateConfigProfileCommand } from '@libs/contracts/commands';
 
-export class UpdateConfigProfileRequestDto extends createZodDto(
-    UpdateConfigProfileCommand.RequestSchema,
+export class UpdateConfigProfileBodyDto extends createZodDto(
+    UpdateConfigProfileCommand.RequestBodySchema,
 ) {}
 
 export class UpdateConfigProfileResponseDto extends createZodDto(

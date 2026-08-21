@@ -1,17 +1,18 @@
 import { TransactionHost } from '@nestjs-cls/transactional';
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
+import { sql } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 
 import { Injectable } from '@nestjs/common';
 
 import { TxKyselyService } from '@common/database';
 import { getKyselyUuid } from '@common/helpers';
+import { values } from '@common/helpers/kysely/values';
 import { ICrud } from '@common/types/crud-port';
 import { wrapDbNull } from '@common/utils';
 import { TSubscriptionTemplateType } from '@libs/contracts/constants';
 
 import { ExternalSquadEntity, ExternalSquadWithInfoEntity } from '../entities';
-import {} from '../entities';
 import { ExternalSquadConverter } from '../external-squads.converter';
 
 @Injectable()
@@ -29,8 +30,8 @@ export class ExternalSquadRepository implements ICrud<ExternalSquadEntity> {
                 ...model,
                 subscriptionSettings: wrapDbNull(model.subscriptionSettings),
                 hostOverrides: wrapDbNull(model.hostOverrides),
-                responseHeaders: wrapDbNull(model.responseHeaders),
-
+                responseHeadersAdd: model.responseHeadersAdd,
+                responseHeadersRemove: model.responseHeadersRemove,
                 hwidSettings: wrapDbNull(model.hwidSettings, true),
                 customRemarks: wrapDbNull(model.customRemarks, true),
             },
@@ -61,8 +62,8 @@ export class ExternalSquadRepository implements ICrud<ExternalSquadEntity> {
                 ...data,
                 subscriptionSettings: wrapDbNull(data.subscriptionSettings),
                 hostOverrides: wrapDbNull(data.hostOverrides),
-                responseHeaders: wrapDbNull(data.responseHeaders),
-
+                responseHeadersAdd: data.responseHeadersAdd,
+                responseHeadersRemove: data.responseHeadersRemove,
                 hwidSettings: wrapDbNull(data.hwidSettings, true),
                 customRemarks: wrapDbNull(data.customRemarks, true),
             },
@@ -78,7 +79,8 @@ export class ExternalSquadRepository implements ICrud<ExternalSquadEntity> {
                 | 'customRemarks'
                 | 'subscriptionSettings'
                 | 'hostOverrides'
-                | 'responseHeaders'
+                | 'responseHeadersAdd'
+                | 'responseHeadersRemove'
                 | 'hwidSettings'
             >
         >,
@@ -98,7 +100,8 @@ export class ExternalSquadRepository implements ICrud<ExternalSquadEntity> {
                 | 'customRemarks'
                 | 'subscriptionSettings'
                 | 'hostOverrides'
-                | 'responseHeaders'
+                | 'responseHeadersAdd'
+                | 'responseHeadersRemove'
                 | 'hwidSettings'
             >
         >,
@@ -130,7 +133,8 @@ export class ExternalSquadRepository implements ICrud<ExternalSquadEntity> {
                 'externalSquads.name',
                 'externalSquads.subscriptionSettings',
                 'externalSquads.hostOverrides',
-                'externalSquads.responseHeaders',
+                'externalSquads.responseHeadersAdd',
+                'externalSquads.responseHeadersRemove',
                 'externalSquads.hwidSettings',
                 'externalSquads.customRemarks',
                 'externalSquads.subpageConfigUuid',
@@ -166,7 +170,8 @@ export class ExternalSquadRepository implements ICrud<ExternalSquadEntity> {
                 'externalSquads.name',
                 'externalSquads.subscriptionSettings',
                 'externalSquads.hostOverrides',
-                'externalSquads.responseHeaders',
+                'externalSquads.responseHeadersAdd',
+                'externalSquads.responseHeadersRemove',
                 'externalSquads.hwidSettings',
                 'externalSquads.customRemarks',
                 'externalSquads.subpageConfigUuid',
@@ -296,7 +301,8 @@ export class ExternalSquadRepository implements ICrud<ExternalSquadEntity> {
         ExternalSquadEntity,
         | 'subscriptionSettings'
         | 'hostOverrides'
-        | 'responseHeaders'
+        | 'responseHeadersAdd'
+        | 'responseHeadersRemove'
         | 'hwidSettings'
         | 'customRemarks'
     > | null> {
@@ -305,7 +311,8 @@ export class ExternalSquadRepository implements ICrud<ExternalSquadEntity> {
             select: {
                 subscriptionSettings: true,
                 hostOverrides: true,
-                responseHeaders: true,
+                responseHeadersAdd: true,
+                responseHeadersRemove: true,
                 hwidSettings: true,
                 customRemarks: true,
             },
@@ -324,14 +331,22 @@ export class ExternalSquadRepository implements ICrud<ExternalSquadEntity> {
             viewPosition: number;
         }[],
     ): Promise<boolean> {
-        await this.prisma.withTransaction(async () => {
-            for (const { uuid, viewPosition } of dto) {
-                await this.prisma.tx.externalSquads.updateMany({
-                    where: { uuid },
-                    data: { viewPosition },
-                });
-            }
-        });
+        if (dto.length === 0) return true;
+
+        const v = values(
+            dto.map(({ uuid, viewPosition }) => ({
+                uuid: sql<string>`${uuid}::uuid`,
+                viewPosition: sql<number>`${viewPosition}::int`,
+            })),
+            'v',
+        );
+
+        await this.qb.kysely
+            .updateTable('externalSquads')
+            .from(v)
+            .set((eb) => ({ viewPosition: eb.ref('v.viewPosition') }))
+            .whereRef('externalSquads.uuid', '=', 'v.uuid')
+            .execute();
 
         await this.prisma.tx
             .$executeRaw`SELECT setval('external_squads_view_position_seq', (SELECT MAX(view_position) FROM external_squads) + 1)`;

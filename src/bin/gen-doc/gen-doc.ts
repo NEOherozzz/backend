@@ -1,22 +1,9 @@
-process.env.DATABASE_URL = 'postgresql://postgres:postgres@remnawave-db:5432/postgres';
-process.env.APP_SECRET = 'mock';
-process.env.FRONT_END_DOMAIN = 'mock';
-process.env.METRICS_USER = 'mock';
-process.env.METRICS_PASS = 'mock';
-process.env.SUB_PUBLIC_DOMAIN = 'mock';
-process.env.IS_DOCS_ENABLED = 'true';
-process.env.NODE_ENV = 'development';
-process.env.REDIS_HOST = 'localhost';
-process.env.REDIS_PORT = '6379';
-process.env.INSTANCE_TYPE = 'api';
-
 import { ROOT } from '@contract/api';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { utilities as nestWinstonModuleUtilities, WinstonModule } from 'nest-winston';
-import { patchNestJsSwagger, ZodValidationPipe } from 'nestjs-zod';
 import { createLogger } from 'winston';
 import * as winston from 'winston';
 
@@ -30,8 +17,6 @@ import { AppModule } from '../../app.module';
 dayjs.extend(utc);
 dayjs.extend(relativeTime);
 dayjs.extend(timezone);
-
-patchNestJsSwagger();
 
 // const levels = {
 //     error: 0,
@@ -65,15 +50,11 @@ async function bootstrap(): Promise<void> {
         }),
     });
 
-    ghActionsDocs(app);
-
     app.setGlobalPrefix(ROOT);
 
-    app.useGlobalPipes(new ZodValidationPipe());
+    await ghActionsDocs(app);
 
-    app.enableShutdownHooks();
-
-    await app.init();
+    process.exit(0);
 }
 bootstrap().catch(() => {
     process.exit(0);

@@ -5,7 +5,7 @@ import { TResult } from '@common/types';
 import { HwidUserDeviceEntity } from '../../entities/hwid-user-device.entity';
 
 export class CreateWithAdvisoryLockCommand extends Command<
-    TResult<{ created: boolean; hwidUserDevice: HwidUserDeviceEntity | null }>
+    TResult<{ hwidDevice: HwidUserDeviceEntity | null }>
 > {
     constructor(
         public readonly hwidUserDevice: HwidUserDeviceEntity,

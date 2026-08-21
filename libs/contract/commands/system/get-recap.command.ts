@@ -29,9 +29,7 @@ export namespace GetRecapCommand {
                 distinctCountries: z.number(),
             }),
             version: z.string(),
-            initDate: z
-                .string()
-                .datetime({ local: true, offset: true })
+            initDate: z.iso.datetime({ local: true, offset: true })
                 .transform((str) => new Date(str)),
         }),
     });

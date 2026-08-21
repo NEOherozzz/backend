@@ -2,7 +2,7 @@ import { Query } from '@nestjs/cqrs';
 
 import { TResult } from '@common/types';
 
-export class GetUsersByExpireAtQuery extends Query<TResult<{ tId: bigint }[]>> {
+export class GetUsersByExpireAtQuery extends Query<TResult<{ id: bigint }[]>> {
     constructor(
         public readonly start: Date,
         public readonly end: Date,

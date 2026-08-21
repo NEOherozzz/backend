@@ -2,7 +2,7 @@ import { CONTROLLERS_INFO, NODE_PLUGINS_CONTROLLER } from '@contract/api';
 import { ROLE } from '@contract/constants';
 
 import { Controller, HttpStatus, Query, UseFilters, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { Endpoint } from '@common/decorators/base-endpoint';
 import { Roles } from '@common/decorators/roles/roles';
@@ -20,9 +20,8 @@ import { GetTorrentBlockerReportsStatsCommand } from '@libs/contracts/commands/n
 
 import {
     GetTorrentBlockerReportsResponseDto,
-    GetTorrentBlockerReportsRequestDto,
+    GetTorrentBlockerReportsQueryDto,
     GetTorrentBlockerReportsStatsResponseDto,
-    TruncateTorrentBlockerReportsResponseDto,
 } from './dtos/node-plugins.dtos';
 import { GetTorrentBlockerReportsResponseModel, TorrentBlockerReportResponseModel } from './models';
 import { NodePluginService } from './node-plugins.service';
@@ -37,28 +36,13 @@ import { NodePluginService } from './node-plugins.service';
 export class TorrentBlockerReportsController {
     constructor(private readonly nodePluginService: NodePluginService) {}
 
-    @ApiOkResponse({
-        type: GetTorrentBlockerReportsResponseDto,
-        description: 'Torrent blocker reports fetched successfully',
-    })
-    @ApiQuery({
-        name: 'start',
-        type: 'number',
-        required: false,
-        description: 'Offset for pagination',
-    })
-    @ApiQuery({
-        name: 'size',
-        type: 'number',
-        required: false,
-        description: 'Page size for pagination',
-    })
     @Endpoint({
+        type: GetTorrentBlockerReportsResponseDto,
         command: GetTorrentBlockerReportsCommand,
         httpCode: HttpStatus.OK,
     })
     async getTorrentBlockerReports(
-        @Query() query: GetTorrentBlockerReportsRequestDto,
+        @Query() query: GetTorrentBlockerReportsQueryDto,
     ): Promise<GetTorrentBlockerReportsResponseDto> {
         const { start, size, filters, filterModes, globalFilterMode, sorting } = query;
         const result = await this.nodePluginService.getTorrentBlockerReports({
@@ -79,11 +63,8 @@ export class TorrentBlockerReportsController {
         };
     }
 
-    @ApiOkResponse({
-        type: GetTorrentBlockerReportsStatsResponseDto,
-        description: 'Torrent blocker reports stats fetched successfully',
-    })
     @Endpoint({
+        type: GetTorrentBlockerReportsStatsResponseDto,
         command: GetTorrentBlockerReportsStatsCommand,
         httpCode: HttpStatus.OK,
     })
@@ -96,23 +77,14 @@ export class TorrentBlockerReportsController {
         };
     }
 
-    @ApiOkResponse({
-        type: TruncateTorrentBlockerReportsResponseDto,
-        description: 'Torrent blocker reports truncated successfully',
-    })
     @Endpoint({
         command: TruncateTorrentBlockerReportsCommand,
-        httpCode: HttpStatus.OK,
+        httpCode: HttpStatus.NO_CONTENT,
     })
-    async truncateTorrentBlockerReports(): Promise<TruncateTorrentBlockerReportsResponseDto> {
+    async truncateTorrentBlockerReports() {
         const result = await this.nodePluginService.truncateTorrentBlockerReports();
 
-        const data = errorHandler(result);
-        return {
-            response: new GetTorrentBlockerReportsResponseModel({
-                total: data.total,
-                records: data.records.map((item) => new TorrentBlockerReportResponseModel(item)),
-            }),
-        };
+        errorHandler(result);
+        return;
     }
 }

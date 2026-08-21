@@ -14,13 +14,11 @@ export const SubscriptionInfoSchema = z.object({
         trafficLimitBytes: z.string(),
         lifetimeTrafficUsedBytes: z.string(),
         username: z.string(),
-        expiresAt: z
-            .string()
-            .datetime()
+        expiresAt: z.iso.datetime()
             .transform((str) => new Date(str)),
         isActive: z.boolean(),
-        userStatus: z.nativeEnum(USERS_STATUS),
-        trafficLimitStrategy: z.nativeEnum(RESET_PERIODS),
+        userStatus: z.enum(USERS_STATUS),
+        trafficLimitStrategy: z.enum(RESET_PERIODS),
     }),
     links: z.array(z.string()),
     ssConfLinks: z.record(z.string(), z.string()),

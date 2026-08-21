@@ -2,5 +2,5 @@ import { createZodDto } from 'nestjs-zod';
 
 import { RegisterCommand } from '@libs/contracts/commands';
 
-export class RegisterRequestDto extends createZodDto(RegisterCommand.RequestSchema) {}
+export class RegisterBodyDto extends createZodDto(RegisterCommand.RequestBodySchema) {}
 export class RegisterResponseDto extends createZodDto(RegisterCommand.ResponseSchema) {}

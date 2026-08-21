@@ -15,6 +15,8 @@ export const CACHE_KEYS = {
     NODE_XRAY_UPTIME: (uuid: string) => `node_xray_uptime:${uuid}`,
     RAW_INBOUND: (uuid: string) => `raw_inbound:${uuid}`,
     XRAY_JSON_TEMPLATE: (uuid: string) => `xray_json_template:${uuid}`,
+    EXTERNAL_SQUAD_TEMPLATE_NAME: (uuid: string, type: TSubscriptionTemplateType) =>
+        `external_squad_template_name:${uuid}:${type}`,
 } as const;
 
 export const CACHE_KEYS_TTL = {
@@ -26,6 +28,7 @@ export const CACHE_KEYS_TTL = {
     NODE_XRAY_UPTIME: 16, // 16 seconds
     RAW_INBOUND: 3_600, // 1 hour
     XRAY_JSON_TEMPLATE: 3_600, // 1 hour
+    EXTERNAL_SQUAD_TEMPLATE_NAME: 3_600, // 1 hour
 } as const;
 
 export const INTERNAL_CACHE_KEYS = {
@@ -39,4 +42,11 @@ export const INTERNAL_CACHE_KEYS = {
 
 export const INTERNAL_CACHE_KEYS_TTL = {
     NODE_USER_USAGE: 10_800, // 3 hours in seconds
+} as const;
+
+export const EXPORT_TO_STREAM_KEYS = {
+    PREFIX: 'ioraw:',
+    USER_USAGE: 'export:user_usage',
+    SUBSCRIPTION_REQUESTS: 'export:subscription_requests',
+    NODE_CONNECTIONS: 'export:node_connections',
 } as const;

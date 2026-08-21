@@ -15,7 +15,7 @@ export namespace CreateConfigProfileCommand {
         { scope: 'create', kind: 'write' },
     );
 
-    export const RequestSchema = z.object({
+    export const RequestBodySchema = z.object({
         name: z
             .string()
             .min(2, 'Name must be at least 2 characters')
@@ -24,14 +24,13 @@ export namespace CreateConfigProfileCommand {
                 /^[A-Za-z0-9_\s-]+$/,
                 'Name can only contain letters, numbers, underscores, dashes and spaces',
             ),
-        config: z.object({}).passthrough(),
+        config: z.looseObject({}),
     });
-
-    export type Request = z.infer<typeof RequestSchema>;
 
     export const ResponseSchema = z.object({
         response: ConfigProfileSchema,
     });
 
+    export type RequestBody = z.infer<typeof RequestBodySchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

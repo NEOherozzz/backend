@@ -4,17 +4,14 @@ import { ClsModule } from 'nestjs-cls';
 import { QueueModule } from 'src/queue/queue.module';
 
 import { Logger, OnApplicationShutdown, Module } from '@nestjs/common';
-import { ConditionalModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 
 import { AxiosModule } from '@common/axios';
 import { CommonConfigModule } from '@common/config/common-config';
 import { PrismaModule } from '@common/database';
 import { PrismaService } from '@common/database/prisma.service';
-import { RedisProducerModule } from '@common/microservices';
 import { RawCacheModule } from '@common/raw-cache/raw-cache.module';
 import { RuntimeMetricsModule } from '@common/runtime-metrics/runtime-metrics.module';
-import { isProcessor } from '@common/utils/startup-app';
 
 import { RemnawaveModules } from '@modules/remnawave-backend.modules';
 
@@ -37,8 +34,6 @@ import { RemnawaveModules } from '@modules/remnawave-backend.modules';
                     }),
                 }),
             ],
-            global: true,
-            middleware: { mount: true },
         }),
         EventEmitterModule.forRoot({
             wildcard: true,
@@ -46,7 +41,6 @@ import { RemnawaveModules } from '@modules/remnawave-backend.modules';
         }),
         RemnawaveModules,
         QueueModule,
-        ConditionalModule.registerWhen(RedisProducerModule, () => isProcessor()),
         RuntimeMetricsModule,
     ],
     controllers: [],

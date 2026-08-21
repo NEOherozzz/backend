@@ -1,9 +1,9 @@
 import { Command } from '@nestjs/cqrs';
 
-import { UpdateUserRequestDto } from '@modules/users/dtos';
+import { UpdateUserBodyDto } from '@modules/users/dtos';
 
 export class UpdateUserWithServiceCommand extends Command<void> {
-    constructor(public readonly dto: UpdateUserRequestDto) {
+    constructor(public readonly dto: UpdateUserBodyDto) {
         super();
     }
 }

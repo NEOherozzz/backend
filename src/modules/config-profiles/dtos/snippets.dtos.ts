@@ -4,19 +4,20 @@ import {
     CreateSnippetCommand,
     DeleteSnippetCommand,
     GetSnippetsCommand,
+    SyncSnippetCommand,
     UpdateSnippetCommand,
 } from '@libs/contracts/commands';
 
-export class CreateSnippetRequestDto extends createZodDto(CreateSnippetCommand.RequestSchema) {}
+export class CreateSnippetBodyDto extends createZodDto(CreateSnippetCommand.RequestBodySchema) {}
 
 export class CreateSnippetResponseDto extends createZodDto(CreateSnippetCommand.ResponseSchema) {}
 
-export class UpdateSnippetRequestDto extends createZodDto(UpdateSnippetCommand.RequestSchema) {}
+export class UpdateSnippetBodyDto extends createZodDto(UpdateSnippetCommand.RequestBodySchema) {}
 
 export class UpdateSnippetResponseDto extends createZodDto(UpdateSnippetCommand.ResponseSchema) {}
 
-export class DeleteSnippetRequestDto extends createZodDto(DeleteSnippetCommand.RequestSchema) {}
-
-export class DeleteSnippetResponseDto extends createZodDto(DeleteSnippetCommand.ResponseSchema) {}
+export class DeleteSnippetBodyDto extends createZodDto(DeleteSnippetCommand.RequestBodySchema) {}
 
 export class GetSnippetsResponseDto extends createZodDto(GetSnippetsCommand.ResponseSchema) {}
+
+export class SyncSnippetBodyDto extends createZodDto(SyncSnippetCommand.RequestBodySchema) {}

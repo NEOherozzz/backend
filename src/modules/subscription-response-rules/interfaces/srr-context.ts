@@ -10,6 +10,7 @@ export interface ISRRContext {
     hwidHeaders: HwidHeaders | null;
     isExtendedClient: boolean;
     matchedResponseType: TResponseRulesResponseType;
+    matchedRuleName?: string;
     ip: string;
     subscriptionSettings: SubscriptionSettingsEntity;
     overrideTemplateName?: string;
@@ -19,4 +20,5 @@ export interface ISRRContext {
     disableHwidCheck?: boolean;
     encryption?: TResponseRuleEncryption;
     excludeHostsByTags?: Set<string>;
+    respondWithRemarks?: string[];
 }

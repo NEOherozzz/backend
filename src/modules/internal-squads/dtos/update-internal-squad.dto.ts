@@ -2,8 +2,8 @@ import { createZodDto } from 'nestjs-zod';
 
 import { UpdateInternalSquadCommand } from '@libs/contracts/commands';
 
-export class UpdateInternalSquadRequestDto extends createZodDto(
-    UpdateInternalSquadCommand.RequestSchema,
+export class UpdateInternalSquadBodyDto extends createZodDto(
+    UpdateInternalSquadCommand.RequestBodySchema,
 ) {}
 
 export class UpdateInternalSquadResponseDto extends createZodDto(

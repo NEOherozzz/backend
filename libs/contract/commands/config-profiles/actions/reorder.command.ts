@@ -15,7 +15,7 @@ export namespace ReorderConfigProfileCommand {
         { scope: 'reorder', kind: 'write' },
     );
 
-    export const RequestSchema = z.object({
+    export const RequestBodySchema = z.object({
         items: z.array(
             ConfigProfileSchema.pick({
                 viewPosition: true,
@@ -23,7 +23,6 @@ export namespace ReorderConfigProfileCommand {
             }),
         ),
     });
-    export type Request = z.infer<typeof RequestSchema>;
 
     export const ResponseSchema = z.object({
         response: z.object({
@@ -32,5 +31,6 @@ export namespace ReorderConfigProfileCommand {
         }),
     });
 
+    export type RequestBody = z.infer<typeof RequestBodySchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

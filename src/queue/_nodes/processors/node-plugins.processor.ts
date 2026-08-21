@@ -158,7 +158,7 @@ export class NodePluginsProcessor extends WorkerHost {
 
             for (const report of collectedReports.reports) {
                 await this.usersQueuesService.fireTorrentBlockerEvent({
-                    tId: report.actionReport.userId,
+                    id: report.actionReport.userId,
                     event: EVENTS.TORRENT_BLOCKER.REPORT,
                     nodeUuid,
                     report,

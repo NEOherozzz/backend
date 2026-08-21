@@ -1,24 +1,23 @@
 import { TransactionHost } from '@nestjs-cls/transactional';
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 import { Prisma } from '@prisma/client';
+import { sql } from 'kysely';
 
 import { Injectable } from '@nestjs/common';
 
 import { TxKyselyService } from '@common/database/tx-kysely.service';
+import { getKyselyUuid } from '@common/helpers';
 import { ICrudHistoricalRecords } from '@common/types/crud-port';
 
 import { IGetNodesUsageByRange } from '@modules/nodes-usage-history/interfaces';
 
 import { BulkUpsertHistoryEntryBuilder } from '../builders/bulk-upsert-history-entry/bulk-upsert-history-entry.builder';
-import { GetNodeUsersUsageByRangeBuilder } from '../builders/get-node-users-usage-by-range/get-node-users-usage-by-range.builder';
-import { GetUserUsageByRangeBuilder } from '../builders/get-user-usage-by-range/get-user-usage-by-range.builder';
 import { NodesUserUsageHistoryEntity } from '../entities/nodes-user-usage-history.entity';
 import {
-    IGetLegacyStatsNodesUsersUsage,
     IGetUniversalTopNode,
     IGetUniversalSeries,
-    IGetLegacyStatsUserUsage,
     IGetUniversalTopUser,
+    INodeUsage,
 } from '../interfaces';
 import { NodesUserUsageHistoryConverter } from '../nodes-user-usage-history.converter';
 
@@ -53,41 +52,6 @@ export class NodesUserUsageHistoryRepository implements ICrudHistoricalRecords<N
     ): Promise<void> {
         const { query } = new BulkUpsertHistoryEntryBuilder(userUsageHistoryList);
         await this.prisma.tx.$executeRaw<void>(query);
-    }
-
-    /**
-     * @deprecated This method is deprecated and may be removed in future versions.
-     */
-    public async getLegacyStatsUserUsage(
-        tId: bigint,
-        start: Date,
-        end: Date,
-    ): Promise<IGetLegacyStatsUserUsage[]> {
-        const { query } = new GetUserUsageByRangeBuilder(tId, start, end);
-        const result = await this.prisma.tx.$queryRaw<IGetLegacyStatsUserUsage[]>(query);
-        return result;
-    }
-
-    /**
-     * @deprecated This method is deprecated and may be removed in future versions.
-     */
-    public async getNodeUsersUsageByRange(
-        nodeUuid: string,
-        start: Date,
-        end: Date,
-    ): Promise<IGetLegacyStatsNodesUsersUsage[]> {
-        const nodeId = await this.prisma.tx.nodes.findFirstOrThrow({
-            select: {
-                id: true,
-                uuid: true,
-            },
-            where: {
-                uuid: nodeUuid,
-            },
-        });
-        const { query } = new GetNodeUsersUsageByRangeBuilder(nodeId.id, start, end);
-        const result = await this.prisma.tx.$queryRaw<IGetLegacyStatsNodesUsersUsage[]>(query);
-        return result;
     }
 
     public async cleanOldUsageRecords(): Promise<number> {
@@ -225,6 +189,24 @@ export class NodesUserUsageHistoryRepository implements ICrudHistoricalRecords<N
         return result.map((item) => Number(item.value));
     }
 
+    public async getNewUsersTrafficByRange(start: Date, endExclusive: Date): Promise<bigint> {
+        const result = await this.qb.kysely
+            .selectFrom('nodesUserUsageHistory as nuh')
+            .select([sql<bigint>`coalesce(sum(nuh.total_bytes), 0)`.as('totalBytes')])
+            .where('nuh.createdAt', '>=', start)
+            .where('nuh.createdAt', '<', endExclusive)
+            .where('nuh.userId', 'in', (eb) =>
+                eb
+                    .selectFrom('users')
+                    .select('users.id')
+                    .where('users.createdAt', '>=', start)
+                    .where('users.createdAt', '<', endExclusive),
+            )
+            .executeTakeFirstOrThrow();
+
+        return BigInt(result.totalBytes);
+    }
+
     public async getTopNodeUsersByTraffic(
         nodeId: bigint,
         start: Date,
@@ -233,16 +215,16 @@ export class NodesUserUsageHistoryRepository implements ICrudHistoricalRecords<N
     ): Promise<IGetUniversalTopUser[]> {
         return await this.qb.kysely
             .selectFrom('users as u')
-            .innerJoin('nodesUserUsageHistory as nuh', 'nuh.userId', 'u.tId')
+            .innerJoin('nodesUserUsageHistory as nuh', 'nuh.userId', 'u.id')
             .select([
-                'u.uuid',
+                'u.id as userId',
                 'u.username',
                 (eb) => eb.fn.sum<bigint>('nuh.totalBytes').as('total'),
             ])
             .where('nuh.nodeId', '=', nodeId)
             .where('nuh.createdAt', '>=', start)
             .where('nuh.createdAt', '<=', end)
-            .groupBy(['u.uuid', 'u.username'])
+            .groupBy(['u.id', 'u.username'])
             .orderBy((eb) => eb.fn.sum<bigint>('nuh.totalBytes'), 'desc')
             .limit(limit)
             .execute();
@@ -314,18 +296,71 @@ export class NodesUserUsageHistoryRepository implements ICrudHistoricalRecords<N
     ): Promise<IGetUniversalTopUser[]> {
         return await this.qb.kysely
             .selectFrom('users as u')
-            .innerJoin('nodesUserUsageHistory as nuh', 'nuh.userId', 'u.tId')
+            .innerJoin('nodesUserUsageHistory as nuh', 'nuh.userId', 'u.id')
             .select([
-                'u.uuid',
+                'u.id as userId',
                 'u.username',
                 (eb) => eb.fn.sum<bigint>('nuh.totalBytes').as('total'),
             ])
             .where('nuh.nodeId', 'in', nodeIds)
             .where('nuh.createdAt', '>=', start)
             .where('nuh.createdAt', '<=', end)
-            .groupBy(['u.uuid', 'u.username'])
+            .groupBy(['u.id', 'u.username'])
             .orderBy((eb) => eb.fn.sum<bigint>('nuh.totalBytes'), 'desc')
             .limit(limit)
             .execute();
+    }
+
+    public async getNodeUsage(params: {
+        nodesUuids: string[];
+        start: Date;
+        end: Date;
+        minTotalBytes: number;
+    }): Promise<{
+        nodes: INodeUsage[];
+    }> {
+        const { nodesUuids, start, end, minTotalBytes } = params;
+
+        const nodes = await this.qb.kysely
+            .selectFrom('nodes')
+            .select(['nodes.id', 'nodes.uuid'])
+            .where('nodes.uuid', 'in', nodesUuids.map(getKyselyUuid))
+            .execute();
+
+        if (nodes.length === 0) {
+            return { nodes: [] };
+        }
+        const nodeIds = nodes.map((node) => node.id);
+        const uuidByNodeId = new Map(nodes.map((node) => [node.id, node.uuid]));
+
+        const rows = await this.qb.kysely
+            .selectFrom('nodesUserUsageHistory as h')
+            .where('h.nodeId', 'in', nodeIds)
+            .where('h.createdAt', '>=', start)
+            .where('h.createdAt', '<=', end)
+            .groupBy(['h.nodeId', 'h.userId'])
+            .having((eb) => eb(eb.fn.sum('h.totalBytes'), '>=', BigInt(minTotalBytes)))
+            .select((eb) => [
+                'h.nodeId as nodeId',
+                'h.userId as userId',
+                eb.fn.sum('h.totalBytes').as('totalBytes'),
+            ])
+            .execute();
+
+        const byNode = new Map<string, INodeUsage>();
+        for (const row of rows) {
+            const nodeUuid = uuidByNodeId.get(row.nodeId) ?? '';
+            let group = byNode.get(nodeUuid);
+            if (!group) {
+                group = { uuid: nodeUuid, users: [] };
+                byNode.set(nodeUuid, group);
+            }
+            group.users.push({
+                id: Number(row.userId),
+                totalBytes: Number(row.totalBytes),
+            });
+        }
+
+        return { nodes: [...byNode.values()] };
     }
 }

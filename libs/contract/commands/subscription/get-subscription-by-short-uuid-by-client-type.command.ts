@@ -7,12 +7,12 @@ export namespace GetSubscriptionByShortUuidByClientTypeCommand {
     export const url = REST_API.SUBSCRIPTION.GET;
     export const TSQ_url = url(':shortUuid');
 
-    export const RequestSchema = z.object({
+    export const RequestParamSchema = z.object({
         shortUuid: z.string(),
-        clientType: z.nativeEnum(REQUEST_TEMPLATE_TYPE, {
-            message: 'Invalid client type.',
+        clientType: z.enum(REQUEST_TEMPLATE_TYPE, {
+            error: 'Invalid client type.'
         }),
     });
 
-    export type Request = z.infer<typeof RequestSchema>;
+    export type RequestParam = z.infer<typeof RequestParamSchema>;
 }

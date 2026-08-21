@@ -3,13 +3,13 @@ export class UserForConfigEntity {
     public vlessUuid: string;
     public ssPassword: string;
     public tags: string[];
-    public tId: bigint;
+    public id: bigint;
 
     constructor(data: UserForConfigEntity) {
         this.trojanPassword = data.trojanPassword;
         this.vlessUuid = data.vlessUuid;
         this.ssPassword = data.ssPassword;
         this.tags = data.tags;
-        this.tId = data.tId;
+        this.id = data.id;
     }
 }

@@ -55,6 +55,7 @@ export interface IResolveProxyConfigOptions {
     fallbackOptions?: {
         showHwidMaxDeviceRemarks?: boolean;
         showHwidNotSupportedRemarks?: boolean;
+        respondWithRemarks?: string[];
     };
     excludeHostsByTags?: ISRRContext['excludeHostsByTags'];
 }
@@ -156,6 +157,12 @@ export class ResolveProxyConfigService {
                 }
                 if (fallbackOptions.showHwidNotSupportedRemarks) {
                     return settings.customRemarks.HWIDNotSupported;
+                }
+                if (
+                    fallbackOptions.respondWithRemarks &&
+                    fallbackOptions.respondWithRemarks.length > 0
+                ) {
+                    return fallbackOptions.respondWithRemarks;
                 }
             }
 
@@ -415,8 +422,10 @@ export class ResolveProxyConfigService {
                         ),
                         echConfigList: tls?.echConfigList || null,
                         echForceQuery: tls?.echForceQuery || null,
+                        echSockopt: toNonEmptyRecord(tls?.echSockopt),
                         pinnedPeerCertSha256: inputHost.pinnedPeerCertSha256,
                         verifyPeerCertByName: inputHost.verifyPeerCertByName,
+                        cipherSuites: tls?.cipherSuites || null,
                     },
                 };
             }
@@ -589,6 +598,7 @@ export class ResolveProxyConfigService {
                     ? Buffer.from(inputHost.serverDescription).toString('base64')
                     : null,
                 xrayJsonTemplate: inputHost.xrayJsonTemplate,
+                mapper: inputHost.mapper,
             },
             metadata: {
                 uuid: inputHost.uuid,
@@ -668,14 +678,36 @@ export class ResolveProxyConfigService {
         user: UserEntity,
         settings: SubscriptionSettingsEntity,
     ): string[] {
-        return remarks.map((remark) =>
-            TemplateEngine.formatWithUser(remark, user, settings, this.subPublicDomain),
+        const userValueMap = TemplateEngine.createUserValueMap(
+            user,
+            settings,
+            this.subPublicDomain,
         );
+        return remarks.map((remark) => TemplateEngine.replace(remark, userValueMap));
+    }
+
+    private parseResolvedProxyConfigFromRemark(remark: string): ResolvedProxyConfig | null {
+        if (!remark.startsWith('{"f')) {
+            return null;
+        }
+
+        try {
+            const parsed: unknown = JSON.parse(remark);
+
+            if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+                return null;
+            }
+
+            return parsed as ResolvedProxyConfig;
+        } catch {
+            return null;
+        }
     }
 
     private createFallbackHosts(remarks: string[]): ResolvedProxyConfig[] {
         return remarks.map(
             (remark) =>
+                this.parseResolvedProxyConfigFromRemark(remark.trim()) ??
                 ({
                     finalRemark: remark,
                     address: '0.0.0.0',
@@ -702,6 +734,7 @@ export class ResolveProxyConfigService {
                         serverDescription: null,
                         xrayJsonTemplate: null,
                         mihomoIpVersion: null,
+                        mapper: {},
                     },
                     metadata: {
                         uuid: '00000000-0000-0000-0000-000000000000',
@@ -717,7 +750,7 @@ export class ResolveProxyConfigService {
                         vlessRouteId: null,
                         rawInbound: null,
                     },
-                }) satisfies ResolvedProxyConfig,
+                } satisfies ResolvedProxyConfig),
         );
     }
 }

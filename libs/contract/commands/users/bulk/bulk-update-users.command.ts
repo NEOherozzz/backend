@@ -12,45 +12,32 @@ export namespace BulkUpdateUsersCommand {
     export const endpointDetails = getEndpointDetails(
         USERS_ROUTES.BULK.UPDATE,
         'post',
-        'Bulk update users by UUIDs',
+        'Bulk update users by User IDs',
         { scope: 'bulk-update-users', kind: 'write' },
     );
 
-    export const RequestSchema = z.object({
-        uuids: z
-            .array(z.string().uuid())
-            .min(1, 'Must be at least 1 user UUID')
-            .max(500, 'Maximum 500 user UUIDs'),
+    export const RequestBodySchema = z.object({
+        userIds: z.array(z.number()).min(1).max(500),
         fields: z.object({
             status: UsersSchema.shape.status.optional(),
             trafficLimitBytes: z.optional(
-                z
-                    .number({
-                        invalid_type_error: 'Traffic limit must be a number',
-                    })
-                    .min(0, 'Traffic limit must be greater than 0')
-                    .describe('Traffic limit in bytes. 0 - unlimited'),
+                z.number().min(0).describe('Traffic limit in bytes. 0 - unlimited'),
             ),
             trafficLimitStrategy: z.optional(
-                z
-                    .nativeEnum(RESET_PERIODS, {
-                        description: 'Available reset periods',
-                    })
-                    .describe('Traffic limit reset strategy'),
+                z.enum(RESET_PERIODS).describe('Available reset periods'),
             ),
             expireAt: z.optional(
-                z
-                    .string()
-                    .datetime({ local: true, offset: true, message: 'Invalid date format' })
+                z.iso
+                    .datetime({ local: true, offset: true })
                     .transform((str) => new Date(str))
                     .refine((date) => date > new Date(), {
-                        message: 'Expiration date cannot be in the past',
+                        error: 'Expiration date cannot be in the past',
                     })
                     .describe('Expiration date: 2025-01-17T15:38:45.065Z'),
             ),
-            description: z.optional(z.string().nullable()),
-            telegramId: z.optional(z.number().int().nullable()),
-            email: z.optional(z.string().email('Invalid email format').nullable()),
+            description: z.string().nullish(),
+            telegramId: z.number().nullish(),
+            email: z.email().nullish(),
             tag: z.optional(
                 z
                     .string()
@@ -61,22 +48,10 @@ export namespace BulkUpdateUsersCommand {
                     .max(16, 'Tag must be less than 16 characters')
                     .nullable(),
             ),
-            hwidDeviceLimit: z.optional(
-                z.number().int().min(0, 'Device limit must be non-negative').nullable(),
-            ),
-            externalSquadUuid: z
-                .optional(z.nullable(z.string().uuid()))
-                .describe('Optional. External squad UUID.'),
+            hwidDeviceLimit: z.int().min(0).nullish(),
+            externalSquadUuid: z.uuid().nullish().describe('Optional. External squad UUID.'),
         }),
     });
 
-    export type Request = z.infer<typeof RequestSchema>;
-
-    export const ResponseSchema = z.object({
-        response: z.object({
-            affectedRows: z.number(),
-        }),
-    });
-
-    export type Response = z.infer<typeof ResponseSchema>;
+    export type RequestBody = z.infer<typeof RequestBodySchema>;
 }

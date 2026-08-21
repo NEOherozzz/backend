@@ -14,23 +14,14 @@ export namespace RestartNodeCommand {
         { scope: 'restart', kind: 'write' },
     );
 
-    export const RequestSchema = z.object({
-        uuid: z.string().uuid(),
+    export const RequestParamSchema = z.object({
+        uuid: z.uuid(),
     });
-
-    export type Request = z.infer<typeof RequestSchema>;
 
     export const RequestBodySchema = z.object({
         forceRestart: z.boolean(),
     });
 
+    export type RequestParam = z.infer<typeof RequestParamSchema>;
     export type RequestBody = z.infer<typeof RequestBodySchema>;
-
-    export const ResponseSchema = z.object({
-        response: z.object({
-            eventSent: z.boolean(),
-        }),
-    });
-
-    export type Response = z.infer<typeof ResponseSchema>;
 }

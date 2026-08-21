@@ -15,10 +15,10 @@ import { CACHE_KEYS } from '@libs/contracts/constants';
 import { ERRORS } from '@libs/contracts/constants/errors';
 
 import { PasskeyEntity } from '@modules/admin/entities';
-import { IJWTAuthPayload } from '@modules/auth/interfaces';
+import type { IJWTAuthPayload } from '@modules/auth/interfaces';
 import { GetCachedRemnawaveSettingsQuery } from '@modules/remnawave-settings/queries/get-cached-remnawave-settings';
 
-import { UpdatePasskeyRequestDto, VerifyPasskeyRegistrationRequestDto } from '../dtos';
+import { UpdatePasskeyBodyDto, VerifyPasskeyRegistrationBodyDto } from '../dtos';
 import { GetActivePasskeysResponseModel } from '../models/get-active-passkeys.model';
 import { AdminRepository } from '../repositories/admin.repository';
 import { PasskeyRepository } from '../repositories/passkey.repository';
@@ -100,7 +100,7 @@ export class PasskeyService {
 
     public async verifyPasskeyRegistration(
         jwtPayload: IJWTAuthPayload,
-        dto: VerifyPasskeyRegistrationRequestDto,
+        dto: VerifyPasskeyRegistrationBodyDto,
     ): Promise<TResult<{ verified: boolean; message: string }>> {
         try {
             const response = dto.response as unknown as RegistrationResponseJSON;
@@ -145,7 +145,7 @@ export class PasskeyService {
             const verification = await verifyRegistrationResponse({
                 response,
                 expectedChallenge,
-                expectedOrigin: passkeySettings.origin,
+                expectedOrigin: [passkeySettings.origin, `https://${passkeySettings.rpId}`],
                 expectedRPID: passkeySettings.rpId,
                 requireUserVerification: true,
             });
@@ -219,10 +219,7 @@ export class PasskeyService {
         }
     }
 
-    public async deletePasskey(
-        payload: IJWTAuthPayload,
-        id: string,
-    ): Promise<TResult<GetActivePasskeysResponseModel>> {
+    public async deletePasskey(payload: IJWTAuthPayload, id: string): Promise<TResult<boolean>> {
         try {
             const { uuid } = payload;
 
@@ -234,7 +231,7 @@ export class PasskeyService {
 
             await this.passkeyRepository.deleteByUUID(id);
 
-            return await this.getActivePasskeys(payload);
+            return ok(true);
         } catch (error) {
             this.logger.error(`Delete passkey error: ${error}`);
             return fail(ERRORS.DELETE_PASSKEY_ERROR);
@@ -243,7 +240,7 @@ export class PasskeyService {
 
     public async updatePasskey(
         jwtPayload: IJWTAuthPayload,
-        dto: UpdatePasskeyRequestDto,
+        dto: UpdatePasskeyBodyDto,
     ): Promise<TResult<GetActivePasskeysResponseModel>> {
         try {
             const { uuid } = jwtPayload;
