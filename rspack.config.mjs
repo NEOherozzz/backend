@@ -90,7 +90,9 @@ export default defineConfig({
             },
         ],
     },
+    devtool: isGenDoc ? false : undefined,
     optimization: {
+        minimize: isGenDoc ? false : undefined,
         runtimeChunk: false,
         splitChunks: false,
         minimizer: [
@@ -125,12 +127,33 @@ export default defineConfig({
                       include: /cli\.js$/,
                   }),
               ]),
-        new TsCheckerRspackPlugin({
-            typescript: {
-                configFile: path.resolve(import.meta.dirname, './tsconfig.json'),
-                mode: 'readonly',
-                build: false,
-            },
-        }),
+        ...(isGenDoc
+            ? [
+                  new rspack.BannerPlugin({
+                      banner: [
+                          "process.env.DATABASE_URL ??= 'postgresql://openapi:openapi@openapi:5432/openapi';",
+                          "process.env.APP_SECRET ??= 'openapi';",
+                          "process.env.FRONT_END_DOMAIN ??= 'openapi';",
+                          "process.env.SUB_PUBLIC_DOMAIN ??= 'openapi';",
+                          "process.env.METRICS_USER ??= 'openapi';",
+                          "process.env.METRICS_PASS ??= 'openapi';",
+                          "process.env.REDIS_HOST ??= 'localhost';",
+                          "process.env.REDIS_PORT ??= '6379';",
+                          "process.env.INSTANCE_TYPE ??= 'api';",
+                      ].join('\n'),
+                      raw: true,
+                      entryOnly: true,
+                      include: /gen-doc\.js$/,
+                  }),
+              ]
+            : [
+                  new TsCheckerRspackPlugin({
+                      typescript: {
+                          configFile: path.resolve(import.meta.dirname, './tsconfig.json'),
+                          mode: 'readonly',
+                          build: false,
+                      },
+                  }),
+              ]),
     ],
 });

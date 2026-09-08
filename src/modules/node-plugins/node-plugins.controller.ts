@@ -1,7 +1,7 @@
 import { CONTROLLERS_INFO, NODE_PLUGINS_CONTROLLER } from '@contract/api';
 import { ROLE } from '@contract/constants';
 
-import { Body, Controller, HttpStatus, Param, UseFilters, UseGuards } from '@nestjs/common';
+import { Body, Controller, HttpStatus, Param, Query, UseFilters, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { Endpoint } from '@common/decorators/base-endpoint';
@@ -29,7 +29,13 @@ import {
     UpdateNodePluginCommand,
     UpdateSharedListCommand,
 } from '@libs/contracts/commands';
+import { GetNodePluginsTagsCommand, SetNodePluginTagsCommand } from '@libs/contracts/commands';
 
+import {
+    GetNodePluginsTagsResponseDto,
+    SetNodePluginsTagsBodyDto,
+    SetNodePluginsTagsResponseDto,
+} from './dtos';
 import {
     ReorderNodePluginsBodyDto,
     ReorderNodePluginsResponseDto,
@@ -49,8 +55,8 @@ import {
 import {
     CreateSharedListBodyDto,
     CreateSharedListResponseDto,
-    DeleteSharedListParamDto,
-    GetSharedListParamDto,
+    DeleteSharedListBodyDto,
+    GetSharedListQueryDto,
     GetSharedListResponseDto,
     GetSharedListsResponseDto,
     SyncSharedListBodyDto,
@@ -74,6 +80,35 @@ export class NodePluginController {
     ) {}
 
     @Endpoint({
+        command: GetNodePluginsTagsCommand,
+        httpCode: HttpStatus.OK,
+        type: GetNodePluginsTagsResponseDto,
+    })
+    async getTags(): Promise<GetNodePluginsTagsResponseDto> {
+        const result = await this.nodePluginService.getTags();
+
+        const data = errorHandler(result);
+        return {
+            response: { tags: data },
+        };
+    }
+
+    @Endpoint({
+        command: SetNodePluginTagsCommand,
+        httpCode: HttpStatus.OK,
+        type: SetNodePluginsTagsResponseDto,
+    })
+    async setTags(@Body() body: SetNodePluginsTagsBodyDto): Promise<SetNodePluginsTagsResponseDto> {
+        const result = await this.nodePluginService.setTags(body.uuid, body.tags);
+
+        const data = errorHandler(result);
+        return {
+            response: { uuid: body.uuid, tags: data },
+        };
+    }
+
+
+    @Endpoint({
         type: GetSharedListsResponseDto,
         command: GetSharedListsCommand,
         httpCode: HttpStatus.OK,
@@ -93,9 +128,9 @@ export class NodePluginController {
         httpCode: HttpStatus.OK,
     })
     async getSharedListByName(
-        @Param() param: GetSharedListParamDto,
+        @Query() query: GetSharedListQueryDto,
     ): Promise<GetSharedListResponseDto> {
-        const result = await this.sharedListsService.getSharedListByName(param.name);
+        const result = await this.sharedListsService.getSharedListByName(query.name);
 
         const data = errorHandler(result);
         return {
@@ -150,8 +185,8 @@ export class NodePluginController {
         command: DeleteSharedListCommand,
         httpCode: HttpStatus.NO_CONTENT,
     })
-    async deleteSharedList(@Param() param: DeleteSharedListParamDto) {
-        const result = await this.sharedListsService.deleteSharedListByName(param.name);
+    async deleteSharedList(@Body() body: DeleteSharedListBodyDto) {
+        const result = await this.sharedListsService.deleteSharedListByName(body.name);
 
         errorHandler(result);
         return;
@@ -293,4 +328,5 @@ export class NodePluginController {
         errorHandler(result);
         return;
     }
+
 }

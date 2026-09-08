@@ -6,6 +6,7 @@ import utc from 'dayjs/plugin/utc';
 import { utilities as nestWinstonModuleUtilities, WinstonModule } from 'nest-winston';
 import { createLogger } from 'winston';
 import * as winston from 'winston';
+import 'zod/compile';
 
 import { NestFactory } from '@nestjs/core';
 
@@ -45,6 +46,7 @@ const logger = createLogger({
 
 async function bootstrap(): Promise<void> {
     const app = await NestFactory.create(AppModule, {
+        preview: true,
         logger: WinstonModule.createLogger({
             instance: logger,
         }),
@@ -52,10 +54,14 @@ async function bootstrap(): Promise<void> {
 
     app.setGlobalPrefix(ROOT);
 
-    await ghActionsDocs(app);
+    const specPath = await ghActionsDocs(app);
+
+    logger.info(`OpenAPI spec written to ${specPath}`);
 
     process.exit(0);
 }
-bootstrap().catch(() => {
-    process.exit(0);
+bootstrap().catch((error) => {
+    logger.error(`Failed to generate OpenAPI spec: ${error}`);
+
+    process.exit(1);
 });

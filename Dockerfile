@@ -16,10 +16,11 @@ RUN apk add --no-cache curl unzip ca-certificates \
     && curl -L ${MIHOMO_SCHEMA_URL} -o frontend_temp/dist/assets/mihomo.schema.json \
     && curl -L https://validator.remna.dev/main.wasm -o frontend_temp/dist/assets/main.wasm
 
-FROM node:24.19-trixie-slim AS backend-build
+FROM node:24.20-trixie-slim AS backend-build
 WORKDIR /opt/app
 
 COPY package*.json ./
+COPY patches ./patches
 COPY prisma ./prisma
 COPY rspack.config.mjs ./
 COPY prisma.config.ts ./prisma.config.ts
@@ -32,6 +33,8 @@ COPY src ./src
 COPY libs ./libs
 
 RUN npm run migrate:generate \
+    && npm run generate:openapi \
+    && test -s openapi.json \
     && npm run build \
     && npm prune --omit=dev \
     && npm cache clean --force
@@ -50,7 +53,7 @@ RUN cd node_modules/@prisma/client/runtime && \
     find node_modules \( -name '*.js.map' -o -name '*.mjs.map' \) -delete && \
     find node_modules \( -name '*.d.ts' -o -name '*.d.cts' -o -name '*.d.mts' \) -delete
 
-FROM node:24.19-trixie-slim
+FROM node:24.20-trixie-slim
 
 LABEL org.opencontainers.image.title="Remnawave"
 LABEL org.opencontainers.image.description="Powerful proxy management tool"
@@ -85,6 +88,7 @@ ENV __RW_METADATA_BUILD_TIME=${__RW_METADATA_BUILD_TIME}
 ENV __RW_METADATA_BUILD_NUMBER=${__RW_METADATA_BUILD_NUMBER}
 
 COPY --from=backend-build /opt/app/dist ./dist
+COPY --from=backend-build /opt/app/openapi.json ./openapi.json
 COPY --from=frontend /opt/frontend/frontend_temp/dist ./frontend
 COPY --from=backend-build /opt/app/prisma/generated ./prisma/generated
 COPY --from=backend-build /opt/app/prisma/migrations ./prisma/migrations
